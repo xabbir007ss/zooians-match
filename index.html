@@ -1041,12 +1041,24 @@ const Chat = {
     const {data,error}=await sb.from(TBL("messages")).select("*").eq(M.match,matchId).order(M.created,{ascending:true}).limit(500);
     if(error){ console.warn("[thread]",error.message); return []; }
     return data.map(mapMsg);
-  },
-  async send(matchId,from,text){
+    },
+  async send(matchId, from, text) {
     await detectSchema();
-    const {data,error}=await sb.from(TBL("messages")).insert(put("messages",{match:matchId,sender:from,body:text})).select().single();
-    if(error) console.warn("[send]",error);
-    return {data:data?mapMsg(data):null,error};
+    if(!sb||!matchId) return { data: null, error: "Not initialized" };
+    const { data, error } = await sb
+      .from(TBL("messages"))
+      .insert({
+        match: matchId,       // Match ID
+        sender: from,         // Sender ID
+        body: text            // Message text
+      })
+      .select()
+      .single();
+      
+    if (error) {
+      console.warn("[send]", error);
+    }
+    return { data: data ? mapMsg(data) : null, error };
   },
   /* live messages for one conversation; returns an unsubscribe function */
   subscribe(matchId,cb){
