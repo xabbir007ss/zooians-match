@@ -975,14 +975,21 @@ const Social = {
     const A=COL.matches.a, B=COL.matches.b;
     const {data,error}=await sb.from(TBL("matches")).select("*").or(`${A}.eq.${code},${B}.eq.${code}`);
     if(error){ console.warn("[matches]",error.message); return []; }
-    const list=data.map(mapMatch);
+    /* if the database holds two rows for the same two people, treat them as ONE match (oldest wins) */
+    const byPair=new Map();
+    data.map(mapMatch).sort((x,y)=>(x.at-y.at)||String(x.id).localeCompare(String(y.id))).forEach(m=>{
+      const key=[...m.members].sort().join("|");
+      if(byPair.has(key)) byPair.get(key).alias.push(m.id);
+      else { m.alias=[m.id]; byPair.set(key,m); }
+    });
+    const list=[...byPair.values()];
     if(list.length){                                           // attach the latest message to each match
       const M=COL.messages;
-      const {data:ms}=await sb.from(TBL("messages")).select("*").in(M.match,list.map(m=>m.id))
+      const {data:ms}=await sb.from(TBL("messages")).select("*").in(M.match,list.flatMap(m=>m.alias))
         .order(M.created,{ascending:false}).limit(400);
       const seen=new Set();
-      (ms||[]).forEach(r=>{ const pid=pick(r,"messages","match"); if(seen.has(pid)) return; seen.add(pid);
-        const m=list.find(x=>x.id===pid); if(!m) return;
+      (ms||[]).forEach(r=>{ const pid=pick(r,"messages","match");
+        const m=list.find(x=>x.alias.includes(pid)); if(!m||seen.has(m.id)) return; seen.add(m.id);
         m.lastMsg=pick(r,"messages","body")||""; m.lastAt=toMs(pick(r,"messages","created")); m.lastFrom=pick(r,"messages","sender"); });
     }
     return list;
@@ -991,8 +998,8 @@ const Social = {
     await detectSchema(); if(!isUuid(a)||!isUuid(b)) return null;
     const A=COL.matches.a, B=COL.matches.b;
     const {data}=await sb.from(TBL("matches")).select("*")
-      .or(`and(${A}.eq.${a},${B}.eq.${b}),and(${A}.eq.${b},${B}.eq.${a})`).limit(1);
-    if(data&&data.length) return mapMatch(data[0]);
+      .or(`and(${A}.eq.${a},${B}.eq.${b}),and(${A}.eq.${b},${B}.eq.${a})`).limit(10);
+    if(data&&data.length) return data.map(mapMatch).sort((x,y)=>(x.at-y.at)||String(x.id).localeCompare(String(y.id)))[0];
     if(retry){ await new Promise(r=>setTimeout(r,350)); return Social.findMatch(a,b,false); }
     return null;
   },
@@ -1059,10 +1066,14 @@ async function rtAuth(){
 const chanName = p=>p+":"+Math.random().toString(36).slice(2,9);
 
 const Chat = {
-  async thread(matchId){
+  async thread(matchId,me,other){
     await detectSchema(); if(!sb||!matchId) return [];
     const M=COL.messages;
-    const {data,error}=await sb.from(TBL("messages")).select("*").eq(M.match,matchId).order(M.created,{ascending:true}).limit(500);
+    let q=sb.from(TBL("messages")).select("*");
+    if(me&&other&&M.sender&&M.receiver)
+      q=q.or(`${M.match}.eq.${matchId},and(${M.sender}.eq.${me},${M.receiver}.eq.${other}),and(${M.sender}.eq.${other},${M.receiver}.eq.${me})`);
+    else q=q.eq(M.match,matchId);
+    const {data,error}=await q.order(M.created,{ascending:true}).limit(500);
     if(error){ console.warn("[thread]",error.message); return []; }
     return data.map(mapMsg);
   },
@@ -1076,13 +1087,15 @@ const Chat = {
     return {data:data?mapMsg(data):null,error};
   },
   /* live messages for one conversation; returns an unsubscribe function */
-  subscribe(matchId,cb){
+  subscribe(matchId,cb,me,other){
     let ch=null, dead=false;
     detectSchema().then(rtAuth).then(()=>{
       if(dead||!sb) return;
       ch=sb.channel(chanName("chat"))
         .on("postgres_changes",{event:"INSERT",schema:"public",table:TBL("messages")},p=>{
-          if(!p||!p.new) return; const m=mapMsg(p.new); if(m.pid===matchId) cb(m); })
+          if(!p||!p.new) return; const m=mapMsg(p.new);
+          const samePair=me&&other&&((m.from===me&&m.to===other)||(m.from===other&&m.to===me));
+          if(m.pid===matchId||samePair) cb(m); })
         .subscribe(st=>{ if(st==="CHANNEL_ERROR"||st==="TIMED_OUT") console.warn("[realtime] chat:",st,"— the 3-second fallback sync keeps the chat updating"); });
     });
     return ()=>{ dead=true; if(ch) sb.removeChannel(ch); };
@@ -2234,14 +2247,14 @@ async function openChat(pid,other){
     });
     box.scrollTop=box.scrollHeight;
   };
-  let list=await Chat.thread(pid); paint(list);
+  let list=await Chat.thread(pid,App.me,other.code); paint(list);
   const addMsg=m=>{ if(list.some(x=>x.id===m.id)) return; list.push(m); list.sort((a,b)=>a.at-b.at); paint(list); markRead(pid); };
-  threadUnsub=Chat.subscribe(pid,addMsg);          /* live: new messages appear instantly */
+  threadUnsub=Chat.subscribe(pid,addMsg,App.me,other.code);          /* live: new messages appear instantly */
   /* safety net: even if the websocket drops, the chat re-syncs every 3 s */
   const poll=setInterval(async()=>{
     if(!document.body.contains(sheet)){ clearInterval(poll); return; }
     if(document.hidden) return;
-    (await Chat.thread(pid)).forEach(addMsg);
+    (await Chat.thread(pid,App.me,other.code)).forEach(addMsg);
   },3000);
 
   const ta=$("#cText",sheet);
@@ -2701,7 +2714,7 @@ function startRealtime(){
   }
 
   App.watchers.push(Chat.watchInbox(m=>{
-    const mt=App.matches.find(x=>x.id===m.pid);
+    const mt=App.matches.find(x=>x.id===m.pid||(x.alias&&x.alias.includes(m.pid))||(m.from&&m.to&&x.members.includes(m.from)&&x.members.includes(m.to)));
     if(!mt){ syncMatches(); return; }
     mt.lastMsg=m.text; mt.lastAt=m.at; mt.lastFrom=m.from; paintBadges();
     if(m.from!==me) buzz(20);
