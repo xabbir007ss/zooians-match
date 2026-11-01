@@ -1061,16 +1061,30 @@ const Chat = {
     return { data: data ? mapMsg(data) : null, error };
   },
   /* live messages for one conversation; returns an unsubscribe function */
-  subscribe(matchId,cb){
-    let ch=null, dead=false;
+  subscribe(matchId, cb){
+    let ch = null, dead = false;
     detectSchema().then(()=>{
-      if(dead) return;
-      ch=sb.channel("chat:"+matchId)
-        .on("postgres_changes",{event:"INSERT",schema:"public",table:TBL("messages"),filter:`${COL.messages.match}=eq.${matchId}`},
-          p=>cb(mapMsg(p.new)))
-        .subscribe(s=>{ if(s==="CHANNEL_ERROR") console.warn("[realtime] chat channel error — is Realtime enabled for the messages table?"); });
+      if(dead || !sb || !matchId) return;
+      
+      const M = COL.messages; // Supabase column mapping
+      ch = sb.channel("chat:" + matchId)
+        .on("postgres_changes", {
+          event: "INSERT",
+          schema: "public",
+          table: TBL("messages"),
+          filter: `${M.match || 'match_id'}=eq.${matchId}`
+        }, p => {
+          if (p && p.new) {
+            cb(mapMsg(p.new));
+          }
+        })
+        .subscribe((status) => {
+          if (status === "CHANNEL_ERROR") {
+            console.warn("[realtime] chat channel error");
+          }
+        });
     });
-    return ()=>{ dead=true; if(ch) sb.removeChannel(ch); };
+    return () => { dead = true; if(ch) sb.removeChannel(ch); };
   },
   /* every message I'm allowed to see (RLS applies) — used for unread badges + inbox ordering */
   watchInbox(cb){
