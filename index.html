@@ -422,6 +422,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pv-chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px 2px}
 .pv-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;background:var(--paper);border:1px solid var(--line);font-size:13.5px;font-weight:600}
 .pv-chip i{font-style:normal;font-size:15px;line-height:1}
+.pv-chip i:empty{display:none}
 .pv-looking{margin:12px 18px;padding:16px 18px;border-radius:22px;background:var(--love);color:#fff;box-shadow:0 14px 28px -16px rgba(164,40,232,.8)}
 .pv-looking small{display:block;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
 .pv-looking b{display:block;margin-top:5px;font-family:var(--ff-d);font-size:21px;font-weight:700;line-height:1.2}
@@ -434,20 +435,20 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pr-slot select.input{height:48px;margin-bottom:10px}
 .pr-slot textarea.input{min-height:78px}
 /* ---- match intro inside a chat (3D animated panda) ---- */
-.matchintro{position:relative;text-align:center;padding:12px 20px 14px;overflow:hidden}
+.matchintro{position:relative;text-align:center;padding:8px 20px 10px;overflow:hidden}
 .mi-hearts{position:absolute;inset:0;pointer-events:none}
 .mi-hearts i{position:absolute;bottom:34%;width:15px;height:15px;color:var(--pink);opacity:0;animation:miHeart 5.6s ease-in infinite;animation-delay:var(--d)}
 .mi-hearts i:nth-child(even){color:var(--violet)}
 .mi-hearts i:nth-child(3n){color:#FF8FC4}
 .mi-hearts svg{width:100%;height:100%;display:block}
-@keyframes miHeart{0%{opacity:0;transform:translateY(0) scale(.5)}14%{opacity:.85}100%{opacity:0;transform:translateY(-130px) translateX(12px) scale(1.15)}}
-.mi-stage{position:relative;width:170px;height:176px;margin:6px auto 0;perspective:700px}
+@keyframes miHeart{0%{opacity:0;transform:translateY(0) scale(.5)}14%{opacity:.85}100%{opacity:0;transform:translateY(-90px) translateX(12px) scale(1.15)}}
+.mi-stage{position:relative;width:104px;height:112px;margin:6px auto 0;perspective:700px}
 .mi-panda{position:absolute;left:0;right:0;bottom:8px;width:100%;height:auto;transform-origin:50% 100%;
   animation:miJump 2.6s cubic-bezier(.4,0,.3,1) infinite;filter:drop-shadow(0 12px 12px rgba(40,10,60,.22));pointer-events:none}
-@keyframes miJump{0%,100%{transform:translateY(0) rotateY(-12deg) rotateZ(-2deg) scale(1.02,.97)}50%{transform:translateY(-16px) rotateY(12deg) rotateZ(2deg) scale(.99,1.02)}}
-.mi-shadow{position:absolute;left:50%;bottom:0;width:90px;height:12px;margin-left:-45px;border-radius:50%;background:rgba(40,10,60,.2);filter:blur(4px);animation:miShadow 2.6s cubic-bezier(.4,0,.3,1) infinite}
+@keyframes miJump{0%,100%{transform:translateY(0) rotateY(-12deg) rotateZ(-2deg) scale(1.02,.97)}50%{transform:translateY(-10px) rotateY(12deg) rotateZ(2deg) scale(.99,1.02)}}
+.mi-shadow{position:absolute;left:50%;bottom:0;width:60px;height:9px;margin-left:-30px;border-radius:50%;background:rgba(40,10,60,.2);filter:blur(4px);animation:miShadow 2.6s cubic-bezier(.4,0,.3,1) infinite}
 @keyframes miShadow{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(.7);opacity:.5}}
-.mi-title{display:flex;justify-content:center;font-family:var(--ff-d);font-weight:800;font-size:36px;line-height:1.1;margin-top:8px}
+.mi-title{display:flex;justify-content:center;font-family:var(--ff-d);font-weight:800;font-size:28px;line-height:1.1;margin-top:4px}
 .mi-title span{display:inline-block;animation:miLetter 2s ease-in-out infinite;animation-delay:calc(var(--i) * .09s)}
 @keyframes miLetter{0%,55%,100%{transform:translateY(0) scale(1)}28%{transform:translateY(-8px) scale(1.14)}}
 .mi-sub{margin-top:6px;font-size:13px;color:var(--ink-3);line-height:1.5}
@@ -1677,8 +1678,6 @@ function setupLocation(body,d){
       <span class="small muted" id="gpsState">Detect where you are right now with GPS</span></span></button>
     <div class="field" style="margin-top:6px"><label>Divisions of Bangladesh</label>
       <div class="chips" id="divs">${DIVISIONS.map(x=>chip(x,x)).join("")}</div></div>
-    <div class="field"><label>Popular hubs</label>
-      <div class="chips" id="hubs">${HUBS.map(h=>chip(h+", Dhaka",h)).join("")}</div></div>
     <div class="field"><label for="sq">Search any area or postcode</label>
       <div class="search"><span>${I.search}</span>
       <input id="sq" placeholder="e.g. Bashundhara, 1229, London" style="padding-left:42px;height:54px;border-radius:14px;width:100%;border:1.5px solid var(--line);background:var(--paper)"></div>
@@ -2145,7 +2144,7 @@ function openProfileSheet(p,opts={}){
       </div>
       <div class="pv-chips">
         ${chip("📏",p.height?hLabel(p.height):"")}
-        ${chip("🙏",p.religion)}
+        ${chip("",p.religion)}
         ${chip("🗣️",(p.langs||[]).join(" · "))}
         ${chip("💼",p.work)}
         ${chip("📍",(p.loc&&p.loc.label)||"")}
