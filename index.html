@@ -690,7 +690,8 @@ const SCHEMA = {
     a:["user_a","user1_id","user_1","user1","user_one","a"], b:["user_b","user2_id","user_2","user2","user_two","b"],
     created:["created_at"] },
   messages:{ table:"messages", id:["id"], match:["match_id"],
-    sender:["sender_id","from_user","user_id","from_id"], body:["content","body","text","message"], created:["created_at"] },
+    sender:["sender_id","from_user","user_id","from_id"],
+    receiver:["receiver_id","recipient_id","to_user","to_id"], body:["content","body","text","message"], created:["created_at"] },
   blocks:{ table:"blocks",
     blocker:["blocker_id","user_id","from_user","from_id"], blocked:["blocked_id","blocked_user_id","to_user","to_id"], created:["created_at"] },
   reports:{ table:"reports", id:["id"],
@@ -995,8 +996,26 @@ const Social = {
     if(retry){ await new Promise(r=>setTimeout(r,350)); return Social.findMatch(a,b,false); }
     return null;
   },
-  async unmatch(a,b){ const m=await Social.findMatch(a,b,false);
-    if(m) await sb.from(TBL("matches")).delete().eq(COL.matches.id,m.id); },
+  /* Tinder/Bumble style: chat + match vanish for both, and both reappear in each other's discovery */
+  async unmatch(me,other){
+    await detectSchema();
+    if(!sb||!isUuid(me)||!isUuid(other)) return {ok:false,message:"please log in again"};
+    const m=await Social.findMatch(me,other,false);
+    const r=await sb.rpc("unmatch_user",{target:other});          // server function (see unmatch-fix.sql)
+    if(r.error){
+      console.warn("[unmatch] rpc failed, trying direct deletes:",r.error.message);
+      if(m){ await sb.from(TBL("messages")).delete().eq(COL.messages.match,m.id);
+             await sb.from(TBL("matches")).delete().eq(COL.matches.id,m.id); }
+      await sb.from(TBL("likes")).delete().eq(COL.likes.from,me).eq(COL.likes.to,other);
+      await sb.from(TBL("likes")).delete().eq(COL.likes.from,other).eq(COL.likes.to,me);
+    }
+    const still=await Social.findMatch(me,other,false);
+    if(still) return {ok:false,message:/function/i.test((r.error&&r.error.message)||"")
+      ? "run unmatch-fix.sql in Supabase first (the unmatch function is missing)"
+      : "the database refused the delete — run unmatch-fix.sql in Supabase"};
+    await Social.unpass(me,other);
+    return {ok:true};
+  },
 
   /* ---- blocks / reports ---- */
   async block(from,to){ await detectSchema();
@@ -1018,9 +1037,10 @@ const Social = {
     let ch=null, dead=false;
     detectSchema().then(()=>{
       if(dead) return;
-      ch=sb.channel("social:"+me)
+      ch=sb.channel("social:"+me+":"+Math.random().toString(36).slice(2,8))
         .on("postgres_changes",{event:"INSERT",schema:"public",table:TBL("likes"),filter:`${COL.likes.to}=eq.${me}`},()=>h.onLike&&h.onLike())
         .on("postgres_changes",{event:"INSERT",schema:"public",table:TBL("matches")},()=>h.onMatch&&h.onMatch())
+        .on("postgres_changes",{event:"DELETE",schema:"public",table:TBL("matches")},()=>h.onGone&&h.onGone())
         .subscribe();
     });
     return ()=>{ dead=true; if(ch) sb.removeChannel(ch); };
@@ -1028,11 +1048,15 @@ const Social = {
 };
 
 /* ======================= chat.js ======================= */
-/* ===========================================================================
-   chat.js — messages table + Supabase Realtime (WebSocket) subscriptions
-   =========================================================================== */
+/* messages table + Supabase Realtime. Columns: match_id, sender_id, receiver_id, content */
 const mapMsg = r=>({ id:r[COL.messages.id], pid:pick(r,"messages","match"), from:pick(r,"messages","sender"),
-  text:pick(r,"messages","body")||"", at:toMs(pick(r,"messages","created"))||Date.now() });
+  to:pick(r,"messages","receiver"), text:pick(r,"messages","body")||"", at:toMs(pick(r,"messages","created"))||Date.now() });
+
+/* make sure the websocket uses the logged-in user's token (Realtime only delivers rows RLS lets this user SELECT) */
+async function rtAuth(){
+  try{ const {data}=await sb.auth.getSession(); if(data&&data.session) sb.realtime.setAuth(data.session.access_token); }catch(e){}
+}
+const chanName = p=>p+":"+Math.random().toString(36).slice(2,9);
 
 const Chat = {
   async thread(matchId){
@@ -1041,64 +1065,40 @@ const Chat = {
     const {data,error}=await sb.from(TBL("messages")).select("*").eq(M.match,matchId).order(M.created,{ascending:true}).limit(500);
     if(error){ console.warn("[thread]",error.message); return []; }
     return data.map(mapMsg);
-    },
-  async send(matchId, from, text) {
+  },
+  /* receiver_id is filled in so the other person is allowed to SEE (and live-receive) the message */
+  async send(matchId,from,text,to){
     await detectSchema();
-    if(!sb||!matchId) return { data: null, error: "Not initialized" };
-    const { data, error } = await sb
-      .from(TBL("messages"))
-      .insert({
-        match_id: matchId,       // Match ID
-        sender_id: from,         // Sender ID
-        content: text            // Message text
-      })
-      .select()
-      .single();
-      
-    if (error) {
-      console.warn("[send]", error);
-    }
-    return { data: data ? mapMsg(data) : null, error };
+    if(!sb||!matchId) return {data:null,error:{message:"no conversation"}};
+    const row=put("messages",{match:matchId,sender:from,receiver:to||undefined,body:text});
+    const {data,error}=await sb.from(TBL("messages")).insert(row).select().single();
+    if(error) console.warn("[send]",error);
+    return {data:data?mapMsg(data):null,error};
   },
   /* live messages for one conversation; returns an unsubscribe function */
-  subscribe(matchId, cb){
-    let ch = null, dead = false;
-    detectSchema().then(()=>{
-      if(dead || !sb || !matchId) return;
-      
-      const M = COL.messages; // Supabase column mapping
-      ch = sb.channel("chat:" + matchId)
-        .on("postgres_changes", {
-          event: "INSERT",
-          schema: "public",
-          table: TBL("messages"),
-          filter: `${M.match || 'match_id'}=eq.${matchId}`
-        }, p => {
-          if (p && p.new) {
-            cb(mapMsg(p.new));
-          }
-        })
-        .subscribe((status) => {
-          if (status === "CHANNEL_ERROR") {
-            console.warn("[realtime] chat channel error");
-          }
-        });
+  subscribe(matchId,cb){
+    let ch=null, dead=false;
+    detectSchema().then(rtAuth).then(()=>{
+      if(dead||!sb) return;
+      ch=sb.channel(chanName("chat"))
+        .on("postgres_changes",{event:"INSERT",schema:"public",table:TBL("messages")},p=>{
+          if(!p||!p.new) return; const m=mapMsg(p.new); if(m.pid===matchId) cb(m); })
+        .subscribe(st=>{ if(st==="CHANNEL_ERROR"||st==="TIMED_OUT") console.warn("[realtime] chat:",st,"— the 3-second fallback sync keeps the chat updating"); });
     });
-    return () => { dead = true; if(ch) sb.removeChannel(ch); };
+    return ()=>{ dead=true; if(ch) sb.removeChannel(ch); };
   },
-  /* every message I'm allowed to see (RLS applies) — used for unread badges + inbox ordering */
+  /* every new message I'm allowed to see — unread badges + inbox order */
   watchInbox(cb){
     let ch=null, dead=false;
-    detectSchema().then(()=>{
+    detectSchema().then(rtAuth).then(()=>{
       if(dead||!sb) return;
-      ch=sb.channel("inbox:"+Math.random().toString(36).slice(2,8))
-        .on("postgres_changes",{event:"INSERT",schema:"public",table:TBL("messages")},p=>cb(mapMsg(p.new)))
+      ch=sb.channel(chanName("inbox"))
+        .on("postgres_changes",{event:"INSERT",schema:"public",table:TBL("messages")},p=>{ if(p&&p.new) cb(mapMsg(p.new)); })
         .subscribe();
     });
     return ()=>{ dead=true; if(ch) sb.removeChannel(ch); };
   }
 };
-
 </script>
 <script>
 /* ==========================================================================
@@ -1763,7 +1763,7 @@ const markRead=id=>{ try{localStorage.setItem("zm:read:"+id,String(now()))}catch
 async function loadSocial(){
   const me=App.me;
   const [matches,likedYou,myLikes,passes,blocks]=await Promise.all([
-    Social.matches(me),Social.likedBy(me),Social.myLikes(me),Social.myPasses(me),Social.blocks(me),loadConfig()
+    Social.matches(me),Social.likedBy(me),Social.myLikes(me),Social.myPasses(me),Promise.resolve([]),loadConfig()
   ]);
   App.matches=matches; App.likedYou=likedYou; App.myLikes=myLikes; App.passes=passes; App.blocks=blocks;
   App.demoOff = !SHOW_SAMPLE_PROFILES;
@@ -2037,20 +2037,25 @@ function openProfileSheet(p,opts={}){
 
 function personMenu(p,after){
   if(p.code===App.me){ toast("That's you"); return; }
-  const blocked=App.blocks.some(b=>b.from===App.me&&b.to===p.code);
+  const isMatch=App.matches.some(m=>m.members.includes(p.code));
   const b=modal(p.name,`
-    <button class="listopt" id="mReport">${I.flag}<span>Report ${esc(p.name)}</span></button>
-    <button class="listopt" id="mBlock">${I.ban}<span>${blocked?"Unblock":"Block"} ${esc(p.name)}</span></button>
-    ${App.matches.some(m=>m.members.includes(p.code))?`<button class="listopt" id="mUnmatch">${I.x}<span>Unmatch</span></button>`:""}`);
+    ${isMatch?`<button class="listopt" id="mUnmatch">${I.x}<span>Unmatch ${esc(p.name)}</span></button>`:""}
+    <button class="listopt" id="mReport">${I.flag}<span>Report ${esc(p.name)}</span></button>`);
   $("#mReport",b).onclick=()=>{ closeModal(); reportDialog(p); };
-  $("#mBlock",b).onclick=async()=>{
-    if(blocked){ await Social.unblock(App.me,p.code); toast(`${p.name} unblocked`); }
-    else { await Social.block(App.me,p.code); toast(`${p.name} blocked — they can't see or reach you`); }
-    App.blocks=await Social.blocks(App.me); closeModal(); after&&after(); go("app",{tab:App.tab});
-  };
   const un=$("#mUnmatch",b);
-  if(un) un.onclick=async()=>{ await Social.unmatch(App.me,p.code); App.matches=await Social.matches(App.me);
-    closeModal(); after&&after(); toast("Unmatched"); go("app",{tab:"chats"}); };
+  if(un) un.onclick=()=>{
+    const c=modal(`Unmatch ${p.name}?`,`<p class="muted small" style="margin-bottom:14px;line-height:1.55">The chat disappears for both of you, and you'll both show up in each other's discovery again.</p>
+      <button class="btn danger" id="okUn">Unmatch</button>
+      <button class="btn ghost" id="noUn" style="margin-top:10px">Cancel</button>`);
+    $("#noUn",c).onclick=closeModal;
+    $("#okUn",c).onclick=async()=>{
+      const btn=$("#okUn",c); btn.disabled=true; btn.textContent="Unmatching…";
+      const r=await Social.unmatch(App.me,p.code);
+      if(!r.ok){ closeModal(); toast("Couldn't unmatch: "+r.message,5200); return; }
+      closeModal(); if(threadUnsub){ try{threadUnsub()}catch(e){} threadUnsub=null; }
+      App.openChatPid=null; after&&after(); toast(`Unmatched ${p.name}`); go("app",{tab:"chats"});
+    };
+  };
 }
 
 function reportDialog(p){
@@ -2193,6 +2198,7 @@ async function viewChats(root){
 /* ------------------------------ thread ----------------------------------- */
 let threadUnsub=null;
 async function openChat(pid,other){
+  App.openChatPid=pid;
   if(threadUnsub){ try{threadUnsub()}catch(e){} threadUnsub=null; }
   markRead(pid);
   const sheet=el("div","sheet");
@@ -2209,7 +2215,7 @@ async function openChat(pid,other){
       <textarea id="cText" rows="1" placeholder="Message ${esc(other.name)}"></textarea>
       <button class="roundbtn" id="cSend">${I.send}</button></div>`;
   $("#frame").appendChild(sheet);
-  $("#cBack",sheet).onclick=()=>{ if(threadUnsub){try{threadUnsub()}catch(e){}} sheet.remove(); go("app",{tab:"chats"}); };
+  $("#cBack",sheet).onclick=()=>{ if(threadUnsub){try{threadUnsub()}catch(e){}} App.openChatPid=null; sheet.remove(); go("app",{tab:"chats"}); };
   $("#cAv",sheet).onclick=()=>openProfileSheet(other,{readonly:true});
   $("#cMore",sheet).onclick=()=>personMenu(other,()=>sheet.remove());
   $("#cCall",sheet).onclick=()=>startCall(other,"audio");
@@ -2217,7 +2223,6 @@ async function openChat(pid,other){
 
   const box=$("#msgs",sheet);
   const paint=msgs=>{
-    const blockedByMe=App.blocks.some(b=>b.from===App.me&&b.to===other.code);
     box.innerHTML=`<div class="chatintro">
       <div style="width:110px;margin:0 auto">${pandaSVG(other.gender==="Female"?"f":"m")}</div>
       <b style="display:block;color:var(--ink);font-size:15px;margin-top:6px">You matched with ${esc(other.name)}</b>
@@ -2227,20 +2232,24 @@ async function openChat(pid,other){
       b.innerHTML=`${esc(m.text)}<span class="tm">${clockOf(m.at)}</span>`;
       box.appendChild(b);
     });
-    if(blockedByMe) box.appendChild(el("div","chatintro",`You blocked ${esc(other.name)}. Unblock from the ⋯ menu to talk again.`));
     box.scrollTop=box.scrollHeight;
   };
   let list=await Chat.thread(pid); paint(list);
   const addMsg=m=>{ if(list.some(x=>x.id===m.id)) return; list.push(m); list.sort((a,b)=>a.at-b.at); paint(list); markRead(pid); };
   threadUnsub=Chat.subscribe(pid,addMsg);          /* live: new messages appear instantly */
+  /* safety net: even if the websocket drops, the chat re-syncs every 3 s */
+  const poll=setInterval(async()=>{
+    if(!document.body.contains(sheet)){ clearInterval(poll); return; }
+    if(document.hidden) return;
+    (await Chat.thread(pid)).forEach(addMsg);
+  },3000);
 
   const ta=$("#cText",sheet);
   ta.addEventListener("input",()=>{ ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,110)+"px"; });
   const send=async()=>{
     const t=ta.value.trim(); if(!t) return;
-    if(App.blocks.some(b=>b.from===App.me&&b.to===other.code)){ toast("Unblock to send a message"); return; }
     ta.value=""; ta.style.height="auto";
-    const {data,error}=await Chat.send(pid,App.me,t);
+    const {data,error}=await Chat.send(pid,App.me,t,other.code);
     if(error){ ta.value=t; toast("Message not sent: "+error.message,3800); return; }
     if(data) addMsg(data);
     markRead(pid);
@@ -2316,7 +2325,6 @@ async function viewProfile(root){
       <h3 style="margin:24px 0 10px">Account</h3>
       <div class="card" style="padding:4px 14px">
         <button class="listopt" id="pwBtn">${I.lock}<span style="flex:1">Change password</span><span class="muted">›</span></button>
-        <button class="listopt" id="blkBtn">${I.ban}<span style="flex:1">Blocked members</span><span class="muted">${App.blocks.filter(b=>b.from===App.me).length}</span></button>
         <button class="listopt" id="themeBtn">🌗<span style="flex:1">Appearance</span><span class="muted" id="themeNow">${LSget("zm:theme")||"auto"}</span></button>
         <button class="listopt" id="outBtn">${I.out}<span style="flex:1;color:var(--alert)">Log out</span></button>
       </div>
@@ -2335,18 +2343,6 @@ async function viewProfile(root){
     const order=["auto","light","dark"]; const cur=LSget("zm:theme")||"auto";
     const next=order[(order.indexOf(cur)+1)%3];
     LSset("zm:theme",next); applyTheme(); $("#themeNow").textContent=next;
-  };
-  $("#blkBtn").onclick=async()=>{
-    const mine=App.blocks.filter(b=>b.from===App.me);
-    const rows=[]; for(const b of mine) rows.push(await profileOf(b.to));
-    const body=modal("Blocked members", rows.length?rows.map(p=>
-      `<div class="likerow" style="padding-left:0;padding-right:0">
-        <img class="av sm" src="${(p.photos&&p.photos[0])||artFor(p.code,p.name)}">
-        <div class="t"><b>${esc(p.name)}</b></div>
-        <button class="mini" data-ub="${p.code}">Unblock</button></div>`).join("")
-      :`<p class="muted small">You haven't blocked anyone.</p>`);
-    $$("[data-ub]",body).forEach(x=>x.onclick=async()=>{ await Social.unblock(App.me,x.dataset.ub);
-      App.blocks=await Social.blocks(App.me); closeModal(); toast("Unblocked"); go("app",{tab:"profile"}); });
   };
 }
 function applyTheme(){
@@ -2677,8 +2673,36 @@ function startRealtime(){
   App.watchers.forEach(u=>{try{u()}catch(e){}}); App.watchers=[];
   const me=App.me; if(!me||App.preview) return;
   const onList=()=>App.screen==="app"&&!$("#frame .sheet");
+  let syncing=false;
+
+  /* one place that reconciles matches: new match -> popup, unmatched -> chat disappears, new message -> list order */
+  async function syncMatches(){
+    if(syncing||!App.me) return; syncing=true;
+    try{
+      const prev=App.matches||[], after=await Social.matches(me);
+      const prevIds=new Set(prev.map(m=>m.id)), nowIds=new Set(after.map(m=>m.id));
+      const fresh=after.filter(m=>!prevIds.has(m.id)), gone=prev.filter(m=>!nowIds.has(m.id));
+      const msgChanged=after.some(m=>{ const o=prev.find(x=>x.id===m.id); return o&&o.lastAt!==m.lastAt; });
+      App.matches=after;
+      if(gone.length){ App.myLikes=await Social.myLikes(me); App.likedYou=await Social.likedBy(me); }
+      paintBadges();
+      if(App.openChatPid && !nowIds.has(App.openChatPid)){      /* the other person unmatched you while this chat was open */
+        if(threadUnsub){ try{threadUnsub()}catch(e){} threadUnsub=null; }
+        $$("#frame .sheet").forEach(x=>x.remove()); App.openChatPid=null;
+        go("app",{tab:"chats"}); return;
+      }
+      if(fresh.length){ const other=await profileOf(fresh[0].members.find(c=>c!==me)); showMatch(other); }
+      if(onList()){
+        if(App.tab==="chats" && (fresh.length||gone.length||msgChanged)) go("app",{tab:"chats"});
+        else if(App.tab==="liked" && (fresh.length||gone.length)) go("app",{tab:"liked"});
+        else if(App.tab==="people" && gone.length) go("app",{tab:"people"});   /* they're back in discovery */
+      }
+    }finally{ syncing=false; }
+  }
+
   App.watchers.push(Chat.watchInbox(m=>{
-    const mt=App.matches.find(x=>x.id===m.pid); if(!mt) return;
+    const mt=App.matches.find(x=>x.id===m.pid);
+    if(!mt){ syncMatches(); return; }
     mt.lastMsg=m.text; mt.lastAt=m.at; mt.lastFrom=m.from; paintBadges();
     if(m.from!==me) buzz(20);
     if(App.tab==="chats"&&onList()) go("app",{tab:"chats"});
@@ -2686,13 +2710,11 @@ function startRealtime(){
   App.watchers.push(Social.watch(me,{
     onLike:async()=>{ App.likedYou=await Social.likedBy(me); paintBadges();
       if(App.tab==="liked"&&onList()) go("app",{tab:"liked"}); },
-    onMatch:async()=>{ const had=new Set(App.matches.map(m=>m.id)); App.matches=await Social.matches(me);
-      const fresh=App.matches.filter(m=>!had.has(m.id)); if(!fresh.length) return;
-      paintBadges();
-      const other=await profileOf(fresh[0].members.find(c=>c!==me));
-      showMatch(other);                                   /* the person who was liked back sees the popup too */
-      if((App.tab==="chats"||App.tab==="liked")&&onList()) go("app",{tab:App.tab}); }
+    onMatch:syncMatches, onGone:syncMatches
   }));
+  /* safety net: also reconcile every 6 s (covers a dropped websocket) */
+  const t=setInterval(()=>{ if(!document.hidden) syncMatches(); },6000);
+  App.watchers.push(()=>clearInterval(t));
 }
 
 /* a disabled member loses access within a minute, even mid-session */
