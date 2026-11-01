@@ -1048,9 +1048,9 @@ const Chat = {
     const { data, error } = await sb
       .from(TBL("messages"))
       .insert({
-        match: matchId,       // Match ID
-        sender: from,         // Sender ID
-        body: text            // Message text
+        match_id: matchId,       // Match ID
+        sender_id: from,         // Sender ID
+        content: text            // Message text
       })
       .select()
       .single();
