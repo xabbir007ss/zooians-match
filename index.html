@@ -454,6 +454,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .tag.disabled{background:rgba(229,72,77,.14);color:var(--alert)}
 .tag.pending{background:var(--honey-soft);color:#8A6200}
 .tag.suspended{background:rgba(107,43,255,.14);color:var(--violet)}
+.tag.banned{background:rgba(229,72,77,.18);color:var(--alert)}
 .rowacts{display:flex;gap:6px;flex-wrap:wrap}
 .mini{padding:6px 11px;border-radius:9px;font-size:12px;font-weight:700;background:var(--honey-wash);border:1px solid var(--line)}
 .mini:hover{background:var(--honey);border-color:var(--honey-deep)}
@@ -824,6 +825,7 @@ async function processImage(file){
    profiles.js — profiles table (fetch / save) + member status + admin loaders
    photo_1..photo_3 <-> profile.photos[]
    =========================================================================== */
+const BAD_STATUS = ["banned","suspended","disabled"];
 const toArr = v => Array.isArray(v) ? v
   : (typeof v==="string" && v ? v.replace(/^\{|\}$/g,"").split(",").map(s=>s.replace(/^"|"$/g,"").trim()).filter(Boolean) : []);
 
@@ -877,13 +879,14 @@ const Profiles = {
     await detectSchema(); if(!sb) return [];
     const {data,error}=await sb.from(TBL("profiles")).select("*").limit(500);
     if(error){ console.warn("[profiles.all]",error.message); return []; }
-    return data.map(fromRow).filter(p=>p.done && p.status!=="disabled" && p.status!=="suspended");
+    return data.map(fromRow).filter(p=>p.done && !BAD_STATUS.includes(p.status));
   }
 };
 
 const Members = {
   async get(code){ const p=await Profiles.get(code); return p?{code,status:p.status,notes:"",createdAt:p.createdAt}:null; },
-  async isActive(code){ if(!isUuid(code)) return true; const p=await Profiles.get(code); return !p || p.status==="active"; },
+  async status(code){ if(!isUuid(code)) return "active"; const p=await Profiles.get(code); return p?(p.status||"active"):"active"; },
+  async isActive(code){ return !BAD_STATUS.includes(await Members.status(code)); },
   async setStatus(code,status){
     await detectSchema(); const c=COL.profiles.status; if(!c) return false;
     const {error}=await sb.from(TBL("profiles")).update({[c]:status}).eq(COL.profiles.id,code);
@@ -1051,6 +1054,24 @@ const Social = {
         .subscribe();
     });
     return ()=>{ dead=true; if(ch) sb.removeChannel(ch); };
+  }
+};
+
+/* ======================= account.js ======================= */
+const Account = {
+  /* deletes the login, profile, likes, matches, chats (database function) + the photo files */
+  async deleteMine(){
+    if(!sb) return {ok:false,message:"you're offline"};
+    const {data}=await sb.auth.getSession(); const ses=data&&data.session;
+    if(!ses) return {ok:false,message:"please log in again"};
+    const uid=ses.user.id;
+    const {error}=await sb.rpc("delete_my_account");
+    if(error) return {ok:false,message:/function/i.test(error.message)?"run zm-ban-and-delete.sql in Supabase first":error.message};
+    try{                                                            // best effort: remove the photo files too
+      const {data:files}=await sb.storage.from(PHOTO_BUCKET).list(uid,{limit:100});
+      if(files&&files.length) await sb.storage.from(PHOTO_BUCKET).remove(files.map(f=>uid+"/"+f.name));
+    }catch(e){ console.warn("[delete] photos",e); }
+    return {ok:true};
   }
 };
 
@@ -1415,7 +1436,7 @@ async function startSession(user){
   const code=codeOf(user);
   if(!(await Members.isActive(code))){
     await Auth.signOut();
-    go("login"); setTimeout(()=>showAlert("err","This account has been disabled by the admin."),50); return; }
+    go("login"); setTimeout(()=>showAlert("err","Your account has been suspended. Contact support if you think this is a mistake."),50); return; }
   App.preview=false; App.me=code; App.email=user.email||"";
   Session.set(code);
   startGuard(); startRealtime();
@@ -1426,7 +1447,7 @@ async function startSession(user){
   else { go("app",{tab:"people"}); }
 }
 
-async function logout(){
+async function logout(msg){
   const wasPreview=App.preview, code=App.me;
   App.watchers.forEach(u=>{try{u()}catch(e){}}); App.watchers=[];
   clearInterval(startGuard._t);
@@ -1436,7 +1457,7 @@ async function logout(){
   else await Auth.signOut();
   profileCache.clear();
   go("login");
-  if(!wasPreview) setTimeout(()=>{ showAlert("ok","You've been logged out."); },50);
+  if(!wasPreview) setTimeout(()=>{ showAlert("ok",msg||"You've been logged out."); },50);
 }
 
 /* ---------------------------- change password ---------------------------- */
@@ -2340,6 +2361,7 @@ async function viewProfile(root){
         <button class="listopt" id="pwBtn">${I.lock}<span style="flex:1">Change password</span><span class="muted">›</span></button>
         <button class="listopt" id="themeBtn">🌗<span style="flex:1">Appearance</span><span class="muted" id="themeNow">${LSget("zm:theme")||"auto"}</span></button>
         <button class="listopt" id="outBtn">${I.out}<span style="flex:1;color:var(--alert)">Log out</span></button>
+        <button class="listopt" id="delBtn">${I.x}<span style="flex:1;color:var(--alert)">Delete account</span></button>
       </div>
       <p class="tiny muted" style="text-align:center;margin:20px 0 10px">ZOOIANS MATCH<br>
         <span class="syncdot ${DB.mode==="cloud"?"":"local"}"><i></i>${DB.mode==="cloud"?"Synced":"On this device only"}</span></p>
@@ -2352,6 +2374,21 @@ async function viewProfile(root){
     <button class="btn danger" id="okOut">Log out</button><button class="btn ghost" id="noOut" style="margin-top:10px">Stay</button>`);
     $("#okOut",b).onclick=()=>{closeModal();logout()}; $("#noOut",b).onclick=closeModal; };
   $("#setBtn").onclick=()=>go("edit",{});
+  $("#delBtn").onclick=()=>{
+    if(App.preview){ toast("Not available in preview mode"); return; }
+    const b=modal("Delete your account?",`<p class="muted small" style="margin-bottom:14px;line-height:1.6">This permanently deletes your profile, photos, likes, matches and chats. Nothing about you stays in the app, and it can't be undone.</p>
+      <button class="btn danger" id="okDelAcc">Yes, delete everything</button>
+      <button class="btn ghost" id="noDelAcc" style="margin-top:10px">Cancel</button>`);
+    $("#noDelAcc",b).onclick=closeModal;
+    $("#okDelAcc",b).onclick=async()=>{
+      const btn=$("#okDelAcc",b); btn.disabled=true; btn.textContent="Deleting…";
+      const r=await Account.deleteMine();
+      if(!r.ok){ closeModal(); toast("Couldn't delete: "+r.message,5200); return; }
+      closeModal();
+      try{ Object.keys(localStorage).filter(k=>k.startsWith("zm:")&&k!=="zm:theme").forEach(k=>localStorage.removeItem(k)); }catch(e){}
+      await logout("Your account and all its data have been deleted. Goodbye 💛");
+    };
+  };
   $("#themeBtn").onclick=()=>{
     const order=["auto","light","dark"]; const cur=LSget("zm:theme")||"auto";
     const next=order[(order.indexOf(cur)+1)%3];
@@ -2434,7 +2471,7 @@ function adRender(){
   const stats=[
     ["hl",m.length,"Total members"],
     ["",m.filter(x=>x.status==="active").length,"Active"],
-    ["",m.filter(x=>x.status==="disabled"||x.status==="suspended").length,"Disabled / suspended"],
+    ["",m.filter(x=>BAD_STATUS.includes(x.status)).length,"Banned / suspended"],
     ["",m.length-complete,"Incomplete profiles"],
     ["",AD.likes.length,"Likes"],
     ["",AD.matches.length,"Matches"],
@@ -2501,7 +2538,7 @@ function adMembers(root){
         <td>${done}</td><td>${dateOf(x.createdAt)}</td><td>${x.lastSeen?timeAgo(x.lastSeen):"never"}</td>
         <td><div class="rowacts">
           ${x.status!=="active"?`<button class="mini green" data-act="active" data-c="${x.code}">Activate</button>`:""}
-          ${x.status==="active"?`<button class="mini red" data-act="disabled" data-c="${x.code}">Disable</button>`:""}
+          ${x.status==="active"?`<button class="mini red" data-act="banned" data-c="${x.code}">Ban</button><button class="mini" data-act="suspended" data-c="${x.code}">Suspend</button>`:""}
           <button class="mini" data-view="${x.code}">View</button>
           <button class="mini red" data-del="${x.code}">Delete</button>
         </div></td></tr>`;
@@ -2557,7 +2594,7 @@ function adViewMember(code){
     <div class="field"><label>Admin note</label><input class="input" id="vNote" value="${esc(m.notes||"")}"></div>
     <div class="rowacts">
       <button class="mini green" data-s="active">Activate</button>
-      <button class="mini red" data-s="disabled">Disable</button>
+      <button class="mini red" data-s="banned">Ban</button>
       <button class="mini red" data-s="suspended">Suspend</button>
       <button class="mini" id="vSave">Save note</button>
     </div>`);
@@ -2674,7 +2711,7 @@ async function boot(){
     }
     await Auth.signOut();
     setTimeout(done,900); go("login");
-    setTimeout(()=>showAlert("err","This account has been disabled by the admin."),50);
+    setTimeout(()=>showAlert("err","Your account has been suspended. Contact support if you think this is a mistake."),50);
     return;
   }
   setTimeout(done,900);
@@ -2733,15 +2770,19 @@ function startRealtime(){
 /* a disabled member loses access within a minute, even mid-session */
 function startGuard(){
   clearInterval(startGuard._t);
-  startGuard._t=setInterval(async()=>{
+  const check=async()=>{
     if(!App.me || App.preview) return;
     if(!(await Members.isActive(App.me))){
       clearInterval(startGuard._t);
-      await Auth.signOut(); Session.clear(); App.me=null;
+      App.watchers.forEach(u=>{try{u()}catch(e){}}); App.watchers=[];
+      closeModal(); $$("#frame .sheet").forEach(x=>x.remove()); $("#matchui").classList.remove("on"); $("#callui").classList.remove("on");
+      await Auth.signOut(); Session.clear(); App.me=null; App.profile=null; profileCache.clear();
       go("login");
-      setTimeout(()=>showAlert("err","Your access has been switched off by the admin."),50);
+      setTimeout(()=>showAlert("err","Your account has been banned."),50);
     } else { Members.touch(App.me); }
-  },60000);
+  };
+  startGuard._t=setInterval(check,20000);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) check(); });
 }
 
 window.addEventListener("hashchange",()=>{ if(location.hash==="#/admin") openAdmin(); else closeAdmin(); });
