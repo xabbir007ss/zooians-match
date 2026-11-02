@@ -820,24 +820,18 @@ function authError(e){
   if(m.includes("password should be")||m.includes("weak")) return "Choose a stronger password (at least 6 characters).";
   if(m.includes("rate limit")||m.includes("too many")) return "Too many attempts. Wait a minute and try again.";
   if(m.includes("invalid email")||m.includes("unable to validate email")) return "That email address doesn't look right.";
-  if(m.includes("disposable")||m.includes("database error saving new user")) return "Temporary / disposable emails aren't allowed. Please use a real email like Gmail, Yahoo or Outlook.";
+  if(m.includes("not allowed")||m.includes("database error saving new user")) return "Please sign up with an official email: Gmail, Yahoo, Outlook, Hotmail or iCloud.";
   if(m.includes("failed to fetch")||m.includes("network")) return "Can't reach the server. Check your internet connection and try again.";
   return (e&&e.message)||"Something went wrong. Please try again.";
 }
-/* ---- temp / disposable email blocklist (manual signup only) ---- */
-const BLOCKED_EMAIL_DOMAINS = new Set(["10mail.org","10minemail.com","10minutemail.com","10minutemail.net","10minutemail.org","1secmail.com","1secmail.net","1secmail.org","20minutemail.com","30minutemail.com","33mail.com","anonbox.net","anonymbox.com","armyspy.com","burnermail.io","burpcollaborator.net","cmail.net","cool.fr.nf","courriel.fr.nf","cuvox.de","dayrep.com","discard.email","discardmail.com","discardmail.de","dispostable.com","dropmail.me","einrot.com","email-fake.com","emailfake.com","emailondeck.com","emailtemporanea.com","emailtemporanea.net","emltmp.com","esiix.com","eyepaste.com","fake-mail.net","fakeinbox.com","fakemail.fr","fakemail.net","fakemailgenerator.com","fexbox.org","fexpost.com","fleckens.hu","generator.email","getnada.com","grr.la","guerrillamail.biz","guerrillamail.com","guerrillamail.de","guerrillamail.info","guerrillamail.net","guerrillamail.org","guerrillamailblock.com","gustr.com","harakirimail.com","inbox.lv","inboxbear.com","inboxkitten.com","incognitomail.org","jetable.fr.nf","jourrapide.com","jsrsolutions.com","kasmail.com","klzlk.com","linshiyou.com","lroid.com","luxusmail.org","mail-temp.com","mail-temporaire.fr","mail.tm","mailbox.in.ua","mailcatch.com","maildrop.cc","maileater.com","mailexpire.com","mailforspam.com","mailinator.com","mailinator.net","mailinator2.com","mailmetrash.com","mailmoat.com","mailnesia.com","mailnull.com","mailshell.com","mailtemp.net","mega.zik.dj","mintemail.com","minutemail.com","moakt.cc","moakt.com","moakt.ws","mohmal.com","moncourrier.fr.nf","monemail.fr.nf","monmail.fr.nf","mt2014.com","mt2015.com","mvrht.net","mytemp.email","mytrashmail.com","nada.email","nada.ltd","nomail.xl.cx","nospam.ze.tc","nwldx.com","objectmail.com","oneoffmail.com","owlpic.com","pjjkp.com","pokemail.net","proxymail.eu","rcpt.at","recode.me","rhyta.com","sendspamhere.com","sharedmailbox.org","sharklasers.com","shieldedmail.com","smashmail.de","snakemail.com","sofort-mail.de","sogetthis.com","soodonims.com","spam4.me","spambog.com","spambog.de","spambox.us","spamex.com","spamfree24.org","spamgourmet.com","speed.1s.fr","superrito.com","tafmail.com","teleworm.us","temp-mail.io","temp-mail.org","temp-mail.ru","tempail.com","tempinbox.com","tempm.com","tempmail.com","tempmail.dev","tempmail.net","tempmailaddress.com","tempmailer.com","tempmailer.de","tempmailo.com","temporary-mail.net","temporarymail.com","tempr.email","thankyou2010.com","thisisnotmyrealemail.com","throwam.com","throwawaymail.com","tmail.ws","tmails.net","tmpbox.net","tmpeml.com","tmpmail.net","tmpmail.org","tradermail.info","trash-mail.at","trash-mail.com","trashmail.at","trashmail.com","trashmail.de","trashmail.io","trashmail.me","trashmail.net","trbvm.com","trbvn.com","turual.com","twinmail.de","tyldd.com","uggsrock.com","upliftnow.com","venompen.com","veryrealemail.com","vomoto.com","vpn.st","walkmail.net","webm4il.info","wegwerfmail.de","wegwerfmail.net","wh4f.org","whyspam.me","willhackforfood.biz","wuzupmail.net","wwjmp.com","xagloo.com","xemaps.com","xents.com","xmaily.com","xojxe.com","yapped.net","yep.it","yoggm.com","yopmail.com","yopmail.fr","yopmail.net","zehnminutenmail.de","zippymail.info","zoemail.org"]);
-const BLOCKED_EMAIL_HINTS = ["tempmail","temp-mail","10minute","guerrilla","mailinator","throwaway","trashmail","yopmail","disposable","fakeinbox","getnada","burner","dispostable"];
+/* ---- signup email allowlist: only well-known, official mail providers may create an account with email+password ---- */
+const ALLOWED_EMAIL_DOMAINS = new Set(["gmail.com","googlemail.com","yahoo.com","yahoo.co.uk","yahoo.co.in","yahoo.in","yahoo.ca","yahoo.com.au","yahoo.fr","yahoo.de","yahoo.es","yahoo.it","yahoo.com.br","yahoo.co.jp","ymail.com","rocketmail.com","outlook.com","outlook.sa","hotmail.com","hotmail.co.uk","hotmail.fr","hotmail.it","hotmail.es","hotmail.de","live.com","live.co.uk","live.in","msn.com","windowslive.com","icloud.com","me.com","mac.com","protonmail.com","proton.me","pm.me","aol.com","zoho.com","zohomail.com","gmx.com","gmx.net","mail.com","yandex.com","yandex.ru"]);
 function emailDomain(email){ return String(email||"").trim().toLowerCase().split("@").pop(); }
-function isDisposableEmail(email){
-  const d=emailDomain(email); if(!d||!d.includes(".")) return false;
-  const parts=d.split(".");
-  for(let i=0;i<parts.length-1;i++) if(BLOCKED_EMAIL_DOMAINS.has(parts.slice(i).join("."))) return true;   // also catches sub-domains
-  return BLOCKED_EMAIL_HINTS.some(h=>d.includes(h));
-}
+function isAllowedEmail(email){ return ALLOWED_EMAIL_DOMAINS.has(emailDomain(email)); }
 function validateSignupEmail(email){
   email=String(email||"").trim();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return "Enter a valid email address.";
-  if(isDisposableEmail(email)) return "Temporary / disposable emails aren't allowed. Please use a real email like Gmail, Yahoo or Outlook.";
+  if(!isAllowedEmail(email)) return "Please sign up with an official email: Gmail, Yahoo, Outlook, Hotmail or iCloud. Other / temporary emails aren't allowed.";
   return "";
 }
 const Auth = {
@@ -1498,10 +1492,14 @@ ROUTES.login = ({mode="in",email=""}={})=>{
   });
 
   const gb=$("#googleBtn");
+  const resetG=()=>{ const g=$("#googleBtn"); if(g){ g.disabled=false; const sp=$("span",g); if(sp) sp.textContent="Continue with Google"; } };
+  window.onpageshow=resetG;                       /* coming back with the browser Back button */
+  document.onvisibilitychange=()=>{ if(!document.hidden) resetG(); };
   gb.onclick=async()=>{
     showAlert("","");
     if(!sb){ showAlert("err","Couldn't load the sign-in service. Refresh the page and try again."); return; }
     gb.disabled=true; $("span",gb).textContent="Opening Google…";
+    setTimeout(resetG,6000);                                               /* never stay stuck on "Opening Google…" */
     try{ const {error}=await Auth.google(); if(error) throw error; }      /* the browser now redirects to Google */
     catch(err){ showAlert("err",authError(err)); gb.disabled=false; $("span",gb).textContent="Continue with Google"; }
   };
@@ -1599,7 +1597,7 @@ ROUTES.setup = ({step=0})=>{
   const bars=Array.from({length:SETUP_STEPS},(_,i)=>`<i class="${i<=step?"on":""}"></i>`).join("");
   render(`<div class="page">
     <div class="topbar">
-      ${step>0?`<button class="iconbtn" id="bk">${I.back}</button>`:brandTile(36)}
+      <button class="iconbtn" id="bk">${I.back}</button>
       <h2>${["Your photos","About you","Where you are","Your vibe","Your personality"][step]}</h2>
       <span class="small muted">${step+1}/${SETUP_STEPS}</span>
     </div>
@@ -1608,7 +1606,26 @@ ROUTES.setup = ({step=0})=>{
     <div style="padding:10px 20px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--paper)">
       <button class="btn" id="nextBtn">${step===SETUP_STEPS-1?"Continue to interests":"Continue"}</button>
     </div></div>`);
-  if(step>0) $("#bk").onclick=()=>go("setup",{step:step-1});
+  const askLeave=()=>{
+    const b=modal("Leave account setup?",`<p class="muted small" style="margin-bottom:16px;line-height:1.6">Your account isn't finished yet. You can continue where you left off, or cancel and remove this account.</p>
+      <button class="btn" id="contAcc">Continue account creation</button>
+      <button class="btn danger" id="cancelAcc" style="margin-top:10px">Cancel account creation</button>`,{dismissable:false});
+    $("#contAcc",b).onclick=closeModal;
+    $("#cancelAcc",b).onclick=async()=>{
+      const btn=$("#cancelAcc",b); btn.disabled=true; btn.textContent="Cancelling…";
+      if(!App.preview){ try{ await Account.deleteMine(); }catch(e){ console.warn(e); } }   /* removes the half-made account; if that isn't possible we still sign out */
+      closeModal();
+      try{ Object.keys(localStorage).filter(k=>k.startsWith("zm:")&&k!=="zm:theme").forEach(k=>localStorage.removeItem(k)); }catch(e){}
+      App.setupDraft=null;
+      await logout("Account creation cancelled.");
+    };
+  };
+  $("#bk").onclick=()=> step>0 ? go("setup",{step:step-1}) : askLeave();
+  /* phone / browser Back button on the first step opens the same question */
+  if(step===0){
+    try{ history.pushState({zmSetup:1},""); }catch(e){}
+    window.onpopstate=()=>{ if(App.screen==="setup" && !$("#contAcc")){ try{ history.pushState({zmSetup:1},""); }catch(e){} askLeave(); } };
+  } else window.onpopstate=null;
   const body=$("#sbody");
   ({0:setupPhotos,1:setupBasics,2:setupLocation,3:setupVibe,4:setupPersonality}[step])(body,d);
   $("#nextBtn").onclick=async()=>{
