@@ -300,6 +300,38 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .swipecard .incard .chs{display:flex;flex-wrap:wrap;gap:7px;max-height:72px;overflow:hidden}
 .swipecard .incard .chs span{padding:7px 12px;border-radius:999px;background:var(--honey-wash);border:1px solid var(--line);font-size:13px;font-weight:600;white-space:nowrap}
 .swipecard .incard .chs span.cm{background:var(--honey);border-color:transparent;color:#2A1C00}
+.stamp{position:absolute;z-index:4;opacity:0;pointer-events:none;top:50%;left:50%;right:auto;margin:-44px 0 0 -44px;width:88px;height:88px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:#fff;box-shadow:0 12px 30px -8px rgba(0,0,0,.45);transform:scale(.5);transition:none}
+.stamp svg{width:46px;height:46px}
+.stamp.like{left:50%;right:auto;color:#1FBF6B;transform:scale(.5)}
+.stamp.nope{left:50%;right:auto;color:#F0384F;transform:scale(.5)}
+.xprof{position:absolute;inset:0;z-index:60;border-radius:var(--r-card);overflow-y:auto;overflow-x:hidden;background:var(--paper);box-shadow:var(--shadow-m);
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;opacity:0;transform:translateY(26px) scale(.985);transition:opacity .32s ease,transform .36s var(--ease)}
+.xprof.on{opacity:1;transform:none}
+.xclose{position:sticky;top:10px;float:right;margin:10px 10px -48px 0;width:40px;height:40px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(20,16,40,.6);color:#fff;z-index:5;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.xclose svg{width:20px;height:20px}
+.pv-hero{border-radius:0}
+.pv-sh{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,6,30,.8),transparent 50%)}
+.pv-nm{position:absolute;left:16px;right:70px;bottom:16px;color:#fff}
+.pv-nm .n{font-family:var(--ff-d);font-size:28px;font-weight:700;display:flex;align-items:baseline;gap:9px}
+.pv-nm .n i{font-style:normal;font-weight:500;font-size:22px}
+.pv-sec{padding:6px 18px 4px;margin-top:14px}
+.pv-sec>h3{font-family:var(--ff-d);font-size:19px;font-weight:700;margin-bottom:10px}
+.pv-sec .bio{font-size:15.5px;line-height:1.6}
+.pv-loc{display:flex;align-items:center;gap:13px}
+.pv-loc .mp{width:44px;height:44px;border-radius:14px;background:#fff;border:1px solid #ddd;display:grid;place-items:center;flex:none}
+.pv-loc .mp svg{width:26px;height:26px}
+.pv-loc b{display:block;font-size:16px}.pv-loc span{font-size:13.5px;color:var(--ink-3)}
+.ptr{position:absolute;top:8px;left:50%;margin-left:-19px;width:38px;height:38px;border-radius:50%;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.25);display:grid;place-items:center;z-index:70}
+.ptr .spin{width:20px;height:20px;border-width:3px}
+.hc-card{width:100%;display:flex;gap:14px;align-items:center;text-align:left;margin-bottom:12px}
+.hc-ico{width:46px;height:46px;border-radius:15px;background:var(--honey);display:grid;place-items:center;flex:none}
+.hc-ico svg{width:24px;height:24px}
+.hc-art h2{font-family:var(--ff-d);font-size:22px;margin:4px 0 12px}
+.hc-art h4{font-size:16px;font-weight:800;margin:20px 0 6px}
+.hc-art p,.hc-art li{font-size:14.5px;line-height:1.7;color:var(--ink-2)}
+.hc-art ul,.hc-art ol{padding-left:20px;margin:6px 0}
+.hc-art li{margin-bottom:5px}
+.hc-art .callout{margin-top:18px;padding:14px 16px;border-radius:16px;background:var(--honey-wash);border:1px solid var(--honey);font-size:14px;line-height:1.6}
 .sdown{display:flex;align-items:center;justify-content:center;gap:6px;margin:-4px 0 6px;font-size:11.5px;font-weight:700;color:var(--ink-3)}
 .sdown svg{width:18px;height:18px;animation:sdBounce 1.5s ease-in-out infinite}
 @keyframes sdBounce{0%,100%{transform:translateY(-2px);opacity:.6}50%{transform:translateY(3px);opacity:1}}
@@ -343,9 +375,6 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .dots i.on{background:#fff}
 .tapzone{position:absolute;top:0;bottom:36%;width:34%;z-index:2}
 .tapzone.l{left:0}.tapzone.r{right:0}
-.stamp{position:absolute;top:56px;padding:8px 16px;border-radius:12px;font-family:var(--ff-d);font-size:26px;font-weight:800;border:4px solid;opacity:0;z-index:4;pointer-events:none}
-.stamp.like{left:18px;color:#2FE38F;border-color:#2FE38F;transform:rotate(-12deg)}
-.stamp.nope{right:18px;color:#FF5A78;border-color:#FF5A78;transform:rotate(12deg)}
 .deckact{display:flex;justify-content:center;align-items:center;gap:15px;padding:14px 0 6px}
 .act{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow-m);transition:transform .16s var(--ease)}
 .act:hover{transform:translateY(-3px) scale(1.05)}
@@ -374,9 +403,12 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pv-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
 
 /* ================= bottom nav ================= */
-#nav{display:flex;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(18px);
+#nav{position:relative;display:flex;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(18px);
   border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);flex:none;z-index:20}
 #nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;color:var(--ink-3);font-size:10.5px;font-weight:700;position:relative;transition:color .16s}
+#nav .navav{width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid transparent;transition:transform .2s var(--ease),border-color .2s}
+#nav button.on .navav{border-color:var(--ink);transform:translateY(-2px)}
+html,body{overscroll-behavior-y:none}
 #nav button svg{width:23px;height:23px;transition:transform .2s var(--ease)}
 #nav button.on{color:var(--ink)}
 #nav button.on svg{transform:translateY(-2px)}
@@ -794,7 +826,7 @@ const SCHEMA = {
     gc_member:["gc_member","zoo_member","in_gc"], gc_name:["gc_name","zoo_gc","gc"],
     langs:["languages","langs"], interests:["interests"],
     photo1:["photo_1"], photo2:["photo_2"], photo3:["photo_3"],
-    religion:["religion"], qualities:["qualities"], prompts:["prompts"], verified:["verified"], is_member:["is_member"], member_until:["member_until"],
+    religion:["religion"], qualities:["qualities"], prompts:["prompts"], drinking:["drinking"], smoking:["smoking"], kids:["kids"], verified:["verified"], is_member:["is_member"], member_until:["member_until"],
     done:["profile_complete","is_complete","onboarded","done"], status:["status"], is_admin:["is_admin"],
     last_seen:["last_seen","last_seen_at"], created:["created_at"], updated:["updated_at"] },
   likes:{ table:"likes",
@@ -965,6 +997,7 @@ function fromRow(r){
   let prompts=g("prompts"); if(typeof prompts==="string"){ try{ prompts=JSON.parse(prompts); }catch(e){ prompts=[]; } }
   prompts=(Array.isArray(prompts)?prompts:[]).filter(x=>x&&x.q&&String(x.a||"").trim());
   return {
+    drinking:g("drinking")||"", smoking:g("smoking")||"", kids:g("kids")||"",
     isMember:!!g("is_member"), memberUntil:toMs(g("member_until"))||0,
     verified:!!g("verified"), _ph0:(photos&&photos[0])||null,
     religion:g("religion")||"", qualities:toArr(g("qualities")).slice(0,3), prompts,
@@ -988,7 +1021,7 @@ function toRow(p){
     gc_member:!!(p.gc&&p.gc.member), gc_name:(p.gc&&p.gc.which)||null,
     langs:p.langs||[], interests:p.interests||[],
     photo1:ph[0]||null, photo2:ph[1]||null, photo3:ph[2]||null,
-    verified:!!p.verified,
+    verified:!!p.verified, drinking:p.drinking||null, smoking:p.smoking||null, kids:p.kids||null,
     religion:p.religion||null, qualities:(p.qualities||[]).slice(0,3),
     prompts:(p.prompts||[]).filter(x=>x&&x.q&&String(x.a||'').trim()).map(x=>({q:x.q,a:String(x.a).trim()})),
     done:!!p.done, updated:new Date().toISOString()
@@ -1298,7 +1331,7 @@ const blankProfile = code => ({
   code, name:"", age:null, gender:"", height:null, photos:[],
   loc:{mode:"hub",label:"",lat:null,lng:null,radius:DEFAULT_RADIUS},
   work:"", looking:"", gc:{member:false,which:""}, bio:"",
-  langs:["Bangla","English"], interests:[], religion:"", qualities:[], prompts:[], verified:false, done:false, updatedAt:now()
+  langs:["Bangla","English"], interests:[], religion:"", drinking:"", smoking:"", kids:"", qualities:[], prompts:[], verified:false, done:false, updatedAt:now()
 });
 
 /* ------------------------------ interest math ---------------------------- */
@@ -1651,7 +1684,7 @@ ROUTES.changepw = ()=>{
    PROFILE SETUP — 4 steps
    ========================================================================== */
 const SETUP_STEPS=5;
-const needsExtras=p=>!p.religion||(p.qualities||[]).length!==3;
+const needsExtras=p=>!p.religion||(p.qualities||[]).length!==3||!p.drinking||!p.smoking||!p.kids;
 ROUTES.setup = ({step=0})=>{
   $("#nav").classList.add("hide");
   const d=App.setupDraft=App.setupDraft||blankProfile(App.me);
@@ -1707,6 +1740,9 @@ function validateStep(step,d){
   if(step===3){ if(!d.work) return "Pick your professional status";
     if(!d.looking) return "Pick what you're looking for";
     if(!d.religion) return "Pick your religion (or Prefer not to say)";
+    if(!d.drinking) return "Tell us about drinking (Yes or No)";
+    if(!d.smoking) return "Tell us about smoking (Yes or No)";
+    if(!d.kids) return "Tell us about kids (Yes or No)";
     if(d.gc.member && !d.gc.which) return "Choose which Zoo GC you're in"; }
   if(step===4 && (d.qualities||[]).length!==3) return "Pick exactly 3 qualities you value";
   return null;
@@ -1892,6 +1928,10 @@ function setupVibe(body,d){
   $$("#rl .chip[data-r]").forEach(b=>b.onclick=()=>{ rlOther=false; d.religion=b.dataset.r; paintRl(); });
   rc.onclick=()=>{ rlOther=true; d.religion=ri.value.trim(); paintRl(); ri.focus(); };
   ri.oninput=()=>{ d.religion=ri.value.trim(); };
+  const LS=[["drinking","Drinking"],["smoking","Smoking"],["kids","Kids"]];
+  $("#rl").closest(".field").insertAdjacentHTML("afterend",LS.map(([k,l])=>`<div class="field"><label>${l}</label>
+    <div class="chips" data-ls="${k}">${["Yes","No"].map(v=>`<button class="chip" data-v="${v}" aria-pressed="${d[k]===v}">${v}</button>`).join("")}</div></div>`).join(""));
+  $$("[data-ls]").forEach(g=>{ const k=g.dataset.ls; $$(".chip",g).forEach(b=>b.onclick=()=>{ d[k]=b.dataset.v; $$(".chip",g).forEach(x=>x.setAttribute("aria-pressed",x===b)); }); });
   const openGC=()=>{
     const b=modal("Which Zoo GC are you in?", gcList.map(g=>
       `<button class="listopt ${d.gc.which===g?"on":""}" data-g="${esc(g)}"><span class="tick">${I.check.replace("<svg",'<svg style="width:13px;color:#2A1C00"')}</span><span>${esc(g)}</span></button>`).join(""));
@@ -1985,14 +2025,14 @@ ROUTES.interests = ({setup})=>{
 /* ==========================================================================
    MAIN APP SHELL
    ========================================================================== */
-const TABS=[{k:"people",l:"People",i:I.people},{k:"discover",l:"Discover",i:I.compass},{k:"chats",l:"Chats",i:I.chat},
-            {k:"liked",l:"Liked You",i:I.spark},{k:"profile",l:"Profile",i:I.user}];
+const TABS=[{k:"profile",l:"Profile",i:I.user},{k:"discover",l:"Discover",i:I.compass},{k:"people",l:"People",i:I.people},
+            {k:"liked",l:"Liked You",i:I.heart},{k:"chats",l:"Chats",i:I.chat}];
 
 ROUTES.app = async ({tab})=>{
   App.tab = tab||App.tab||"people";
   const nav=$("#nav"); nav.classList.remove("hide");
   nav.innerHTML=TABS.map(t=>`<button data-t="${t.k}" class="${App.tab===t.k?"on":""}">
-    ${t.i}<span>${t.l}</span><span class="badge hide" data-b="${t.k}"></span></button>`).join("");
+    ${t.k==="profile"&&App.profile&&App.profile.photos&&App.profile.photos[0]?`<img class="navav" data-face="${App.profile.photos[0]}" src="${App.profile.photos[0]}" alt="">`:t.i}<span>${t.l}</span><span class="badge hide" data-b="${t.k}"></span></button>`).join("");
   $$("#nav button").forEach(b=>b.onclick=()=>go("app",{tab:b.dataset.t}));
   render(`<div class="page"><div class="scroll" id="tabbody" style="display:flex;flex-direction:column"></div></div>`);
   await loadSocial();
@@ -2080,9 +2120,9 @@ async function viewPeople(root){
   $("#filtBtn").onclick=openFilters;
   await buildDeck();
   $("#aUndo").onclick=undoSwipe;
-  $("#aNope").onclick=()=>swipeTop(-1);
-  $("#aLike").onclick=()=>swipeTop(1);
-  $("#aStar").onclick=()=>swipeTop(1,true);
+  $("#aNope").onclick=()=>{ collapseCard(); swipeTop(-1); };
+  $("#aLike").onclick=()=>{ collapseCard(); swipeTop(1); };
+  $("#aStar").onclick=()=>{ collapseCard(); swipeTop(1,true); };
 }
 
 /* ==========================================================================
@@ -2162,6 +2202,7 @@ async function buildDeck(){
 
 function drawDeck(){
   const d=$("#deck"); if(!d) return;
+  App.expanded=null;
   if(!App.deck.length){
     d.innerHTML=`<div class="emptydeck"><div style="width:150px">${pandaSVG("f")}</div>
       <h2>That's everyone for now</h2>
@@ -2186,6 +2227,10 @@ function drawDeck(){
 
 const ICO_SEARCH='<svg class="lkico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>';
 const ICO_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+const ICO_CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.7l5 5L19.5 7"/></svg>';
+const ICO_CROSS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const ICO_MAP='<svg viewBox="0 0 24 24"><path fill="#111" d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.7" fill="#fff"/></svg>';
+const ICO_HELP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1.1.9-1.1 1.7"/><circle cx="12" cy="16.6" r=".6" fill="currentColor"/></svg>';
 const ICO_NOTE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3 8.8 8.8 0 0 1-3.6-.8L3 21l1.9-5.2A8.1 8.1 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3.2 8.4 8.4 0 0 1 21 11.5z"/><path d="M12.5 14.6s-3-1.8-3-3.9a1.7 1.7 0 0 1 3-1.1 1.7 1.7 0 0 1 3 1.1c0 2.1-3 3.9-3 3.9z" fill="currentColor" stroke="none"/></svg>';
 const ICO_VER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.7 2.7L16 9.6"/></svg>';
 function cardHTML(p){
@@ -2201,7 +2246,7 @@ function cardHTML(p){
       <div class="photo" style="background-image:url('${(p.photos&&p.photos[0])||artFor(p.code,p.name)}')"></div>
       <div class="shade"></div>
       ${(p.photos||[]).length>1?`<div class="dots">${p.photos.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("")}</div>`:""}
-      <div class="stamp like">LIKE</div><div class="stamp nope">NOPE</div>
+      <div class="stamp like">${ICO_CHECK}</div><div class="stamp nope">${ICO_CROSS}</div>
       <div class="stack"><div class="info">
         <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px">
           ${p.verified?`<span class="vpill" style="margin:0">${ICO_VER}Photo verified</span>`:""}
@@ -2212,8 +2257,7 @@ function cardHTML(p){
       </div>
       <div class="incard" data-open="${p.code}">
         <div class="sdown">${ICO_DOWN}<span>Scroll down for full profile</span></div>
-        <h4>${comAll.length?"We have things in common":"My bio"}</h4>
-        ${!comAll.length&&p.bio?`<p style="font-size:13.5px;line-height:1.4;margin:-3px 0 9px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.bio)}</p>`:""}
+        <h4>${comAll.length?"We have things in common":"Looking for"}</h4>
         <div class="chs">${chips||'<span>New here</span>'}</div>
       </div></div>
     </div></article>`;
@@ -2242,30 +2286,31 @@ function wireCard(card,p){
     if(!mode){ if(Math.hypot(dx,dy)<8) return; mode=Math.abs(dx)>=Math.abs(dy)*1.25?"h":"v"; }
     if(mode==="h"){
       card.style.transform=`translateX(${dx}px) rotate(${dx/26}deg)`;
-      like.style.opacity=clamp(dx/110,0,1); nope.style.opacity=clamp(-dx/110,0,1);
-    }
+      const lo=clamp(dx/110,0,1), no=clamp(-dx/110,0,1);
+      like.style.opacity=lo; like.style.transform=`scale(${.5+lo*.55})`; nope.style.opacity=no; nope.style.transform=`scale(${.5+no*.55})`;
+    } else if(dy>0){ card.style.transform=`translateY(${Math.min(dy*.4,70)}px)`; }
   });
   const release=e=>{
     if(!drag||(e&&e.pointerId!==pid)) return; drag=false;
     card.style.transition="transform .3s var(--ease), opacity .3s";
     const vx=dx/Math.max(1,performance.now()-t0);
-    const reset=()=>{ card.style.transform=""; like.style.opacity=0; nope.style.opacity=0; };
+    const reset=()=>{ card.style.transform=""; like.style.opacity=0; nope.style.opacity=0; like.style.transform=""; nope.style.transform=""; };
     if(!mode){                                    /* a tap */
       reset();
-      if(e && e.target && e.target.closest && e.target.closest(".incard")){ openProfileSheet(p); }
+      if(e && e.target && e.target.closest && e.target.closest(".incard")){ expandCard(p); }
       else {
         const r=card.getBoundingClientRect(), x=(sx-r.left)/r.width;
         if(photos.length>1){ if(x<.33) showPhoto(photoIdx-1); else if(x>.67) showPhoto(photoIdx+1); }
       }
     }
-    else if(mode==="v"){ reset(); if(dy<-45) openProfileSheet(p); }
+    else if(mode==="v"){ reset(); if(dy<-45) expandCard(p); else if(dy>75) refreshPeople(); }
     else if(Math.abs(dx)>70 || (Math.abs(vx)>.45 && Math.abs(dx)>28)) finishSwipe(card,p,dx>0?1:-1,false);
     else reset();
     dx=0; dy=0; mode=""; };
   card.addEventListener("pointerup",release);
   card.addEventListener("pointercancel",release);
   card.addEventListener("dragstart",e=>e.preventDefault());
-  card.addEventListener("wheel",e=>{ if(e.deltaY>25 && Date.now()-wheelAt>600){ wheelAt=Date.now(); openProfileSheet(p); } },{passive:true});
+  card.addEventListener("wheel",e=>{ if(e.deltaY>25 && Date.now()-wheelAt>600){ wheelAt=Date.now(); expandCard(p); } },{passive:true});
 }
 
 /* ---- a note on someone's photo (Bumble-style). It stays on this device — it is NOT sent to the other person. ---- */
@@ -2401,48 +2446,87 @@ function openFilters(){
 /* ==========================================================================
    FULL PROFILE SHEET
    ========================================================================== */
-function openProfileSheet(p,opts={}){
-  const me=App.profile;
+/* hero photo with name on it */
+function pvHeroHTML(p){
+  const photos=p.photos&&p.photos.length?p.photos:[artFor(p.code,p.name)];
+  return `<div class="pv-hero"><img src="${photos[0]}" alt="${esc(p.name)}"><div class="pv-sh"></div>
+    <div class="pv-nm">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        ${p.verified?`<span class="vpill" style="margin:0;background:rgba(20,16,40,.72);color:#fff">${ICO_VER}Photo verified</span>`:""}
+        ${p.gc&&p.gc.member&&p.gc.which?`<span class="zoobadge">🐼 ${esc(p.gc.which)} Member</span>`:""}</div>
+      <div class="n">${esc(p.name)}<i>${p.age||""}</i></div></div>
+    <button class="notebtn" data-note="1" aria-label="Send a note" style="position:absolute;right:14px;bottom:14px;left:auto">${ICO_NOTE}</button></div>`;
+}
+/* the scrolling profile, in this exact order */
+function pvStreamHTML(p){
+  const me=App.profile||{};
+  const photos=p.photos&&p.photos.length?p.photos:[];
   const com=commonInterests(p.interests||[],me.interests||[]);
   const pct=overlapPct(p.interests||[],me.interests||[]);
-  const photos=p.photos&&p.photos.length?p.photos:[artFor(p.code,p.name)];
-  const sheet=el("div","sheet");
-  const chip=(ic,t)=>t?`<span class="pv-chip"><i>${ic}</i>${esc(t)}</span>`:"";
   const prompts=p.prompts||[];
-  const promptBlock=i=>prompts[i]?`<div class="pv-prompt"><small>${esc(prompts[i].q)}</small><p>${esc(prompts[i].a)}</p></div>`:"";
-  const photoBlock=i=>photos[i]?`<div class="pv-photo"><img src="${photos[i]}" alt=""><button class="notebtn" data-note="1" aria-label="Send a note">${ICO_NOTE}</button></div>`:"";
+  const pr=i=>prompts[i]?`<div class="pv-prompt"><small>${esc(prompts[i].q)}</small><p>${esc(prompts[i].a)}</p></div>`:"";
+  const im=i=>photos[i+1]?`<div class="pv-photo"><img src="${photos[i+1]}" alt=""><button class="notebtn" data-note="1" aria-label="Send a note">${ICO_NOTE}</button></div>`:"";
+  const chip=(ic,t)=>t?`<span class="pv-chip"><i>${ic}</i>${esc(t)}</span>`:"";
+  const km=distKm(me,p);
+  const about=[chip("📏",p.height?hLabel(p.height):""),chip("💼",p.work),
+    chip("🍷",p.drinking?"Drinking: "+p.drinking:""),chip("🚬",p.smoking?"Smoking: "+p.smoking:""),chip("👶",p.kids?"Kids: "+p.kids:"")].join("");
+  const locLabel=(p.loc&&p.loc.label)||"";
+  return [
+    p.bio?`<div class="pv-sec"><h3>My bio</h3><p class="bio">${esc(p.bio)}</p></div>`:"",                                   /* 1 */
+    about?`<div class="pv-sec"><h3>About me</h3><div class="pv-chips" style="padding:0">${about}</div></div>`:"",              /* 2 */
+    p.looking?`<div class="pv-looking" style="margin:14px 18px 4px"><small>I'm looking for</small><b>${ICO_SEARCH}${esc(plain(p.looking))}</b></div>`:"", /* 3 */
+    `<div class="pv-sec"><h3>My interests ${com.length?`<span class="muted" style="font-size:12.5px;font-weight:600">· ${pct}% shared with you</span>`:""}</h3>
+      <div class="chips">${(p.interests||[]).map(i=>`<span class="chip ${com.includes(i)?"on":""}" style="pointer-events:none">${esc(i)}</span>`).join("")||'<span class="muted small">No interests yet</span>'}</div></div>`, /* 4 */
+    im(0)+pr(0),                                                                                                               /* 5 */
+    im(1)+pr(1),                                                                                                               /* 6 */
+    (p.langs||[]).length?`<div class="pv-sec"><h3>Languages</h3><div class="chips">${p.langs.map(l=>`<span class="chip" style="pointer-events:none">${esc(l)}</span>`).join("")}</div></div>`:"", /* 7 */
+    im(2)+pr(2),                                                                                                               /* 8 */
+    locLabel?`<div class="pv-sec"><h3>My location</h3><div class="pv-loc"><span class="mp">${ICO_MAP}</span><div><b>${esc(locLabel)}</b>${km!=null?`<span>${km<1?"Less than 1 km away":km+" km away"}</span>`:""}</div></div></div>`:"", /* 9 */
+    (p.qualities||[]).length?`<div class="pv-sec"><h3>Qualities I value</h3><div class="pv-qual">${p.qualities.map(q=>`<span>${esc(q)}</span>`).join("")}</div></div>`:""
+  ].join("");
+}
+
+/* full profile INSIDE the People card — no separate page */
+function expandCard(p){
+  const deck=$("#deck"); if(!deck||App.expanded) return;
+  App.expanded=p.code;
+  const x=el("div","xprof");
+  x.innerHTML=`<button class="xclose" aria-label="Back to card">${ICO_DOWN}</button>${pvHeroHTML(p)}${pvStreamHTML(p)}
+    <div style="padding:22px 18px 40px;text-align:center">
+      <button class="linkbtn" id="xMore" style="color:var(--ink-3);font-size:13px">Report or unmatch ${esc(p.name)}</button></div>`;
+  deck.appendChild(x);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>x.classList.add("on")));
+  $(".xclose",x).onclick=collapseCard;
+  $("#xMore",x).onclick=()=>personMenu(p,collapseCard);
+  $$("[data-note]",x).forEach(b=>b.onclick=()=>openNote(p));
+  let ty=0,atTop=false;
+  x.addEventListener("touchstart",e=>{ ty=e.touches[0].clientY; atTop=x.scrollTop<=0; },{passive:true});
+  x.addEventListener("touchend",e=>{ const dy=e.changedTouches[0].clientY-ty; if(atTop&&dy>90) collapseCard(); });
+  x.addEventListener("wheel",e=>{ if(x.scrollTop<=0 && e.deltaY<-40) collapseCard(); },{passive:true});
+}
+function collapseCard(){
+  const x=$("#deck .xprof"); App.expanded=null; if(!x) return;
+  x.classList.remove("on"); setTimeout(()=>x.remove(),320);
+}
+/* pull down on the card = refresh */
+async function refreshPeople(){
+  const d=$("#deck"); if(!d||App.refreshing||App.expanded) return;
+  App.refreshing=true;
+  const sp=el("div","ptr"); sp.innerHTML='<i class="spin"></i>'; d.appendChild(sp);
+  try{ await loadSocial(); paintBadges(); await buildDeck(); toast("Updated"); }catch(e){ console.warn(e); sp.remove(); }
+  App.refreshing=false;
+}
+
+function openProfileSheet(p,opts={}){
+  const sheet=el("div","sheet");
   sheet.innerHTML=`
     <div class="topbar line" style="background:var(--cream)">
       <button class="iconbtn" id="closeSheet">${I.back}</button>
       <h2>${esc(p.name)}</h2>
       <button class="iconbtn" id="moreBtn">⋯</button></div>
     <div class="scroll" style="padding-bottom:26px">
-      <div class="pv-hero"><img src="${photos[0]}" alt="${esc(p.name)}"><button class="notebtn" data-note="1" aria-label="Send a note">${ICO_NOTE}</button></div>
-      <div style="padding:16px 18px 4px">
-        <div style="display:flex;align-items:baseline;gap:9px">
-          <h1 style="font-size:28px">${esc(p.name)}</h1><span class="muted" style="font-size:21px">${p.age||""}</span></div>
-        ${p.verified?`<div style="margin-top:9px"><span class="verchip"><span style="width:18px;color:#1FB86F;display:block">${ICO_VER}</span>Photo verified</span></div>`:""}
-        ${p.gc&&p.gc.member&&p.gc.which?`<div style="margin-top:9px"><span class="zoobadge">🐼 ${esc(p.gc.which)} Member</span></div>`:""}
-      </div>
-      <div class="pv-chips">
-        ${chip("📏",p.height?hLabel(p.height):"")}
-        ${chip("",p.religion)}
-        ${chip("🗣️",(p.langs||[]).join(" · "))}
-        ${chip("💼",p.work)}
-        ${chip("📍",(p.loc&&p.loc.label)||"")}
-      </div>
-      ${p.looking?`<div class="pv-looking"><small>I'm looking for</small><b>${ICO_SEARCH}${esc(plain(p.looking))}</b></div>`:""}
-      ${p.bio?`<div class="pv-block"><h3>My bio</h3><p style="font-size:15px">${esc(p.bio)}</p></div>`:""}
-      ${promptBlock(0)}
-      ${photoBlock(1)}
-      ${(p.qualities||[]).length?`<div class="pv-block"><h3>Qualities I value</h3><div class="pv-qual">${p.qualities.map(q=>`<span>${esc(q)}</span>`).join("")}</div></div>`:""}
-      ${promptBlock(1)}
-      ${photoBlock(2)}
-      <div class="pv-block"><h3>My interests ${com.length?`<span class="muted" style="font-size:12.5px;font-weight:600">· ${pct}% shared with you</span>`:""}</h3>
-        <div class="chips">${(p.interests||[]).map(i=>`<span class="chip ${com.includes(i)?"on":""}" style="pointer-events:none">${esc(i)}</span>`).join("")||'<span class="muted small">No interests yet</span>'}</div></div>
-      ${promptBlock(2)}
-      ${photoBlock(3)}${photoBlock(4)}
-      <div style="display:flex;gap:12px;padding:16px 18px 30px;justify-content:center">
+      ${pvHeroHTML(p)}${pvStreamHTML(p)}
+      <div style="display:flex;gap:12px;padding:22px 18px 30px;justify-content:center">
         ${opts.readonly?"":`<button class="act nope" id="sNope">${I.x}</button>
         <button class="act like big" id="sLike">${I.heart}</button>`}
         <button class="act" id="sFlag">${I.flag}</button>
@@ -2461,6 +2545,120 @@ function openProfileSheet(p,opts={}){
     close(); swipeTop(1); };
   $("#sFlag",sheet).onclick=()=>reportDialog(p);
 }
+
+
+const HELP_ARTICLES=[
+{id:"safety",icon:"🛡️",title:"Our Safety Features",desc:"Community guidelines, privacy and how we protect you",body:[
+ ["p","ZOOIANS MATCH is built by The Zoo community so that people in Bangladesh can meet each other with respect and confidence. Safety is not an extra feature here — it shapes how the whole app works. This page explains the protections we have, the rules every member agrees to, and what you can do to stay safe."],
+ ["h","Community Guidelines"],
+ ["p","Everyone on ZOOIANS MATCH is expected to follow these rules:"],
+ ["ul",["You must be 18 or older. Accounts of anyone under 18 are removed.","Be yourself. Use your own photos and your real name and age. Impersonating another person is not allowed.","Treat people with respect. Disagree politely, and accept a “no” or a lack of reply gracefully.","No nudity, sexual content or sexually explicit requests in photos, bios, prompts or chats.","No hate speech, discrimination, bullying or threats of any kind.","No scams, advertising, spam, or asking other members for money, gifts or financial details.","No sharing another person's private information, photos or messages without their permission.","No illegal activity of any kind."]],
+ ["h","Zero tolerance for harassment"],
+ ["p","We do not accept harassment, abuse, stalking, threats, unwanted sexual messages or repeated contact after someone has said stop. Reports of this behaviour are treated as serious. Depending on what happened, an account can receive a warning, be suspended, or be permanently banned. A banned member cannot log back in with the same account, and serious cases can be passed on to the authorities where the law requires it."],
+ ["h","Your profile privacy"],
+ ["ul",["Only signed-in members can see profile photos and details. Nothing is public on the open internet.","Your email address and password are never shown to other members.","We show your area (for example “Dhanmondi, Dhaka”) and an approximate distance — never your exact address or live position.","You decide who you talk to: nobody can message you until you both like each other and match.","You can unmatch anyone at any time, and you can delete your account in Profile → Settings, which removes your profile, photos, matches and chats."]],
+ ["h","Photo verification"],
+ ["p","Members can earn a Photo verified badge by taking a quick selfie that is compared automatically with their profile photos. The check runs on your own device, the selfie is not uploaded or stored, and the badge helps others see that a real person is behind the profile. Read “Verifying with ID / Photo Verification” for the full details."],
+ ["h","Safety tips for meeting people"],
+ ["ul",["Chat and, if you can, video call before you meet in person.","Meet in a busy public place for the first few times, and arrange your own transport.","Tell a trusted friend or family member who you are meeting, where, and when.","Never send money, share banking or card details, or pay for someone else, however good the story.","Trust your instincts. If something feels wrong, leave — you do not owe anyone an explanation.","Keep conversations inside the app until you feel comfortable."]],
+ ["note","If you ever feel in danger, contact your local emergency services immediately. In Bangladesh the national emergency number is 999."]]},
+{id:"verify",icon:"✅",title:"Verifying with ID / Photo Verification",desc:"How the badge works and how your data is handled",body:[
+ ["p","Photo verification is our way of helping members confirm that the person behind a profile is real and matches the photos they upload. Verified members get a “Photo verified” badge on their People card and on their full profile."],
+ ["p","ZOOIANS MATCH does not ask you to upload an ID card, passport or any other identity document. Verification is done with a live selfie only."],
+ ["h","How to verify, step by step"],
+ ["ol",["Open the Profile tab and tap Verify my profile.","Allow camera access when your browser asks. You will see a live preview inside an oval frame.","Face the camera in good light, with your whole face visible. Remove sunglasses, masks and anything covering your face.","Tap Take selfie & verify.","You are taken straight back to Your Profile — you do not need to wait. The status next to Verify my profile shows In Review while the check runs in the background.","When it finishes, the status changes to Verified, and your badge appears on your card. If the selfie does not match, you will see Try again and can retry immediately."]],
+ ["h","Why verification matters"],
+ ["p","Fake accounts, bots and people using someone else's pictures are the most common way trust is broken on dating apps. By comparing a live selfie with the photos on a profile, verification makes it much harder to pretend to be somebody else, and it lets members choose to trust profiles that have passed the check."],
+ ["h","How your verification data is processed"],
+ ["ul",["The selfie is taken in your browser and compared with your profile photos on your own device.","The selfie is not uploaded to our servers and is not saved. It is discarded as soon as the check ends, and the camera is switched off.","The only thing we store is the result — whether your profile is verified (yes or no).","Your connection to the app is encrypted (HTTPS).","We never sell or share your photos."]],
+ ["h","If verification does not work"],
+ ["ul",["Make sure your first profile photos clearly show your face. Group photos and heavily filtered photos make matching harder.","Use bright, even light and look straight at the camera.","Try again — a better selfie often fixes it.","Update your profile photos if they no longer look like you."]],
+ ["h","Removing or redoing your verification"],
+ ["p","You stay in control. Tap the verification section in your profile at any time and choose Remove verification; the badge disappears immediately and you can verify again whenever you like. If you change your main profile photo, the badge is removed so that your new photo can be checked."],
+ ["note","Photo verification is an automatic safeguard, not a guarantee of anyone's identity or intentions. Keep following the safety tips, and report any profile that seems suspicious."]]},
+{id:"report",icon:"🚩",title:"Reporting Someone",desc:"How to report, what happens next and how we respond",body:[
+ ["p","If someone makes you feel uncomfortable or breaks the community guidelines, please tell us. Reports are how we keep ZOOIANS MATCH safe for everyone, and every report helps us act."],
+ ["h","When should you report?"],
+ ["ul",["Fake profiles, bots, or someone using another person's pictures","Harassment, abuse, threats or unwanted sexual messages","Inappropriate or explicit photos","Anyone who seems to be under 18","Scams, requests for money, or spam","Anything else that feels unsafe or wrong"]],
+ ["h","How to report someone, step by step"],
+ ["ol",["Open the person's profile from People, Discover, Liked You, or open your chat with them.","Tap the ⋯ (more) button at the top, or the flag button on their profile.","Choose Report.","Pick the reason that fits best (for example Fake profile, Harassment or abuse, Inappropriate photos, Underage, or Spam or scam).","Add a short note if you can — dates, what was said, anything that helps our team understand.","Tap Send report. Your name is not shown to the person you reported."]],
+ ["h","How to end contact straight away"],
+ ["p","You never have to keep talking to someone. Open the chat or profile, tap ⋯ and choose Unmatch. The conversation is removed for both of you and you will not be able to message each other. Unmatching does not report the person, so if their behaviour broke the rules, please report them as well."],
+ ["h","What happens after you report"],
+ ["ol",["Your report goes straight to the ZOOIANS MATCH moderation team and is marked as open.","A moderator reviews the profile, the photos and, where relevant, the reported activity.","If the guidelines were broken we take action — this can be a warning, removal of content, a temporary suspension or a permanent ban.","The report is then closed. Repeated or serious reports are treated with priority."]],
+ ["p","For privacy reasons we may not be able to tell you exactly what action was taken against another member, but every report is read and counted. Reports are confidential: the person you report is never told who reported them."],
+ ["h","Our moderation response"],
+ ["ul",["Suspended and banned accounts are signed out and cannot use the app.","We look at the whole picture — one report is reviewed carefully, patterns across several reports are acted on faster.","We do not tolerate retaliation against people who report. Doing so is itself a reason for removal.","False or malicious reports made on purpose may lead to action against the reporter."]],
+ ["note","If you are in immediate danger or have been threatened, contact the police or emergency services first (999 in Bangladesh), then report the profile so we can act on it too."]]}
+];
+function openHelpCenter(){
+  const sheet=el("div","sheet");
+  const list=()=>{
+    sheet.innerHTML=`<div class="topbar line" style="background:var(--cream)"><button class="iconbtn" id="hcBack">${I.back}</button><h2>Safety & Help Center</h2><span style="width:44px"></span></div>
+      <div class="scroll pad" style="padding-top:14px">
+        <p class="muted small" style="line-height:1.6;margin-bottom:16px">Everything you need to know about staying safe, getting verified and reporting problems on ZOOIANS MATCH.</p>
+        ${HELP_ARTICLES.map(a=>`<button class="card hc-card" data-a="${a.id}"><span class="hc-ico">${a.icon}</span>
+          <span style="flex:1"><b style="display:block;font-size:15.5px">${esc(a.title)}</b><span class="small muted">${esc(a.desc)}</span></span><span class="muted">›</span></button>`).join("")}
+      </div>`;
+    $("#hcBack",sheet).onclick=()=>sheet.remove();
+    $$("[data-a]",sheet).forEach(b=>b.onclick=()=>article(b.dataset.a));
+  };
+  const article=id=>{
+    const a=HELP_ARTICLES.find(x=>x.id===id);
+    const html=a.body.map(([t,v])=>t==="h"?`<h4>${esc(v)}</h4>`:t==="p"?`<p>${esc(v)}</p>`:t==="note"?`<div class="callout">${esc(v)}</div>`
+      :`<${t}>${v.map(i=>`<li>${esc(i)}</li>`).join("")}</${t}>`).join("");
+    sheet.innerHTML=`<div class="topbar line" style="background:var(--cream)"><button class="iconbtn" id="hcBack">${I.back}</button><h2>Help Center</h2><span style="width:44px"></span></div>
+      <div class="scroll pad hc-art" style="padding-top:8px;padding-bottom:40px"><h2>${esc(a.title)}</h2>${html}</div>`;
+    $("#hcBack",sheet).onclick=list;
+  };
+  list(); $("#frame").appendChild(sheet);
+}
+
+/* ---------- face-cropped avatars (profile tab + chats) ---------- */
+let _fdP=null;
+function loadFD(){
+  if(_fdP) return _fdP;
+  _fdP=new Promise((res,rej)=>{
+    const go=async()=>{ try{ await window.faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS); res(window.faceapi); }catch(e){ rej(e); } };
+    if(window.faceapi) return go();
+    const sc=document.createElement("script"); sc.src=FACE_JS; sc.onload=go; sc.onerror=()=>rej(new Error("load")); document.head.appendChild(sc);
+  }).catch(e=>{ _fdP=null; throw e; });
+  return _fdP;
+}
+const _faceCache=new Map(); let _faceQ=Promise.resolve();
+const hashStr=t=>{ let h=5381; for(let i=0;i<t.length;i++) h=((h<<5)+h+t.charCodeAt(i))|0; return (h>>>0).toString(36); };
+function faceCrop(url){
+  if(!url||/^data:image\/svg/.test(url)) return Promise.resolve(null);
+  if(_faceCache.has(url)) return _faceCache.get(url);
+  const key="zm:fc:"+hashStr(url);
+  try{ const c=localStorage.getItem(key); if(c){ const pr=Promise.resolve(c==="-"?null:c); _faceCache.set(url,pr); return pr; } }catch(e){}
+  const job=_faceQ.then(async()=>{
+    try{
+      const f=await loadFD(); const im=await loadFaceImg(url);
+      const d=await f.detectSingleFace(im,new f.TinyFaceDetectorOptions({inputSize:416,scoreThreshold:.35}));
+      let out=null;
+      if(d){
+        const W=im.naturalWidth,H=im.naturalHeight, bx=d.box;
+        const side=Math.min(Math.max(bx.width,bx.height)*1.9,W,H);
+        const sx=Math.max(0,Math.min(W-side,bx.x+bx.width/2-side/2)), sy=Math.max(0,Math.min(H-side,bx.y+bx.height/2-side/2-bx.height*.06));
+        const cv=document.createElement("canvas"); cv.width=cv.height=120;
+        cv.getContext("2d").drawImage(im,sx,sy,side,side,0,0,120,120);
+        out=cv.toDataURL("image/jpeg",.86);
+      }
+      try{ localStorage.setItem(key,out||"-"); }catch(e){}
+      return out;
+    }catch(e){ return null; }
+  });
+  _faceQ=job.catch(()=>{}); _faceCache.set(url,job); return job;
+}
+function hydrateFaces(root){
+  $$("img[data-face]:not([data-fdone])",root||document).forEach(im=>{
+    im.dataset.fdone="1"; const u=im.dataset.face;
+    faceCrop(u).then(c=>{ if(c && im.isConnected) im.src=c; });
+  });
+}
+(function(){ let t=0; const fr=document.getElementById("frame"); if(!fr) return;
+  new MutationObserver(()=>{ clearTimeout(t); t=setTimeout(()=>hydrateFaces(fr),60); }).observe(fr,{childList:true,subtree:true}); })();
 
 function personMenu(p,after){
   if(p.code===App.me){ toast("That's you"); return; }
@@ -2560,7 +2758,7 @@ async function viewLiked(root){
     const matched=App.matches.some(m=>m.members.includes(p.code));
     const pct=overlapPct(p.interests||[],App.profile.interests||[]);
     const row=el("div","likerow");
-    row.innerHTML=`<img class="av" src="${(p.photos&&p.photos[0])||artFor(p.code,p.name)}" alt="">
+    row.innerHTML=`<img class="av" data-face="${(p.photos&&p.photos[0])||""}" src="${(p.photos&&p.photos[0])||artFor(p.code,p.name)}" alt="">
       <div class="t"><b>${esc(p.name)}${p.age?`, ${p.age}`:""}</b>
         <span>${l.super?"⭐ Super liked you · ":""}${pct}% in common · ${timeAgo(l.at)}</span></div>
       ${matched?`<button class="roundbtn plain" data-chat="${p.code}">${I.chat}</button>`
@@ -2623,7 +2821,7 @@ async function viewChats(root){
     filtered.forEach(r=>{
       const unread=r.m.lastMsg&&r.m.lastFrom&&r.m.lastFrom!==App.me&&r.m.lastAt>readMark(r.m.id);
       const row=el("button","thread");
-      row.innerHTML=`<img class="av sm" src="${(r.p.photos&&r.p.photos[0])||artFor(r.p.code,r.p.name)}" alt="">
+      row.innerHTML=`<img class="av sm" data-face="${(r.p.photos&&r.p.photos[0])||""}" src="${(r.p.photos&&r.p.photos[0])||artFor(r.p.code,r.p.name)}" alt="">
         <div class="t"><b>${esc(r.p.name)}</b>
           <p style="${unread?"color:var(--ink);font-weight:600":""}">${r.m.lastMsg?esc((r.m.lastFrom===App.me?"You: ":"")+r.m.lastMsg):"You matched — say something"}</p></div>
         <div class="meta">${timeAgo(r.m.lastAt||r.m.at)}${unread?'<div style="margin-top:5px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pink)"></span></div>':""}</div>`;
@@ -2645,7 +2843,7 @@ async function openChat(pid,other){
   sheet.innerHTML=`
     <div class="topbar line">
       <button class="iconbtn" id="cBack">${I.back}</button>
-      <img class="av sm" id="cAv" style="width:38px;height:38px;border-radius:13px" src="${(other.photos&&other.photos[0])||artFor(other.code,other.name)}" alt="">
+      <img class="av sm" id="cAv" data-face="${(other.photos&&other.photos[0])||""}" style="width:38px;height:38px;border-radius:50%" src="${(other.photos&&other.photos[0])||artFor(other.code,other.name)}" alt="">
       <h2 style="flex:1;font-size:17px">${esc(other.name)}</h2>
       <button class="iconbtn" id="cCall">${I.phone}</button>
       <button class="iconbtn" id="cVid">${I.video}</button>
@@ -2733,10 +2931,10 @@ async function viewProfile(root){
     .filter(Boolean).length/10*100);
   root.innerHTML=`
     <div class="topbar"><h2>Your profile</h2>
-      <button class="iconbtn" id="setBtn">${I.settings}</button></div>
+      <div style="display:flex;gap:8px"><button class="iconbtn" id="helpBtn" aria-label="Safety and help">${ICO_HELP}</button><button class="iconbtn" id="setBtn">${I.settings}</button></div></div>
     <div class="pad" style="padding-top:6px">
       <div style="display:flex;gap:15px;align-items:center">
-        <img class="av" style="width:78px;height:78px;border-radius:26px" src="${p.photos[0]||artFor(App.me,p.name)}" alt="">
+        <img class="av" data-face="${p.photos[0]||""}" style="width:78px;height:78px;border-radius:50%" src="${p.photos[0]||artFor(App.me,p.name)}" alt="">
         <div style="flex:1;min-width:0">
           <h1 style="font-size:24px">${esc(p.name)}${p.age?`, ${p.age}`:""}</h1>
           <p class="small muted" style="margin-top:3px">${esc(p.loc.label||"No location set")}</p>
@@ -2758,7 +2956,7 @@ async function viewProfile(root){
         <span class="iconbtn" style="background:${p.verified?"#2FE38F":"var(--honey)"};border-color:transparent;color:#102;flex:none"><span style="width:20px;display:block">${ICO_VER}</span></span>
         <span style="flex:1"><b style="display:block;font-size:15px">Verify my profile
           ${p.verified?'<span class="vstate ok" style="margin-left:6px">Verified</span>':App.verifyState==="review"?'<span class="vstate" style="margin-left:6px"><i class="spin"></i>In Review</span>':App.verifyState==="failed"?'<span class="vstate bad" style="margin-left:6px">Try again</span>':""}</b>
-        <span class="small muted">${p.verified?"Your card shows the Photo verified badge":App.verifyState==="review"?"We're checking your selfie in the background":App.verifyState==="failed"?"We couldn't match your selfie. Tap to retry":"Take a selfie to get a Photo verified badge"}</span></span>
+        <span class="small muted">${p.verified?"Tap to remove your verification":App.verifyState==="review"?"We're checking your selfie in the background":App.verifyState==="failed"?"We couldn't match your selfie. Tap to retry":"Take a selfie to get a Photo verified badge"}</span></span>
         ${p.verified||App.verifyState==="review"?"":'<span class="muted">›</span>'}</button>
       <button class="btn" id="editBtn" style="margin-top:12px">${I.edit} Edit profile</button>
       <button class="btn ghost" id="intBtn" style="margin-top:10px">Edit interests (${p.interests.length})</button>
@@ -2778,7 +2976,14 @@ async function viewProfile(root){
         <span class="syncdot ${DB.mode==="cloud"?"":"local"}"><i></i>${DB.mode==="cloud"?"Synced":"On this device only"}</span></p>
     </div>`;
   $("#supBtn").onclick=()=>{ if(!isMember()){ openMemberGate("Get Support (direct WhatsApp help) is a premium feature."); return; } window.open(SUPPORT_URL,"_blank","noopener"); };
-  $("#verBtn").onclick=()=>{ if(p.verified){ toast("You are already verified ✓"); return; }
+  $("#verBtn").onclick=()=>{ if(p.verified){
+      const b=modal("Remove verification?",`<p class="muted small" style="margin-bottom:14px;line-height:1.6">Your Photo verified badge will disappear from your profile. You can verify again any time with a new selfie.</p>
+        <button class="btn danger" id="vRm">Remove verification</button>
+        <button class="btn ghost" id="vKeep" style="margin-top:10px">Keep it</button>`);
+      $("#vKeep",b).onclick=closeModal;
+      $("#vRm",b).onclick=async()=>{ const bt=$("#vRm",b); bt.disabled=true; bt.textContent="Removing…";
+        App.profile.verified=false; App.verifyState=""; await Profiles.save(App.profile); closeModal(); toast("Verification removed"); go("app",{tab:"profile"}); };
+      return; }
     if(App.verifyState==="review"){ toast("Your verification is in review"); return; } openVerify(); };
   $("#editBtn").onclick=()=>go("edit",{});
   $("#intBtn").onclick=()=>go("interests",{setup:false});
@@ -2787,6 +2992,7 @@ async function viewProfile(root){
   $("#outBtn").onclick=()=>{ const b=modal("Log out?",`<p class="muted small" style="margin-bottom:14px">You'll need your email and password to get back in.</p>
     <button class="btn danger" id="okOut">Log out</button><button class="btn ghost" id="noOut" style="margin-top:10px">Stay</button>`);
     $("#okOut",b).onclick=()=>{closeModal();logout()}; $("#noOut",b).onclick=closeModal; };
+  $("#helpBtn").onclick=openHelpCenter;
   $("#setBtn").onclick=()=>go("edit",{});
   $("#delBtn").onclick=()=>{
     if(App.preview){ toast("Not available in preview mode"); return; }
