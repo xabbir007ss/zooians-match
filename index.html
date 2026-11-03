@@ -295,7 +295,9 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .notebtn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:0;background:var(--honey);color:#2A1C00;box-shadow:0 8px 18px -8px rgba(0,0,0,.5);z-index:6}
 .notebtn svg{width:24px;height:24px}
 .swipecard .notebtn{position:absolute;right:6px;bottom:0}
-.swipecard .incard{position:relative;display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;padding:7px 9px;border-radius:24px;background:var(--paper);color:var(--ink);box-shadow:0 10px 30px -10px rgba(0,0,0,.45);z-index:5}
+.swipecard .incard small{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin:0 2px 5px}
+.swipecard .incard .row{display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden}
+.swipecard .incard{position:relative;overflow:hidden;padding:8px 10px 9px;border-radius:24px;background:var(--paper);color:var(--ink);box-shadow:0 10px 30px -10px rgba(0,0,0,.45);z-index:5}
 .swipecard .shint{display:flex;align-items:center;justify-content:center;gap:5px;color:rgba(255,255,255,.82);font-size:11.5px;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,.55);margin-top:-4px}
 .swipecard .shint svg{width:17px;height:17px;animation:sdBounce 1.5s ease-in-out infinite}
 .swipecard .incard span{padding:5px 11px;border-radius:999px;background:var(--honey-wash);border:1px solid var(--line);font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -467,6 +469,9 @@ html,body{overscroll-behavior-y:none}
 .gifmsg{display:block;max-width:220px;width:100%;border-radius:16px}
 .tmhead{align-self:center;font-size:11.5px;font-weight:600;color:var(--ink-3);margin:10px 0 2px}
 .gifbtn{height:46px;padding:0 12px;border-radius:14px;border:1.5px solid var(--line);font-weight:800;font-size:13px;color:var(--ink-2);background:var(--cream);flex:none}
+.bub.big{background:transparent!important;border:0!important;box-shadow:none!important;font-size:40px;line-height:1.1;padding:2px 6px}
+.stk{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-height:50vh;overflow-y:auto}
+.stk button{font-size:30px;padding:8px 0;border-radius:14px;background:var(--cream)}
 .gifgrid{columns:2;column-gap:8px;max-height:50vh;overflow-y:auto}
 .gifgrid img{width:100%;border-radius:12px;margin-bottom:8px;display:block;cursor:pointer;background:var(--honey-wash)}
 .composer{display:flex;gap:9px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:var(--paper);padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
@@ -717,7 +722,7 @@ const INTERESTS = {
 const INTEREST_PREVIEW = 7;
 const QUALITIES = ["Ambition","Confidence","Empathy","Generosity","Humour","Kindness","Openness","Optimism","Playfulness","Sassiness","Leadership","Curiosity","Gratitude","Humility","Loyalty","Sarcasm","Emotional intelligence"];
 const PROMPTS = ["Send a like if you…","Win me over by…","The way to my heart is…","My simple pleasures are…","A perfect weekend for me is…","Two truths and a lie…","My most controversial opinion is…","I geek out on…","Together we could…","I'm weirdly good at…","My go-to spot in Dhaka is…","The best way to ask me out is…"];
-const RELIGIONS = ["Islam","Hinduism","Christianity","Buddhism","Spiritual","Not religious","Prefer not to say"];
+const RELIGIONS = ["Muslim","Hinduism","Christianity","Buddhism","Spiritual","Not religious","Prefer not to say"];
 
 /* location chips: 8 divisions first, then the popular hubs, in this exact order */
 const DIVISIONS = ["Dhaka","Chattogram","Sylhet","Rajshahi","Khulna","Barishal","Rangpur","Mymensingh"];
@@ -732,6 +737,17 @@ const WORK_ICONS=[
  _L('<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>'),
  _L('<path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/>'),
  _L('<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>')];
+const REL_ICONS={
+ "Muslim":_L('<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'),
+ "Hinduism":_L('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>'),
+ "Christianity":_L('<path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2z"/>'),
+ "Buddhism":_L('<path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/>'),
+ "Spiritual":_L('<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>'),
+ "Not religious":_L('<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>'),
+ "Prefer not to say":_L('<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>')};
+const REL_OTHER_ICON=_L('<circle cx="12" cy="12" r="10"/><path d="M17 12h.01"/><path d="M12 12h.01"/><path d="M7 12h.01"/>');
+const normRel=v=>/^islam$/i.test(String(v||"").trim())?"Muslim":String(v||"");
+const relIcon=v=>REL_ICONS[v]||REL_OTHER_ICON;
 const WORK_OTHER_ICON=_L('<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>');
 const workIcon=v=>{ const i=WORK.indexOf(plain(v)); return i>=0?WORK_ICONS[i]:WORK_OTHER_ICON; };
 const LOOKING = ["Long-term Relationship","Casual Dating / Hangouts","New Friends & Networking","Exploring","A life partner"];
@@ -848,6 +864,7 @@ const SHOW_SAMPLE_PROFILES = false;  // fake demo people (they can't be liked in
 const SHOW_PREVIEW_BUTTON  = false;  // builder shortcut on the login screen
 const APP_VERSION = "1.0.1";
 const ALLOW_TEMP_MAIL = false;     // fallback only. The real switch lives in Supabase: select public.set_temp_mail(true/false);
+const TENOR_KEY = "";             // optional second GIF source (free key: developers.google.com/tenor)
 const GIPHY_KEY = "dc6zaTOxFJmzC"; // GIF search. Replace with your own free key from developers.giphy.com for reliable GIFs
 const MEMBERSHIP_URL = "https://wa.me/message/F2JDXVCG2XHBI1";   // <-- put your "Become a Member" link here any time
 const SUPPORT_URL    = "https://wa.me/message/F2JDXVCG2XHBI1";
@@ -1042,7 +1059,7 @@ function fromRow(r){
     drinking:g("drinking")||"", smoking:g("smoking")||"", kids:g("kids")||"",
     isMember:!!g("is_member"), memberUntil:toMs(g("member_until"))||0,
     verified:!!g("verified"), _ph0:(photos&&photos[0])||null,
-    religion:g("religion")||"", qualities:toArr(g("qualities")).slice(0,3), prompts,
+    religion:normRel(g("religion")||""), qualities:toArr(g("qualities")).slice(0,3), prompts,
     code:r[COL.profiles.id], name:g("name")||"", age:g("age")??null, gender:g("gender")||"", height:g("height")??null,
     photos,
     loc:{ mode:g("loc_mode")||"hub", label:g("loc_label")||"", lat:g("lat")??null, lng:g("lng")??null, radius:g("radius")||DEFAULT_RADIUS },
@@ -1960,10 +1977,10 @@ function setupVibe(body,d){
   wi.oninput=()=>{ d.work=wi.value.trim(); };
   $$("#lk .chip").forEach(b=>b.onclick=()=>{ d.looking=b.dataset.w;
     $$("#lk .chip").forEach(x=>x.setAttribute("aria-pressed",x.dataset.w===d.looking)); });
-  let rlOther=!!d.religion && !RELIGIONS.includes(d.religion);
+  d.religion=normRel(d.religion); let rlOther=!!d.religion && !RELIGIONS.includes(d.religion);
   const rlHTML=`<div class="field"><label>Religion</label>
-      <div class="chips" id="rl">${RELIGIONS.map(r=>`<button class="chip" data-r="${esc(r)}" aria-pressed="${d.religion===r}">${esc(r)}</button>`).join("")}
-        <button class="chip" id="rlOtherChip" aria-pressed="${rlOther}">Others</button></div>
+      <div class="chips" id="rl">${RELIGIONS.map(r=>`<button class="chip" data-r="${esc(r)}" aria-pressed="${d.religion===r}">${relIcon(r)}${esc(r)}</button>`).join("")}
+        <button class="chip" id="rlOtherChip" aria-pressed="${rlOther}">${REL_OTHER_ICON}Others</button></div>
       <input class="input ${rlOther?"":"hide"}" id="rlOther" maxlength="30" placeholder="Type your religion" style="margin-top:10px" value="${rlOther?esc(d.religion):""}"></div>`;
   $("#lk").closest(".field").insertAdjacentHTML("afterend",rlHTML);
   const ri=$("#rlOther"), rc=$("#rlOtherChip");
@@ -2082,6 +2099,7 @@ ROUTES.app = async ({tab})=>{
   await loadSocial();
   paintBadges();
   const tb=$("#tabbody"); tb.classList.remove("noscroll");
+  if(App.tab!=="people") wirePullRefresh(tb);
   ({people:viewPeople,discover:viewDiscover,chats:viewChats,liked:viewLiked,profile:viewProfile}[App.tab]||viewPeople)(tb);
 };
 
@@ -2096,6 +2114,24 @@ function openMemberGate(what){
       <button class="btn ghost" id="gateNo" style="margin-top:9px">Maybe later</button></div>`);
   $("#gateBuy",b).onclick=()=>{ window.open(MEMBERSHIP_URL,"_blank","noopener"); };
   $("#gateNo",b).onclick=closeModal;
+}
+function wirePullRefresh(tb){
+  let sy=0,pull=0,act=false,ind=null;
+  const clear=()=>{ if(ind){ ind.remove(); ind=null; } };
+  tb.addEventListener("touchstart",e=>{ if(tb.scrollTop<=0&&e.touches.length===1){ sy=e.touches[0].clientY; act=true; pull=0; } },{passive:true});
+  tb.addEventListener("touchmove",e=>{
+    if(!act) return;
+    if(tb.scrollTop>0){ act=false; clear(); return; }
+    pull=e.touches[0].clientY-sy;
+    if(pull<=8){ clear(); return; }
+    if(!ind){ ind=el("div","ptr"); ind.style.cssText="position:fixed;top:70px;left:50%;margin-left:-19px;z-index:90"; ind.innerHTML='<i class="spin"></i>'; document.body.appendChild(ind); }
+    ind.style.opacity=Math.min(1,pull/80); ind.style.transform=`translateY(${Math.min(pull*.4,50)}px) rotate(${pull*3}deg)`;
+  },{passive:true});
+  tb.addEventListener("touchend",async()=>{
+    if(!act) return; act=false;
+    if(pull>85){ const tab=App.tab; try{ await loadSocial(); paintBadges(); }catch(e){} clear(); go("app",{tab}); toast("Updated"); }
+    else clear();
+  });
 }
 function paintBadges(){
   const newLikes=App.likedYou.filter(l=>!App.myLikes.some(m=>m.to===l.from)&&!App.passes.some(x=>x.to===l.from)).length;
@@ -2301,7 +2337,7 @@ function cardHTML(p){
         ${p.work?`<div class="wline">${workIcon(p.work)}${esc(plain(p.work))}</div>`:""}
         <button class="notebtn" data-note="${p.code}" aria-label="Send a note">${ICO_NOTE}</button>
       </div>
-      ${chips?`<div class="incard" data-open="${p.code}">${chips}</div>`:""}
+      ${chips?`<div class="incard" data-open="${p.code}"><small>Common ground</small><div class="row">${chips}</div></div>`:""}
       <div class="shint" data-open="${p.code}">${ICO_DOWN}<span>Scroll down for full profile</span></div>
     </div></div>
   </article>`;
@@ -2512,7 +2548,7 @@ function pvStreamHTML(p){
   const im=i=>photos[i+1]?`<div class="pv-photo"><img src="${photos[i+1]}" alt=""><button class="notebtn" data-note="1" aria-label="Send a note">${ICO_NOTE}</button></div>`:"";
   const chip=(ic,t)=>t?`<span class="pv-chip"><i>${ic}</i>${esc(t)}</span>`:"";
   const km=distKm(me,p);
-  const about=[chip("📏",p.height?hLabel(p.height):""),chip(workIcon(p.work).replace("class=\"wic\"","class=\"wic\" style=\"margin:0\""),plain(p.work)),
+  const about=[chip("📏",p.height?hLabel(p.height):""),chip(relIcon(p.religion).replace('class="wic"','class="wic" style="margin:0"'),p.religion),chip(workIcon(p.work).replace("class=\"wic\"","class=\"wic\" style=\"margin:0\""),plain(p.work)),
     chip("🍷",p.drinking?"Drinking: "+p.drinking:""),chip("🚬",p.smoking?"Smoking: "+p.smoking:""),chip("👶",p.kids?"Kids: "+p.kids:"")].join("");
   const locLabel=(p.loc&&p.loc.label)||"";
   return [
@@ -2953,26 +2989,55 @@ function fmtHead(ms){
   if(diff<7) return d.toLocaleDateString("en-US",{weekday:"short"})+" "+tm;
   return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",...(d.getFullYear()!==n.getFullYear()?{year:"numeric"}:{})})+", "+tm;
 }
-function openGifPicker(onPick){
-  const b=modal("Send a GIF",`<div class="search" style="margin-bottom:10px">${I.search}<input id="gifQ" placeholder="Search GIFs" autocomplete="off"></div>
-    <div class="gifgrid" id="gifGrid"><p class="muted small" style="padding:20px;text-align:center">Loading…</p></div>
+const STICKERS=["😂","😍","🥰","😘","😎","🤗","😅","😭","🥺","😏","🔥","💖","❤️","💯","👏","🙌","👍","🙏","🎉","✨","🌹","☕","🍕","🐼"];
+function openGifPicker(onPick,onSticker){
+  const b=modal("Send a GIF",`
+    <div class="authtabs" style="margin-bottom:10px"><button data-t="g" class="on">GIFs</button><button data-t="s">Stickers</button></div>
+    <div id="gifPane"></div>
     <button class="btn ghost" id="gifNo" style="margin-top:10px">Close</button>`);
   $("#gifNo",b).onclick=closeModal;
-  let t=0;
-  const load=async q=>{
-    const g=$("#gifGrid",b);
-    try{
-      const url=q?`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=24&rating=pg-13`
-                 :`https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_KEY}&limit=24&rating=pg-13`;
-      const j=await (await fetch(url)).json();
-      const items=(j.data||[]);
-      if(!items.length){ g.innerHTML='<p class="muted small" style="padding:20px;text-align:center">No GIFs found.</p>'; return; }
-      g.innerHTML=items.map(x=>`<img src="${esc(x.images.fixed_width_small?x.images.fixed_width_small.url:x.images.fixed_width.url)}" data-u="${esc(x.images.fixed_width.url)}" alt="">`).join("");
-      $$("img",g).forEach(im=>im.onclick=()=>{ closeModal(); onPick(im.dataset.u); });
-    }catch(e){ g.innerHTML='<p class="muted small" style="padding:20px;text-align:center">GIFs are unavailable right now.</p>'; }
+  const pane=$("#gifPane",b);
+  const stickers=()=>{
+    pane.innerHTML=`<div class="stk">${STICKERS.map(e=>`<button data-e="${e}">${e}</button>`).join("")}</div>`;
+    $$("[data-e]",pane).forEach(x=>x.onclick=()=>{ closeModal(); (onSticker||onPick)(x.dataset.e,true); });
   };
-  $("#gifQ",b).oninput=e=>{ clearTimeout(t); t=setTimeout(()=>load(e.target.value.trim()),350); };
-  load("");
+  const fetchGifs=async q=>{
+    const out=[];
+    try{                                                   /* 1) Giphy */
+      const u=q?`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=24&rating=pg-13`:`https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_KEY}&limit=24&rating=pg-13`;
+      const j=await (await fetch(u)).json();
+      (j.data||[]).forEach(x=>{ const im=x.images||{}; const sm=(im.fixed_width_small||im.fixed_width||{}).url, full=(im.fixed_width||{}).url; if(sm&&full) out.push({sm,full}); });
+    }catch(e){}
+    if(!out.length && TENOR_KEY){                          /* 2) Tenor */
+      try{ const u=q?`https://tenor.googleapis.com/v2/search?key=${TENOR_KEY}&q=${encodeURIComponent(q)}&limit=24&media_filter=tinygif,gif`:`https://tenor.googleapis.com/v2/featured?key=${TENOR_KEY}&limit=24&media_filter=tinygif,gif`;
+        const j=await (await fetch(u)).json();
+        (j.results||[]).forEach(x=>{ const f=x.media_formats||{}; if(f.tinygif&&f.gif) out.push({sm:f.tinygif.url,full:f.gif.url}); }); }catch(e){}
+    }
+    return out;
+  };
+  const gifs=async()=>{
+    pane.innerHTML=`<div class="search" style="margin-bottom:10px">${I.search}<input id="gifQ" placeholder="Search GIFs" autocomplete="off"></div>
+      <div class="gifgrid" id="gifGrid"><p class="muted small" style="padding:20px;text-align:center">Loading…</p></div>`;
+    let t=0;
+    const load=async q=>{
+      const g=$("#gifGrid",pane); if(!g) return;
+      const items=await fetchGifs(q);
+      if(!items.length){
+        g.style.columns="auto";
+        g.innerHTML=`<p class="muted small" style="padding:14px 6px;text-align:center;line-height:1.6">${q?"No GIFs found.":"GIF search isn't available right now."}<br>Paste a GIF link, or use Stickers.</p>
+          <div style="display:flex;gap:8px"><input class="input" id="gifUrl" placeholder="https://…gif" style="flex:1"><button class="btn sm" id="gifSend" style="flex:none">Send</button></div>`;
+        $("#gifSend",pane).onclick=()=>{ const u=$("#gifUrl",pane).value.trim(); if(!/^https:\/\/\S+$/i.test(u)){ toast("Paste a link that starts with https://"); return; } closeModal(); onPick(u); };
+        return;
+      }
+      g.style.columns="";
+      g.innerHTML=items.map(x=>`<img src="${esc(x.sm)}" data-u="${esc(x.full)}" alt="">`).join("");
+      $$("img",g).forEach(im=>im.onclick=()=>{ closeModal(); onPick(im.dataset.u); });
+    };
+    $("#gifQ",pane).oninput=e=>{ clearTimeout(t); t=setTimeout(()=>load(e.target.value.trim()),350); };
+    load("");
+  };
+  $$(".authtabs button",b).forEach(x=>x.onclick=()=>{ $$(".authtabs button",b).forEach(y=>y.classList.toggle("on",y===x)); x.dataset.t==="s"?stickers():gifs(); });
+  gifs();
 }
 async function openChat(pid,other){
   App.openChatPid=pid;
@@ -2983,7 +3048,7 @@ async function openChat(pid,other){
     <div class="topbar line">
       <button class="iconbtn" id="cBack">${I.back}</button>
       <img class="av sm" id="cAv" data-face="${(other.photos&&other.photos[0])||""}" style="width:38px;height:38px;border-radius:50%" src="${(other.photos&&other.photos[0])||artFor(other.code,other.name)}" alt="">
-      <h2 style="flex:1;font-size:17px">${esc(other.name)}</h2>
+      <h2 id="cName" style="flex:1;font-size:17px;cursor:pointer">${esc(other.name)}</h2>
       <button class="iconbtn" id="cMore">⋯</button></div>
     <div class="msgs" id="msgs"></div>
     <div class="composer">
@@ -2992,7 +3057,7 @@ async function openChat(pid,other){
       <button class="roundbtn" id="cSend">${I.send}</button></div>`;
   $("#frame").appendChild(sheet);
   $("#cBack",sheet).onclick=()=>{ if(threadUnsub){try{threadUnsub()}catch(e){}} App.openChatPid=null; sheet.remove(); go("app",{tab:"chats"}); };
-  $("#cAv",sheet).onclick=()=>openProfileSheet(other,{readonly:true});
+  $("#cAv",sheet).onclick=$("#cName",sheet).onclick=()=>openProfileSheet(other,{readonly:true});
   $("#cMore",sheet).onclick=()=>personMenu(other,()=>sheet.remove());
 
   const box=$("#msgs",sheet);
@@ -3019,6 +3084,7 @@ async function openChat(pid,other){
       const g=parseGif(m.text);
       const b=el("div","bub "+(m.from===App.me?"me":"them")+(g?" gif":"")+(rx[m.id]?" hasrx":""));
       b.dataset.id=m.id;
+      if(!g && /^\p{Extended_Pictographic}[\p{Extended_Pictographic}\u200d\ufe0f]{0,5}$/u.test(m.text.trim())) b.classList.add("big");
       b.innerHTML=g?`<img class="gifmsg" src="${esc(g)}" alt="GIF" loading="lazy">`:esc(m.text);
       if(rx[m.id]) b.insertAdjacentHTML("beforeend",`<span class="rx">♥${rx[m.id].size>1?" 2":""}</span>`);
       box.appendChild(b);
@@ -3060,8 +3126,8 @@ async function openChat(pid,other){
     markRead(pid);
   };
   $("#cSend",sheet).onclick=send;
-  $("#cGif",sheet).onclick=()=>openGifPicker(async url=>{
-    const {data,error}=await Chat.send(pid,App.me,"\u2063gif:"+url,other.code);
+  $("#cGif",sheet).onclick=()=>openGifPicker(async(url,isEmoji)=>{
+    const {data,error}=await Chat.send(pid,App.me,isEmoji?url:"\u2063gif:"+url,other.code);
     if(error){ toast("GIF not sent: "+error.message,3200); return; }
     if(data) addMsg(data); markRead(pid); });
   ta.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&window.innerWidth>900){ e.preventDefault(); send(); }});
@@ -3131,7 +3197,7 @@ async function viewProfile(root){
       <h3 style="margin:24px 0 10px">Account</h3>
       <div class="card" style="padding:4px 14px">
         <button class="listopt" id="pwBtn">${I.lock}<span style="flex:1">Change password</span><span class="muted">›</span></button>
-        <button class="listopt" id="supBtn"><span style="width:20px;flex:none;display:block">${I.chat}</span><span style="flex:1">Get Support</span>${isMember()?'<span class="muted">›</span>':'<span class="vstate">Members</span><span style="width:17px;display:block;color:var(--ink-3);flex:none">${I.lock}</span>'}</button>
+        <button class="listopt" id="supBtn"><span style="width:20px;flex:none;display:block">${I.chat}</span><span style="flex:1">Get Support</span>${isMember()?'<span class="muted">›</span>':'<span class="vstate" style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;display:block">'+I.lock+'</span>Members</span>'}</button>
         <button class="listopt" id="themeBtn">${I.sunmoon}<span style="flex:1">Appearance</span><span class="muted" id="themeNow">${LSget("zm:theme")||"auto"}</span></button>
         <button class="listopt" id="outBtn">${I.out}<span style="flex:1;color:var(--alert)">Log out</span></button>
       </div>
