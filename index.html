@@ -289,8 +289,8 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .swipecard .shade{background:linear-gradient(to top,rgba(10,6,30,.82) 0%,rgba(10,6,30,.18) 42%,transparent 62%)}
 .swipecard .stack{position:absolute;left:0;right:0;bottom:0;padding:0 10px 10px;display:flex;flex-direction:column;gap:12px;z-index:5}
 .swipecard .info{position:relative;padding:0 62px 0 8px}
-.swipecard .vpill{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:rgba(20,16,40,.72);font-size:13px;font-weight:600;margin-bottom:8px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.swipecard .vpill svg{width:15px;height:15px}
+.vpill{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:rgba(20,16,40,.72);font-size:13px;font-weight:600;margin-bottom:8px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.vpill svg{width:15px;height:15px}
 .swipecard .wline{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:15.5px;font-weight:600;opacity:.95}
 .notebtn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:0;background:var(--honey);color:#2A1C00;box-shadow:0 8px 18px -8px rgba(0,0,0,.5);z-index:6}
 .notebtn svg{width:24px;height:24px}
@@ -874,7 +874,7 @@ function detectSchema(){
   if(detectSchema._p) return detectSchema._p;
   detectSchema._p=(async()=>{
     if(!sb) return;
-    try{ const c=JSON.parse(sessionStorage.getItem("zm:schema:v4")||"null");
+    try{ const c=JSON.parse(sessionStorage.getItem("zm:schema:v5")||"null");
       if(c){ Object.assign(COL,c); return; } }catch(e){}
     await Promise.all(Object.entries(SCHEMA).map(async([key,def])=>{
       const fields=Object.keys(def).filter(k=>k!=="table");
@@ -888,7 +888,7 @@ function detectSchema(){
     console.info("[schema] detected columns",COL);
     const missing=[]; Object.entries(COL).forEach(([t,m])=>Object.entries(m).forEach(([f,c])=>{ if(!c) missing.push(t+"."+f); }));
     if(missing.length) console.warn("[schema] not found (skipped):",missing.join(", "));
-    if(COL.likes&&COL.likes.from&&COL.likes.to&&COL.matches.a&&COL.messages.body){ try{ sessionStorage.setItem("zm:schema:v4",JSON.stringify(COL)); }catch(e){} }
+    if(COL.likes&&COL.likes.from&&COL.likes.to&&COL.matches.a&&COL.messages.body){ try{ sessionStorage.setItem("zm:schema:v5",JSON.stringify(COL)); }catch(e){} }
   })();
   return detectSchema._p;
 }
@@ -1684,7 +1684,9 @@ ROUTES.changepw = ()=>{
    PROFILE SETUP — 4 steps
    ========================================================================== */
 const SETUP_STEPS=5;
-const needsExtras=p=>!p.religion||(p.qualities||[]).length!==3||!p.drinking||!p.smoking||!p.kids;
+const hasCol=f=>!!(COL.profiles&&COL.profiles[f]);       /* only ask for a field the database can actually store */
+const needsExtras=p=>(hasCol("religion")&&!p.religion)||(hasCol("qualities")&&(p.qualities||[]).length!==3)
+  ||(hasCol("drinking")&&!p.drinking)||(hasCol("smoking")&&!p.smoking)||(hasCol("kids")&&!p.kids);
 ROUTES.setup = ({step=0})=>{
   $("#nav").classList.add("hide");
   const d=App.setupDraft=App.setupDraft||blankProfile(App.me);
@@ -2499,6 +2501,31 @@ function expandCard(p){
   $(".xclose",x).onclick=collapseCard;
   $("#xMore",x).onclick=()=>personMenu(p,collapseCard);
   $$("[data-note]",x).forEach(b=>b.onclick=()=>openNote(p));
+  /* swipe left / right works on the open profile too */
+  x.style.touchAction="pan-y";
+  const xl=el("div","stamp like"), xn=el("div","stamp nope"); xl.innerHTML=ICO_CHECK; xn.innerHTML=ICO_CROSS;
+  [xl,xn].forEach(n=>{ n.style.zIndex=80; deck.appendChild(n); });
+  let sx=0,sy=0,dx=0,hz=false,pid=null;
+  x.addEventListener("pointerdown",e=>{ if(e.target.closest("button")) return; if(e.pointerType==="mouse"&&e.button!==0) return;
+    sx=e.clientX; sy=e.clientY; dx=0; hz=false; pid=e.pointerId; });
+  x.addEventListener("pointermove",e=>{
+    if(pid==null||e.pointerId!==pid) return;
+    dx=e.clientX-sx; const dy=e.clientY-sy;
+    if(!hz && Math.abs(dx)>14 && Math.abs(dx)>Math.abs(dy)*1.4){ hz=true; x.style.transition="none"; try{x.setPointerCapture(e.pointerId)}catch(_){} }
+    if(hz){ x.style.transform=`translateX(${dx}px) rotate(${dx/30}deg)`;
+      const lo=clamp(dx/110,0,1), no=clamp(-dx/110,0,1);
+      xl.style.opacity=lo; xl.style.transform=`scale(${.5+lo*.55})`; xn.style.opacity=no; xn.style.transform=`scale(${.5+no*.55})`; }
+  });
+  const xend=()=>{
+    if(pid==null) return; pid=null; if(!hz) return; hz=false;
+    x.style.transition="transform .3s var(--ease),opacity .3s";
+    if(Math.abs(dx)>90){
+      const dir=dx>0?1:-1, card=$("#deck .swipecard:last-child");
+      x.style.transform=`translateX(${dir*130}%) rotate(${dir*14}deg)`; x.style.opacity="0";
+      setTimeout(()=>{ x.remove(); xl.remove(); xn.remove(); App.expanded=null; if(card) finishSwipe(card,p,dir,false); },200);
+    } else { x.style.transform=""; xl.style.opacity=0; xn.style.opacity=0; }
+  };
+  x.addEventListener("pointerup",xend); x.addEventListener("pointercancel",xend);
   let ty=0,atTop=false;
   x.addEventListener("touchstart",e=>{ ty=e.touches[0].clientY; atTop=x.scrollTop<=0; },{passive:true});
   x.addEventListener("touchend",e=>{ const dy=e.changedTouches[0].clientY-ty; if(atTop&&dy>90) collapseCard(); });
@@ -2507,6 +2534,7 @@ function expandCard(p){
 function collapseCard(){
   const x=$("#deck .xprof"); App.expanded=null; if(!x) return;
   x.classList.remove("on"); setTimeout(()=>x.remove(),320);
+  $$("#deck > .stamp").forEach(n=>n.remove());
 }
 /* pull down on the card = refresh */
 async function refreshPeople(){
