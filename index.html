@@ -86,7 +86,7 @@ img{max-width:100%;display:block}
 
 /* ---------- app frame ---------- */
 #frame{
-  position:relative; width:100%; max-width:var(--app-w); min-height:100%; min-height:100dvh;
+  position:relative; width:100%; max-width:var(--app-w); height:100vh; height:100dvh; max-height:100dvh;
   margin:0 auto; background:var(--cream); overflow:hidden;
   display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px);
 }
@@ -275,10 +275,11 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pslot .main{position:absolute;left:6px;bottom:6px;background:var(--honey);color:#2A1C00;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px}
 
 /* ================= deck ================= */
-#deck{position:relative;flex:1;min-height:360px;margin:4px 14px 0}
+#deck{position:relative;flex:1;min-height:0;margin:4px 14px 0}
+.deckact{flex:none}
 #tabbody.noscroll{overflow:hidden}
 .swipecard{position:absolute;inset:0;border-radius:var(--r-card);overflow:hidden;background:var(--paper);display:flex;flex-direction:column;box-shadow:var(--shadow-m);will-change:transform;touch-action:none}
-.swipecard .photo{position:absolute;inset:0;background-size:cover;background-position:center}
+.swipecard .photo{position:absolute;inset:0;background-size:cover;background-position:50% 20%;background-repeat:no-repeat}
 .swipecard .shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,6,30,.92) 6%,rgba(10,6,30,.34) 40%,transparent 62%)}
 .swipecard .info{position:absolute;left:0;right:0;bottom:0;padding:18px 18px 20px;color:#fff}
 .swipecard .nm{font-family:var(--ff-d);font-size:27px;font-weight:700;display:flex;align-items:baseline;gap:9px}
@@ -286,18 +287,46 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .zoobadge{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:var(--love);color:#fff;font-size:11.5px;font-weight:800}
 .swipecard .pwrap{position:absolute;inset:0;background:var(--ink)}
 .swipecard .shade{background:linear-gradient(to top,rgba(10,6,30,.82) 0%,rgba(10,6,30,.18) 42%,transparent 62%)}
-.swipecard .info{padding:0 76px 144px 18px}
+.swipecard .stack{position:absolute;left:0;right:0;bottom:0;padding:0 10px 10px;display:flex;flex-direction:column;gap:12px;z-index:5}
+.swipecard .info{position:relative;padding:0 62px 0 8px}
 .swipecard .vpill{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:rgba(20,16,40,.72);font-size:13px;font-weight:600;margin-bottom:8px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .swipecard .vpill svg{width:15px;height:15px}
 .swipecard .wline{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:15.5px;font-weight:600;opacity:.95}
 .notebtn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:0;background:var(--honey);color:#2A1C00;box-shadow:0 8px 18px -8px rgba(0,0,0,.5);z-index:6}
 .notebtn svg{width:24px;height:24px}
-.swipecard .notebtn{position:absolute;right:16px;bottom:146px}
-.swipecard .incard{position:absolute;left:10px;right:10px;bottom:10px;padding:14px 16px 14px;border-radius:24px;background:var(--paper);color:var(--ink);box-shadow:0 10px 30px -10px rgba(0,0,0,.45);z-index:5}
+.swipecard .notebtn{position:absolute;right:6px;bottom:0}
+.swipecard .incard{position:relative;padding:10px 16px 14px;border-radius:24px;background:var(--paper);color:var(--ink);box-shadow:0 10px 30px -10px rgba(0,0,0,.45);z-index:5}
 .swipecard .incard h4{font-family:var(--ff-d);font-size:16.5px;font-weight:700;margin-bottom:9px}
 .swipecard .incard .chs{display:flex;flex-wrap:wrap;gap:7px;max-height:72px;overflow:hidden}
 .swipecard .incard .chs span{padding:7px 12px;border-radius:999px;background:var(--honey-wash);border:1px solid var(--line);font-size:13px;font-weight:600;white-space:nowrap}
 .swipecard .incard .chs span.cm{background:var(--honey);border-color:transparent;color:#2A1C00}
+.sdown{display:flex;align-items:center;justify-content:center;gap:6px;margin:-4px 0 6px;font-size:11.5px;font-weight:700;color:var(--ink-3)}
+.sdown svg{width:18px;height:18px;animation:sdBounce 1.5s ease-in-out infinite}
+@keyframes sdBounce{0%,100%{transform:translateY(-2px);opacity:.6}50%{transform:translateY(3px);opacity:1}}
+.lkico{width:14px;height:14px;display:inline-block;vertical-align:-2px;margin-right:5px}
+.dsc h3{font-family:var(--ff-d);font-size:19px;font-weight:700;padding:0 18px;margin:18px 0 2px}
+.dsc .sub{padding:0 18px;font-size:12.5px;color:var(--ink-3);margin-bottom:10px}
+.dsc .row{scroll-padding-left:18px;display:flex;gap:12px;overflow-x:auto;padding:2px 18px 6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.dsc .row::-webkit-scrollbar{display:none}
+.dcard{flex:none;width:148px;scroll-snap-align:start;position:relative;border-radius:20px;overflow:hidden;aspect-ratio:3/4;background:var(--ink);cursor:pointer}
+.dcard .ph{position:absolute;inset:0;background-size:cover;background-position:50% 20%}
+.dcard .sh{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,6,30,.85),transparent 55%)}
+.dcard .tx{position:absolute;left:10px;right:10px;bottom:10px;color:#fff;font-weight:700;font-size:14px;line-height:1.25}
+.dcard .tx small{display:block;font-weight:600;font-size:11px;opacity:.85;margin-top:2px}
+.dcard .hb{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:0;background:rgba(255,255,255,.92);color:#E0287A;z-index:2}
+.dcard .hb svg{width:18px;height:18px}
+.dcard .vb{position:absolute;left:8px;top:8px;width:22px;height:22px;border-radius:50%;background:rgba(20,16,40,.7);color:#fff;display:grid;place-items:center}
+.dcard .vb svg{width:14px;height:14px}
+.lkblur{filter:blur(15px) saturate(1.1);transform:scale(1.15)}
+.lkwrap{position:relative;padding:4px 18px 0}
+.lkgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;pointer-events:none;user-select:none}
+.lkcell{aspect-ratio:3/4;border-radius:20px;overflow:hidden;background:var(--ink);position:relative}
+.lkcell .ph{position:absolute;inset:0;background-size:cover;background-position:50% 20%}
+.lkcta{position:sticky;bottom:14px;margin:-84px 18px 14px;z-index:3}
+.vstate{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:800;background:var(--honey);color:#2A1C00}
+.vstate.ok{background:#2FE38F}.vstate.bad{background:#FFD1D8;color:#7A1020}
+.spin{width:12px;height:12px;border:2px solid rgba(42,28,0,.3);border-top-color:#2A1C00;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .verchip{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--ink)}
 .pv-hero,.pv-photo{position:relative}
 .pv-hero .notebtn,.pv-photo .notebtn{position:absolute;left:14px;bottom:14px;width:42px;height:42px}
@@ -335,14 +364,14 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .pv-hero{position:relative;aspect-ratio:4/5;background:var(--ink)}
-.pv-hero img{width:100%;height:100%;object-fit:cover}
+.pv-hero img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
 .pv-block{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:17px;margin:12px 18px}
 .pv-block h3{margin-bottom:10px;font-size:16.5px}
 .kv{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
 .kv:last-child{border-bottom:0}
 .kv b{font-weight:600;color:var(--ink-3);min-width:104px;font-size:13.5px}
 .pv-photo{margin:12px 18px;border-radius:22px;overflow:hidden;aspect-ratio:4/5;background:var(--ink)}
-.pv-photo img{width:100%;height:100%;object-fit:cover}
+.pv-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
 
 /* ================= bottom nav ================= */
 #nav{display:flex;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(18px);
@@ -688,6 +717,7 @@ const I = {
   spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-9.4-8.8C1 8.6 3.1 5 6.6 4.7c2.2-.2 4.1 1 5.4 2.6 1.3-1.6 3.2-2.8 5.4-2.6 3.5.3 5.6 3.9 4 7.5"/><path d="M18 14v6M15 17h6"/></svg>',
   user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>',
   back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>',
+  compass:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.8 8.2l-2.1 5.5-5.5 2.1 2.1-5.5z"/></svg>',
   search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
   send:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4l17.5-8.4L3.4 3.6 3.4 10l12 2-12 2z"/></svg>',
   phone:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 013 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1z"/></svg>',
@@ -751,6 +781,8 @@ const PHOTO_MAX_BYTES = 480 * 1024;  // each photo is compressed under ~500 KB
 
 const SHOW_SAMPLE_PROFILES = false;  // fake demo people (they can't be liked in a real database)
 const SHOW_PREVIEW_BUTTON  = false;  // builder shortcut on the login screen
+const MEMBERSHIP_URL = "https://wa.me/message/F2JDXVCG2XHBI1";   // <-- put your "Become a Member" link here any time
+const SUPPORT_URL    = "https://wa.me/message/F2JDXVCG2XHBI1";
 const ADMIN_EMAILS = [];             // e.g. ["you@gmail.com"]  (also works via profiles.is_admin = true)
 
 const SCHEMA = {
@@ -762,7 +794,7 @@ const SCHEMA = {
     gc_member:["gc_member","zoo_member","in_gc"], gc_name:["gc_name","zoo_gc","gc"],
     langs:["languages","langs"], interests:["interests"],
     photo1:["photo_1"], photo2:["photo_2"], photo3:["photo_3"],
-    religion:["religion"], qualities:["qualities"], prompts:["prompts"], verified:["verified"],
+    religion:["religion"], qualities:["qualities"], prompts:["prompts"], verified:["verified"], is_member:["is_member"], member_until:["member_until"],
     done:["profile_complete","is_complete","onboarded","done"], status:["status"], is_admin:["is_admin"],
     last_seen:["last_seen","last_seen_at"], created:["created_at"], updated:["updated_at"] },
   likes:{ table:"likes",
@@ -933,6 +965,7 @@ function fromRow(r){
   let prompts=g("prompts"); if(typeof prompts==="string"){ try{ prompts=JSON.parse(prompts); }catch(e){ prompts=[]; } }
   prompts=(Array.isArray(prompts)?prompts:[]).filter(x=>x&&x.q&&String(x.a||"").trim());
   return {
+    isMember:!!g("is_member"), memberUntil:toMs(g("member_until"))||0,
     verified:!!g("verified"), _ph0:(photos&&photos[0])||null,
     religion:g("religion")||"", qualities:toArr(g("qualities")).slice(0,3), prompts,
     code:r[COL.profiles.id], name:g("name")||"", age:g("age")??null, gender:g("gender")||"", height:g("height")??null,
@@ -1952,7 +1985,7 @@ ROUTES.interests = ({setup})=>{
 /* ==========================================================================
    MAIN APP SHELL
    ========================================================================== */
-const TABS=[{k:"people",l:"People",i:I.people},{k:"chats",l:"Chats",i:I.chat},
+const TABS=[{k:"people",l:"People",i:I.people},{k:"discover",l:"Discover",i:I.compass},{k:"chats",l:"Chats",i:I.chat},
             {k:"liked",l:"Liked You",i:I.spark},{k:"profile",l:"Profile",i:I.user}];
 
 ROUTES.app = async ({tab})=>{
@@ -1965,9 +1998,21 @@ ROUTES.app = async ({tab})=>{
   await loadSocial();
   paintBadges();
   const tb=$("#tabbody"); tb.classList.remove("noscroll");
-  ({people:viewPeople,chats:viewChats,liked:viewLiked,profile:viewProfile}[App.tab])(tb);
+  ({people:viewPeople,discover:viewDiscover,chats:viewChats,liked:viewLiked,profile:viewProfile}[App.tab]||viewPeople)(tb);
 };
 
+/* Zoo Member = profiles.is_member true (and member_until empty or in the future). Granted from Supabase only. */
+function isMember(p){ p=p||App.profile||{}; return !!p.isMember && (!p.memberUntil || p.memberUntil>Date.now()); }
+function openMemberGate(what){
+  const b=modal("Zoo Members only",`
+    <div style="text-align:center;padding:2px 4px 6px">
+      <div style="width:92px;margin:0 auto 6px">${pandaSVG("m")}</div>
+      <p class="muted" style="line-height:1.6;margin-bottom:16px">${esc(what||"This is a premium feature.")} You need to be a <b>Zoo Member</b> to use it.</p>
+      <button class="btn" id="gateBuy">Become a Member</button>
+      <button class="btn ghost" id="gateNo" style="margin-top:9px">Maybe later</button></div>`);
+  $("#gateBuy",b).onclick=()=>{ window.open(MEMBERSHIP_URL,"_blank","noopener"); };
+  $("#gateNo",b).onclick=closeModal;
+}
 function paintBadges(){
   const newLikes=App.likedYou.filter(l=>!App.myLikes.some(m=>m.to===l.from)&&!App.passes.some(x=>x.to===l.from)).length;
   const unread=App.matches.filter(m=>m.lastMsg && m.lastFrom && m.lastFrom!==App.me && (m.lastAt>(readMark(m.id)||0))).length;
@@ -2040,6 +2085,58 @@ async function viewPeople(root){
   $("#aStar").onclick=()=>swipeTop(1,true);
 }
 
+/* ==========================================================================
+   DISCOVER — browse compatible people by vibe. Anyone can look; liking needs a Zoo Member.
+   ========================================================================== */
+async function viewDiscover(root){
+  root.classList.remove("noscroll");
+  root.innerHTML=`<div class="topbar"><h2>Discover</h2></div><div class="dsc" id="dsc"><p class="muted small" style="padding:30px;text-align:center">Finding people for you…</p></div>`;
+  const me=App.profile, want=me.gender==="Female"?"Male":"Female";
+  const seen=new Set([...App.myLikes.map(l=>l.to),...App.passes.map(p=>p.to),App.me]);
+  const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
+  const all=(await allProfiles()).filter(p=>p&&p.done&&p.gender===want&&!seen.has(p.code)&&!blocked.has(p.code));
+  const myGoal=plain(me.looking||"").toLowerCase();
+  const score=p=>{
+    let sc=overlapPct(p.interests||[],me.interests||[])*0.6;
+    if(myGoal && plain(p.looking||"").toLowerCase()===myGoal) sc+=25;
+    if(me.religion && p.religion===me.religion) sc+=6;
+    if((me.langs||[]).some(l=>(p.langs||[]).includes(l))) sc+=4;
+    if(me.gc&&me.gc.which&&p.gc&&p.gc.which===me.gc.which) sc+=10;
+    return sc;
+  };
+  const rec=[...all].sort((a,b)=>score(b)-score(a)).slice(0,12);
+  const sim=[...all].filter(p=>overlapPct(p.interests||[],me.interests||[])>0).sort((a,b)=>overlapPct(b.interests,me.interests)-overlapPct(a.interests,me.interests)).slice(0,12);
+  const goal=myGoal?all.filter(p=>plain(p.looking||"").toLowerCase()===myGoal).slice(0,12):[];
+  const comm=all.filter(p=>(me.gc&&me.gc.member&&me.gc.which&&p.gc&&p.gc.which===me.gc.which)||(me.work&&p.work===me.work)).slice(0,12);
+  const tag={
+    rec:p=>`${Math.round(Math.min(99,score(p)))}% vibe match`,
+    sim:p=>`${overlapPct(p.interests||[],me.interests||[])}% interests in common`,
+    goal:p=>plain(p.looking||""),
+    comm:p=>(me.gc&&p.gc&&p.gc.which===me.gc.which&&p.gc.which)?p.gc.which:(p.work||"")
+  };
+  const section=(id,title,sub,list)=> list.length?`<h3>${title}</h3><p class="sub">${sub}</p><div class="row" data-sec="${id}">${list.map(p=>`
+    <div class="dcard" data-c="${p.code}"><div class="ph" style="background-image:url('${(p.photos&&p.photos[0])||artFor(p.code,p.name)}')"></div><div class="sh"></div>
+      ${p.verified?`<span class="vb">${ICO_VER}</span>`:""}
+      <button class="hb" data-like="${p.code}" aria-label="Like">${I.heart}</button>
+      <div class="tx">${esc(p.name)}${p.age?`, ${p.age}`:""}<small>${esc(tag[id](p))}</small></div></div>`).join("")}</div>`:"";
+  const html=section("rec","Recommended for you","Picked from your vibe, interests and goals",rec)
+    +section("sim","Similar interests","People who love what you love",sim)
+    +section("goal","Same dating goals",myGoal?`Also looking for: ${esc(plain(me.looking))}`:"",goal)
+    +section("comm","Communities in common","Same Zoo GC or same professional world",comm);
+  const box=$("#dsc",root);
+  box.innerHTML=html||`<div class="emptydeck" style="padding:40px 20px"><div style="width:140px">${pandaSVG("f")}</div><h2>No one to discover yet</h2><p class="muted small">New people appear as they join. Check back soon.</p></div>`;
+  const byCode=new Map(all.map(p=>[p.code,p]));
+  const after=p=>{ const x=box.querySelector(`.dcard[data-c="${p.code}"]`); $$(`.dcard[data-c="${p.code}"]`,box).forEach(n=>n.remove()); };
+  $$(".dcard",box).forEach(c=>{
+    const p=byCode.get(c.dataset.c);
+    c.onclick=e=>{ if(e.target.closest(".hb")) return; openProfileSheet(p,{discover:true,onLike:after}); };
+    $(".hb",c).onclick=async e=>{ e.stopPropagation();
+      if(!isMember()){ openMemberGate("Sending a like from Discover is a premium feature."); return; }
+      await doLike(p,false); toast("Like sent ♥"); after(p); };
+  });
+  box.style.paddingBottom="24px";
+}
+
 async function buildDeck(){
   const me=App.profile;
   const want = me.gender==="Female" ? "Male" : "Female";
@@ -2087,6 +2184,8 @@ function drawDeck(){
   if(topCard) wireCard(topCard,App.deck[0]);
 }
 
+const ICO_SEARCH='<svg class="lkico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>';
+const ICO_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
 const ICO_NOTE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3 8.8 8.8 0 0 1-3.6-.8L3 21l1.9-5.2A8.1 8.1 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3.2 8.4 8.4 0 0 1 21 11.5z"/><path d="M12.5 14.6s-3-1.8-3-3.9a1.7 1.7 0 0 1 3-1.1 1.7 1.7 0 0 1 3 1.1c0 2.1-3 3.9-3 3.9z" fill="currentColor" stroke="none"/></svg>';
 const ICO_VER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.7 2.7L16 9.6"/></svg>';
 function cardHTML(p){
@@ -2096,25 +2195,27 @@ function cardHTML(p){
   const km=distKm(me,p);
   const loc=p.loc&&p.loc.label?`📍 ${esc(p.loc.label)}${km!=null?` · ${km<2?"nearby":km+" km"}`:""}`:"";
   const chips=[...com.map(c=>`<span class="cm">${esc(c)}</span>`),
-    p.looking?`<span>${esc(plain(p.looking))}</span>`:"", loc?`<span>${loc}</span>`:""].join("");
+    p.looking?`<span>${ICO_SEARCH}${esc(plain(p.looking))}</span>`:"", loc?`<span>${loc}</span>`:""].join("");
   return `<article class="swipecard" data-code="${p.code}">
     <div class="pwrap">
       <div class="photo" style="background-image:url('${(p.photos&&p.photos[0])||artFor(p.code,p.name)}')"></div>
       <div class="shade"></div>
       ${(p.photos||[]).length>1?`<div class="dots">${p.photos.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("")}</div>`:""}
       <div class="stamp like">LIKE</div><div class="stamp nope">NOPE</div>
-      <div class="info" style="position:absolute;left:0;right:0;bottom:0">
+      <div class="stack"><div class="info">
         <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px">
           ${p.verified?`<span class="vpill" style="margin:0">${ICO_VER}Photo verified</span>`:""}
           ${p.gc&&p.gc.member&&p.gc.which?`<span class="zoobadge">🐼 ${esc(p.gc.which)} Member</span>`:""}</div>
         <div class="nm">${esc(p.name)} <i>${p.age||""}</i></div>
         ${p.work?`<div class="wline">${esc(p.work)}</div>`:""}
+        <button class="notebtn" data-note="${p.code}" aria-label="Send a note">${ICO_NOTE}</button>
       </div>
-      <button class="notebtn" data-note="${p.code}" aria-label="Send a note">${ICO_NOTE}</button>
       <div class="incard" data-open="${p.code}">
-        <h4>${comAll.length?"We have things in common":"About "+esc(p.name)}</h4>
+        <div class="sdown">${ICO_DOWN}<span>Scroll down for full profile</span></div>
+        <h4>${comAll.length?"We have things in common":"My bio"}</h4>
+        ${!comAll.length&&p.bio?`<p style="font-size:13.5px;line-height:1.4;margin:-3px 0 9px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.bio)}</p>`:""}
         <div class="chs">${chips||'<span>New here</span>'}</div>
-      </div>
+      </div></div>
     </div></article>`;
 }
 
@@ -2212,30 +2313,33 @@ function openVerify(){
       $("#vvid",b).srcObject=stream; loadFace().catch(()=>{}); }       /* warm up the models while the camera opens */
     catch(e){ msg("Couldn't open the camera. Allow camera access in your browser and try again."); $("#vgo",b).disabled=true; }
   })();
-  $("#vgo",b).onclick=async()=>{
-    const btn=$("#vgo",b), cam=$("#vcam",b), vid=$("#vvid",b);
+  $("#vgo",b).onclick=()=>{
+    const vid=$("#vvid",b);
     if(!vid.videoWidth){ msg("Camera isn't ready yet."); return; }
-    btn.disabled=true; cam.classList.remove("ok","bad"); msg("Checking your face…");
-    try{
-      const f=await loadFace();
-      const cv=document.createElement("canvas"); cv.width=vid.videoWidth; cv.height=vid.videoHeight; cv.getContext("2d").drawImage(vid,0,0);
-      const opt=new f.TinyFaceDetectorOptions({inputSize:416,scoreThreshold:.3});
-      const me=await f.detectSingleFace(cv,opt).withFaceLandmarks().withFaceDescriptor();
-      if(!me){ cam.classList.add("bad"); msg("We couldn't see your face. Move to better light and try again."); btn.disabled=false; return; }
-      let best=0, found=0;
-      for(const src of (App.profile.photos||[]).filter(Boolean)){
-        try{ const im=await loadFaceImg(src); const d=await f.detectSingleFace(im,opt).withFaceLandmarks().withFaceDescriptor();
-          if(d){ found++; best=Math.max(best,Math.max(0,1-f.euclideanDistance(me.descriptor,d.descriptor))*100); } }catch(_){}
-      }
-      if(!found){ cam.classList.add("bad"); msg("We couldn't find a clear face in your profile photos. Add a clear face photo first."); btn.disabled=false; return; }
-      if(Math.round(best)>=FACE_MIN_MATCH){
-        cam.classList.add("ok"); stop();
-        App.profile.verified=true; await Profiles.save(App.profile);
-        msg("✓ Verified! Your profile now shows a Photo verified badge.");
-        btn.textContent="Done"; btn.disabled=false; btn.onclick=()=>{ closeModal(); go("app",{tab:"profile"}); };
-      } else { cam.classList.add("bad"); msg("Your selfie doesn't match your profile photos well enough. Try again in better light."); btn.disabled=false; }
-    }catch(e){ console.warn("[verify]",e); msg("Couldn't run the face check. Check your internet and try again."); btn.disabled=false; }
+    const cv=document.createElement("canvas"); cv.width=vid.videoWidth; cv.height=vid.videoHeight; cv.getContext("2d").drawImage(vid,0,0);
+    stop(); closeModal();                                   /* straight back to Your Profile — the check runs in the background */
+    App.verifyState="review"; go("app",{tab:"profile"}); toast("Selfie received — verification is in review");
+    runVerify(cv);
   };
+}
+async function runVerify(cv){
+  const done=(state,t)=>{ App.verifyState=state; if(t) toast(t,3800); if(App.screen==="app"&&App.tab==="profile") go("app",{tab:"profile"}); };
+  try{
+    const f=await loadFace();
+    const opt=new f.TinyFaceDetectorOptions({inputSize:416,scoreThreshold:.3});
+    const me=await f.detectSingleFace(cv,opt).withFaceLandmarks().withFaceDescriptor();
+    if(!me){ done("failed","We couldn't see your face in the selfie. Please try again."); return; }
+    let best=0, found=0;
+    for(const src of (App.profile.photos||[]).filter(Boolean)){
+      try{ const im=await loadFaceImg(src); const d=await f.detectSingleFace(im,opt).withFaceLandmarks().withFaceDescriptor();
+        if(d){ found++; best=Math.max(best,Math.max(0,1-f.euclideanDistance(me.descriptor,d.descriptor))*100); } }catch(_){}
+    }
+    if(!found){ done("failed","We couldn't find a clear face in your profile photos."); return; }
+    if(Math.round(best)>=FACE_MIN_MATCH){
+      App.profile.verified=true; await Profiles.save(App.profile);
+      done("", "✓ You're verified! Your card now shows Photo verified.");
+    } else done("failed","Your selfie didn't match your profile photos. Please try again.");
+  }catch(e){ console.warn("[verify]",e); done("failed","Couldn't run the face check. Please try again."); }
 }
 
 function swipeTop(dir,superLike){
@@ -2327,8 +2431,8 @@ function openProfileSheet(p,opts={}){
         ${chip("💼",p.work)}
         ${chip("📍",(p.loc&&p.loc.label)||"")}
       </div>
-      ${p.looking?`<div class="pv-looking"><small>I'm looking for</small><b>${esc(plain(p.looking))}</b></div>`:""}
-      ${p.bio?`<div class="pv-block"><h3>About ${esc(p.name)}</h3><p style="font-size:15px">${esc(p.bio)}</p></div>`:""}
+      ${p.looking?`<div class="pv-looking"><small>I'm looking for</small><b>${ICO_SEARCH}${esc(plain(p.looking))}</b></div>`:""}
+      ${p.bio?`<div class="pv-block"><h3>My bio</h3><p style="font-size:15px">${esc(p.bio)}</p></div>`:""}
       ${promptBlock(0)}
       ${photoBlock(1)}
       ${(p.qualities||[]).length?`<div class="pv-block"><h3>Qualities I value</h3><div class="pv-qual">${p.qualities.map(q=>`<span>${esc(q)}</span>`).join("")}</div></div>`:""}
@@ -2351,7 +2455,10 @@ function openProfileSheet(p,opts={}){
   $("#moreBtn",sheet).onclick=()=>personMenu(p,close);
   const nope=$("#sNope",sheet), like=$("#sLike",sheet);
   if(nope) nope.onclick=async()=>{ close(); swipeTop(-1); };
-  if(like) like.onclick=async()=>{ close(); swipeTop(1); };
+  if(like) like.onclick=async()=>{
+    if(opts.discover){ if(!isMember()){ openMemberGate("Sending a like from Discover is a premium feature."); return; }
+      close(); await doLike(p,false); toast("Like sent ♥"); if(opts.onLike) opts.onLike(p); return; }
+    close(); swipeTop(1); };
   $("#sFlag",sheet).onclick=()=>reportDialog(p);
 }
 
@@ -2430,6 +2537,14 @@ async function viewLiked(root){
   root.innerHTML=`<div class="topbar"><h2>Liked you</h2>
     <span class="small muted">${incoming.length}</span></div><div id="likedList"></div>`;
   const list=$("#likedList");
+  if(!isMember() && incoming.length){
+    const ps=await Promise.all(incoming.slice(0,6).map(l=>profileOf(l.from)));
+    list.innerHTML=`<p class="small" style="padding:2px 18px 12px"><b>${incoming.length} ${incoming.length===1?"person has":"people have"} liked you.</b> <span class="muted">See who they are with Zoo Membership.</span></p>
+      <div class="lkwrap"><div class="lkgrid">${ps.map(p=>`<div class="lkcell"><div class="ph lkblur" style="background-image:url('${(p.photos&&p.photos[0])||artFor(p.code,p.name)}')"></div></div>`).join("")}</div></div>
+      <div class="lkcta"><button class="btn" id="seeWho">See who likes you</button></div>`;
+    $("#seeWho").onclick=()=>openMemberGate("Seeing who likes you is a premium feature.");
+    return;
+  }
   if(!incoming.length){
     list.innerHTML=`<div style="text-align:center;padding:44px 30px">
       <div style="width:140px;margin:0 auto">${pandaSVG("m")}</div>
@@ -2641,9 +2756,10 @@ async function viewProfile(root){
       </div>
       <button class="card" id="verBtn" style="width:100%;display:flex;gap:12px;align-items:center;text-align:left;margin-top:14px;${p.verified?"border-color:#2FE38F":""}">
         <span class="iconbtn" style="background:${p.verified?"#2FE38F":"var(--honey)"};border-color:transparent;color:#102;flex:none"><span style="width:20px;display:block">${ICO_VER}</span></span>
-        <span style="flex:1"><b style="display:block;font-size:15px">${p.verified?"Photo verified":"Verify my profile"}</b>
-        <span class="small muted">${p.verified?"Your card shows the verified badge":"Take a selfie to get a Photo verified badge"}</span></span>
-        ${p.verified?"":'<span class="muted">›</span>'}</button>
+        <span style="flex:1"><b style="display:block;font-size:15px">Verify my profile
+          ${p.verified?'<span class="vstate ok" style="margin-left:6px">Verified</span>':App.verifyState==="review"?'<span class="vstate" style="margin-left:6px"><i class="spin"></i>In Review</span>':App.verifyState==="failed"?'<span class="vstate bad" style="margin-left:6px">Try again</span>':""}</b>
+        <span class="small muted">${p.verified?"Your card shows the Photo verified badge":App.verifyState==="review"?"We're checking your selfie in the background":App.verifyState==="failed"?"We couldn't match your selfie. Tap to retry":"Take a selfie to get a Photo verified badge"}</span></span>
+        ${p.verified||App.verifyState==="review"?"":'<span class="muted">›</span>'}</button>
       <button class="btn" id="editBtn" style="margin-top:12px">${I.edit} Edit profile</button>
       <button class="btn ghost" id="intBtn" style="margin-top:10px">Edit interests (${p.interests.length})</button>
       <button class="btn ghost" id="previewBtn" style="margin-top:10px">See it as others do</button>
@@ -2651,6 +2767,7 @@ async function viewProfile(root){
       <h3 style="margin:24px 0 10px">Account</h3>
       <div class="card" style="padding:4px 14px">
         <button class="listopt" id="pwBtn">${I.lock}<span style="flex:1">Change password</span><span class="muted">›</span></button>
+        <button class="listopt" id="supBtn"><span style="width:20px;flex:none;display:block">${I.chat}</span><span style="flex:1">Get Support</span>${isMember()?'<span class="muted">›</span>':'<span class="vstate">Members</span>'}</button>
         <button class="listopt" id="themeBtn">🌗<span style="flex:1">Appearance</span><span class="muted" id="themeNow">${LSget("zm:theme")||"auto"}</span></button>
         <button class="listopt" id="outBtn">${I.out}<span style="flex:1;color:var(--alert)">Log out</span></button>
       </div>
@@ -2660,7 +2777,9 @@ async function viewProfile(root){
       <p class="tiny muted" style="text-align:center;margin:20px 0 10px">ZOOIANS MATCH<br>
         <span class="syncdot ${DB.mode==="cloud"?"":"local"}"><i></i>${DB.mode==="cloud"?"Synced":"On this device only"}</span></p>
     </div>`;
-  $("#verBtn").onclick=()=>{ if(p.verified){ toast("You are already verified ✓"); return; } openVerify(); };
+  $("#supBtn").onclick=()=>{ if(!isMember()){ openMemberGate("Get Support (direct WhatsApp help) is a premium feature."); return; } window.open(SUPPORT_URL,"_blank","noopener"); };
+  $("#verBtn").onclick=()=>{ if(p.verified){ toast("You are already verified ✓"); return; }
+    if(App.verifyState==="review"){ toast("Your verification is in review"); return; } openVerify(); };
   $("#editBtn").onclick=()=>go("edit",{});
   $("#intBtn").onclick=()=>go("interests",{setup:false});
   $("#previewBtn").onclick=()=>openProfileSheet(App.profile,{readonly:true});
