@@ -295,11 +295,10 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .notebtn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:0;background:var(--honey);color:#2A1C00;box-shadow:0 8px 18px -8px rgba(0,0,0,.5);z-index:6}
 .notebtn svg{width:24px;height:24px}
 .swipecard .notebtn{position:absolute;right:6px;bottom:0}
-.swipecard .incard{position:relative;padding:10px 16px 14px;border-radius:24px;background:var(--paper);color:var(--ink);box-shadow:0 10px 30px -10px rgba(0,0,0,.45);z-index:5}
-.swipecard .incard h4{font-family:var(--ff-d);font-size:16.5px;font-weight:700;margin-bottom:9px}
-.swipecard .incard .chs{display:flex;flex-wrap:wrap;gap:7px;max-height:72px;overflow:hidden}
-.swipecard .incard .chs span{padding:7px 12px;border-radius:999px;background:var(--honey-wash);border:1px solid var(--line);font-size:13px;font-weight:600;white-space:nowrap}
-.swipecard .incard .chs span.cm{background:var(--honey);border-color:transparent;color:#2A1C00}
+.swipecard .incard{position:relative;display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;padding:7px 9px;border-radius:24px;background:var(--paper);color:var(--ink);box-shadow:0 10px 30px -10px rgba(0,0,0,.45);z-index:5}
+.swipecard .shint{display:flex;align-items:center;justify-content:center;gap:5px;color:rgba(255,255,255,.82);font-size:11.5px;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,.55);margin-top:-4px}
+.swipecard .shint svg{width:17px;height:17px;animation:sdBounce 1.5s ease-in-out infinite}
+.swipecard .incard span{padding:5px 11px;border-radius:999px;background:var(--honey-wash);border:1px solid var(--line);font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .stamp{position:absolute;z-index:4;opacity:0;pointer-events:none;top:50%;left:50%;right:auto;margin:-44px 0 0 -44px;width:88px;height:88px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:#fff;box-shadow:0 12px 30px -8px rgba(0,0,0,.45);transform:scale(.5);transition:none}
 .stamp svg{width:46px;height:46px}
 .stamp.like{left:50%;right:auto;color:#1FBF6B;transform:scale(.5)}
@@ -332,6 +331,8 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .hc-art ul,.hc-art ol{padding-left:20px;margin:6px 0}
 .hc-art li{margin-bottom:5px}
 .hc-art .callout{margin-top:18px;padding:14px 16px;border-radius:16px;background:var(--honey-wash);border:1px solid var(--honey);font-size:14px;line-height:1.6}
+.wic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-right:7px;flex:none}
+.chip .wic{margin-right:6px}
 .sdown{display:flex;align-items:center;justify-content:center;gap:6px;margin:-4px 0 6px;font-size:11.5px;font-weight:700;color:var(--ink-3)}
 .sdown svg{width:18px;height:18px;animation:sdBounce 1.5s ease-in-out infinite}
 @keyframes sdBounce{0%,100%{transform:translateY(-2px);opacity:.6}50%{transform:translateY(3px);opacity:1}}
@@ -437,6 +438,17 @@ html,body{overscroll-behavior-y:none}
 .thread .t p{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .thread .meta{text-align:right;font-size:11px;color:var(--ink-3);flex:none}
 .newmatches{padding:12px 0 6px}
+.nmt{width:84px;flex:none;text-align:center;cursor:pointer}
+.nmt .ph{position:relative;width:84px;height:112px;border-radius:18px;overflow:hidden;background:var(--ink);display:grid;place-items:center}
+.nmt.gold .ph{box-shadow:0 0 0 3px var(--honey)}
+.nmt .ph i{position:absolute;inset:0;background-size:cover;background-position:50% 20%}
+.nmt.lock .ph i{filter:blur(13px);transform:scale(1.25)}
+.nmt .ph .lk{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-style:normal}
+.nmt .ph .lk svg{width:22px;height:22px;filter:drop-shadow(0 1px 4px rgba(0,0,0,.5))}
+.nmt .ph.likes{background:var(--love)}
+.nmt .heartbig svg{width:30px;height:30px;color:#fff}
+.nmt .cnt{position:absolute;right:6px;bottom:6px;min-width:24px;height:24px;border-radius:999px;background:var(--honey);color:#2A1C00;font-size:12.5px;display:grid;place-items:center;padding:0 6px}
+.nmt span{display:block;font-size:11.5px;font-weight:600;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nmrow{display:flex;gap:14px;overflow-x:auto;padding:4px 18px 10px}
 .nm-item{width:66px;flex:none;text-align:center;cursor:pointer}
 .nm-item img{width:66px;height:66px;border-radius:50%;object-fit:cover;border:3px solid var(--honey)}
@@ -444,9 +456,19 @@ html,body{overscroll-behavior-y:none}
 .msgs{flex:1;min-height:0;overflow-y:auto;padding:16px 16px 10px;display:flex;flex-direction:column;gap:8px}
 .bub{max-width:76%;padding:11px 15px;border-radius:20px;font-size:15px;line-height:1.42;word-break:break-word;animation:bubIn .24s var(--ease)}
 @keyframes bubIn{from{opacity:0;transform:translateY(7px) scale(.97)}to{opacity:1;transform:none}}
-.bub.me{align-self:flex-end;background:var(--sun);color:#2A1C00;border-bottom-right-radius:7px;font-weight:500}
+.bub.me{align-self:flex-end;background:linear-gradient(135deg,#6B5CE6,#4A3FC0);color:#fff;border-bottom-right-radius:7px;font-weight:500;box-shadow:0 6px 16px -8px rgba(74,63,192,.7)}
 .bub.them{align-self:flex-start;background:var(--paper);border:1px solid var(--line);border-bottom-left-radius:7px}
-.bub .tm{display:block;font-size:10px;opacity:.6;margin-top:3px;text-align:right}
+.bub{position:relative;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.bub.hasrx{margin-bottom:11px}
+.bub .rx{position:absolute;bottom:-11px;right:10px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:1px 7px;font-size:12px;font-weight:700;color:#E0287A;box-shadow:0 3px 8px rgba(0,0,0,.12);animation:rxPop .35s var(--ease)}
+.bub.them .rx{right:auto;left:10px}
+@keyframes rxPop{0%{transform:scale(.3)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+.bub.gif{padding:4px;background:transparent!important;border:0!important}
+.gifmsg{display:block;max-width:220px;width:100%;border-radius:16px}
+.tmhead{align-self:center;font-size:11.5px;font-weight:600;color:var(--ink-3);margin:10px 0 2px}
+.gifbtn{height:46px;padding:0 12px;border-radius:14px;border:1.5px solid var(--line);font-weight:800;font-size:13px;color:var(--ink-2);background:var(--cream);flex:none}
+.gifgrid{columns:2;column-gap:8px;max-height:50vh;overflow-y:auto}
+.gifgrid img{width:100%;border-radius:12px;margin-bottom:8px;display:block;cursor:pointer;background:var(--honey-wash)}
 .composer{display:flex;gap:9px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:var(--paper);padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 .composer textarea{flex:1;min-height:46px;max-height:110px;border-radius:22px;border:1.5px solid var(--line);background:var(--cream);padding:12px 16px;font-size:15px;resize:none;line-height:1.35}
 .chatintro{text-align:center;padding:22px 24px;color:var(--ink-3);font-size:13.5px}
@@ -702,7 +724,16 @@ const DIVISIONS = ["Dhaka","Chattogram","Sylhet","Rajshahi","Khulna","Barishal",
 const HUBS = ["Uttara","Gulshan","Banani","Dhanmondi","Bashundhara R/A","Mirpur"];
 const DEFAULT_RADIUS = 500, MAX_RADIUS = 500;
 
-const WORK = ["🎓 Student","💼 Corporate Professional / Job Holder","🏢 Business Owner / Entrepreneur","💻 Freelancer / Digital Marketer","🎨 Creative / Artist"];
+const WORK = ["Student","Corporate Professional / Job Holder","Business Owner / Entrepreneur","Freelancer / Digital Marketer","Creative / Artist"];
+const _L=(d)=>`<svg class="wic" viewBox="0 0 24 24">${d}</svg>`;
+const WORK_ICONS=[
+ _L('<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>'),
+ _L('<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>'),
+ _L('<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>'),
+ _L('<path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/>'),
+ _L('<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>')];
+const WORK_OTHER_ICON=_L('<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>');
+const workIcon=v=>{ const i=WORK.indexOf(plain(v)); return i>=0?WORK_ICONS[i]:WORK_OTHER_ICON; };
 const LOOKING = ["Long-term Relationship","Casual Dating / Hangouts","New Friends & Networking","Exploring","A life partner"];
 const LANGS = ["Bangla","English","Hindi","Urdu","Arabic","Chittagonian","Sylheti","French","Japanese","Korean","Spanish","German"];
 const GC_DEFAULT = Array.from({length:10},(_,i)=>`The Zoo ${i+1}.0`);
@@ -749,6 +780,8 @@ const I = {
   spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-9.4-8.8C1 8.6 3.1 5 6.6 4.7c2.2-.2 4.1 1 5.4 2.6 1.3-1.6 3.2-2.8 5.4-2.6 3.5.3 5.6 3.9 4 7.5"/><path d="M18 14v6M15 17h6"/></svg>',
   user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>',
   back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>',
+  filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>',
+  sunmoon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></svg>',
   compass:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.8 8.2l-2.1 5.5-5.5 2.1 2.1-5.5z"/></svg>',
   search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
   send:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4l17.5-8.4L3.4 3.6 3.4 10l12 2-12 2z"/></svg>',
@@ -813,6 +846,9 @@ const PHOTO_MAX_BYTES = 480 * 1024;  // each photo is compressed under ~500 KB
 
 const SHOW_SAMPLE_PROFILES = false;  // fake demo people (they can't be liked in a real database)
 const SHOW_PREVIEW_BUTTON  = false;  // builder shortcut on the login screen
+const APP_VERSION = "1.0.1";
+const ALLOW_TEMP_MAIL = false;     // fallback only. The real switch lives in Supabase: select public.set_temp_mail(true/false);
+const GIPHY_KEY = "dc6zaTOxFJmzC"; // GIF search. Replace with your own free key from developers.giphy.com for reliable GIFs
 const MEMBERSHIP_URL = "https://wa.me/message/F2JDXVCG2XHBI1";   // <-- put your "Become a Member" link here any time
 const SUPPORT_URL    = "https://wa.me/message/F2JDXVCG2XHBI1";
 const ADMIN_EMAILS = [];             // e.g. ["you@gmail.com"]  (also works via profiles.is_admin = true)
@@ -916,10 +952,16 @@ function authError(e){
 const ALLOWED_EMAIL_DOMAINS = new Set(["gmail.com","googlemail.com","yahoo.com","yahoo.co.uk","yahoo.co.in","yahoo.in","yahoo.ca","yahoo.com.au","yahoo.fr","yahoo.de","yahoo.es","yahoo.it","yahoo.com.br","yahoo.co.jp","ymail.com","rocketmail.com","outlook.com","outlook.sa","hotmail.com","hotmail.co.uk","hotmail.fr","hotmail.it","hotmail.es","hotmail.de","live.com","live.co.uk","live.in","msn.com","windowslive.com","icloud.com","me.com","mac.com","protonmail.com","proton.me","pm.me","aol.com","zoho.com","zohomail.com","gmx.com","gmx.net","mail.com","yandex.com","yandex.ru"]);
 function emailDomain(email){ return String(email||"").trim().toLowerCase().split("@").pop(); }
 function isAllowedEmail(email){ return ALLOWED_EMAIL_DOMAINS.has(emailDomain(email)); }
+let EMAIL_ANY = ALLOW_TEMP_MAIL;                 /* true = any email may sign up (testing mode) */
+async function loadEmailPolicy(){
+  if(!sb) return;
+  try{ const {data}=await sb.from("app_settings").select("value").eq("key","allow_temp_mail").maybeSingle();
+    if(data) EMAIL_ANY=String(data.value).toLowerCase()==="true"; }catch(e){}
+}
 function validateSignupEmail(email){
   email=String(email||"").trim();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return "Enter a valid email address.";
-  if(!isAllowedEmail(email)) return "Please sign up with an official email: Gmail, Yahoo, Outlook, Hotmail or iCloud. Other / temporary emails aren't allowed.";
+  if(!EMAIL_ANY && !isAllowedEmail(email)) return "Please sign up with an official email: Gmail, Yahoo, Outlook, Hotmail or iCloud. Other / temporary emails aren't allowed.";
   return "";
 }
 const Auth = {
@@ -1004,7 +1046,7 @@ function fromRow(r){
     code:r[COL.profiles.id], name:g("name")||"", age:g("age")??null, gender:g("gender")||"", height:g("height")??null,
     photos,
     loc:{ mode:g("loc_mode")||"hub", label:g("loc_label")||"", lat:g("lat")??null, lng:g("lng")??null, radius:g("radius")||DEFAULT_RADIUS },
-    work:g("work")||"", looking:plain(g("looking")||""),
+    work:plain(g("work")||""), looking:plain(g("looking")||""),
     gc:{ member:!!g("gc_member"), which:g("gc_name")||"" },
     bio:g("bio")||"", langs:toArr(g("langs")), interests,
     done: doneCol===undefined ? (!!g("name") && photos.length>=REQ_PHOTOS && interests.length>=5) : !!doneCol,
@@ -1557,7 +1599,7 @@ ROUTES.login = ({mode="in",email=""}={})=>{
     e.preventDefault(); showAlert("",""); 
     const email=em.value.trim(), pass=pw.value;
     if(!/^\S+@\S+\.\S+$/.test(email)){ showAlert("err","Enter a valid email address."); em.focus(); buzz(60); return; }
-    if(up){ const bad=validateSignupEmail(email); if(bad){ showAlert("err",bad); em.focus(); buzz(60); return; } }
+    if(up){ await loadEmailPolicy(); const bad=validateSignupEmail(email); if(bad){ showAlert("err",bad); em.focus(); buzz(60); return; } }
     if(pass.length<6){ showAlert("err","Your password needs at least 6 characters."); pw.focus(); buzz(60); return; }
     if(up && pass!==$("#apw2").value){ showAlert("err","The two passwords don't match."); buzz(60); return; }
     if(!sb){ showAlert("err","Couldn't load the sign-in service. Check your connection and refresh the page."); return; }
@@ -1892,11 +1934,11 @@ function setupLocation(body,d){
 function setupVibe(body,d){
   const gcList=(CONFIG.gcOptions||GC_DEFAULT);
   d.looking=plain(d.looking);
-  let wkOther=!!d.work && !WORK.includes(d.work);
+  d.work=plain(d.work||""); let wkOther=!!d.work && !WORK.includes(d.work);
   body.innerHTML=`
     <div class="field"><label>Professional status</label>
-      <div class="chips" id="wk">${WORK.map(w=>`<button class="chip" data-w="${esc(w)}" aria-pressed="${d.work===w}">${w}</button>`).join("")}
-        <button class="chip" id="wkOtherChip" aria-pressed="${wkOther}">✨ Others</button></div>
+      <div class="chips" id="wk">${WORK.map((w,i)=>`<button class="chip" data-w="${esc(w)}" aria-pressed="${d.work===w}">${WORK_ICONS[i]}${w}</button>`).join("")}
+        <button class="chip" id="wkOtherChip" aria-pressed="${wkOther}">${WORK_OTHER_ICON}Others</button></div>
       <input class="input ${wkOther?"":"hide"}" id="wkOther" maxlength="40" placeholder="Tell us what you do" style="margin-top:10px" value="${wkOther?esc(d.work):""}"></div>
     <div class="field"><label>Looking for</label>
       <div class="chips" id="lk">${LOOKING.map(w=>`<button class="chip" data-w="${esc(w)}" aria-pressed="${d.looking===w}">${esc(w)}</button>`).join("")}</div></div>
@@ -2110,7 +2152,7 @@ async function viewPeople(root){
   root.innerHTML=`<div class="topbar">
       ${brandTile(38)}
       <h2 style="display:flex;align-items:center">${brandText(22)}</h2>
-      <button class="iconbtn" id="filtBtn" aria-label="Discovery settings">${I.settings}</button></div>
+      <button class="iconbtn" id="filtBtn" aria-label="Filters">${I.filter}</button></div>
     <div id="deck"></div>
     <div class="deckact">
       <button class="act undo" id="aUndo" aria-label="Undo">${I.undo}</button>
@@ -2238,11 +2280,13 @@ const ICO_VER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 function cardHTML(p){
   const me=App.profile;
   const comAll=commonInterests(p.interests||[],me.interests||[]);
-  const com=comAll.slice(0,2);
-  const km=distKm(me,p);
-  const loc=p.loc&&p.loc.label?`📍 ${esc(p.loc.label)}${km!=null?` · ${km<2?"nearby":km+" km"}`:""}`:"";
-  const chips=[...com.map(c=>`<span class="cm">${esc(c)}</span>`),
-    p.looking?`<span>${ICO_SEARCH}${esc(plain(p.looking))}</span>`:"", loc?`<span>${loc}</span>`:""].join("");
+  const mainCity=l=>String(l||"").split(",").pop().split("·")[0].trim();
+  const traits=[];
+  if(comAll[0]) traits.push(esc(comAll[0]));
+  if(me.religion && p.religion && me.religion===p.religion) traits.push(esc(p.religion));
+  const c1n=mainCity(me.loc&&me.loc.label), c2n=mainCity(p.loc&&p.loc.label);
+  if(c1n && c2n && c1n.toLowerCase()===c2n.toLowerCase()) traits.push(esc(c2n));
+  const chips=traits.slice(0,3).map(t=>`<span>${t}</span>`).join("");
   return `<article class="swipecard" data-code="${p.code}">
     <div class="pwrap">
       <div class="photo" style="background-image:url('${(p.photos&&p.photos[0])||artFor(p.code,p.name)}')"></div>
@@ -2254,15 +2298,13 @@ function cardHTML(p){
           ${p.verified?`<span class="vpill" style="margin:0">${ICO_VER}Photo verified</span>`:""}
           ${p.gc&&p.gc.member&&p.gc.which?`<span class="zoobadge">🐼 ${esc(p.gc.which)} Member</span>`:""}</div>
         <div class="nm">${esc(p.name)} <i>${p.age||""}</i></div>
-        ${p.work?`<div class="wline">${esc(p.work)}</div>`:""}
+        ${p.work?`<div class="wline">${workIcon(p.work)}${esc(plain(p.work))}</div>`:""}
         <button class="notebtn" data-note="${p.code}" aria-label="Send a note">${ICO_NOTE}</button>
       </div>
-      <div class="incard" data-open="${p.code}">
-        <div class="sdown">${ICO_DOWN}<span>Scroll down for full profile</span></div>
-        <h4>${comAll.length?"We have things in common":"Looking for"}</h4>
-        <div class="chs">${chips||'<span>New here</span>'}</div>
-      </div></div>
-    </div></article>`;
+      ${chips?`<div class="incard" data-open="${p.code}">${chips}</div>`:""}
+      <div class="shint" data-open="${p.code}">${ICO_DOWN}<span>Scroll down for full profile</span></div>
+    </div></div>
+  </article>`;
 }
 
 function wireCard(card,p){
@@ -2299,7 +2341,7 @@ function wireCard(card,p){
     const reset=()=>{ card.style.transform=""; like.style.opacity=0; nope.style.opacity=0; like.style.transform=""; nope.style.transform=""; };
     if(!mode){                                    /* a tap */
       reset();
-      if(e && e.target && e.target.closest && e.target.closest(".incard")){ expandCard(p); }
+      if(e && e.target && e.target.closest && e.target.closest(".incard,.shint")){ expandCard(p); }
       else {
         const r=card.getBoundingClientRect(), x=(sx-r.left)/r.width;
         if(photos.length>1){ if(x<.33) showPhoto(photoIdx-1); else if(x>.67) showPhoto(photoIdx+1); }
@@ -2470,7 +2512,7 @@ function pvStreamHTML(p){
   const im=i=>photos[i+1]?`<div class="pv-photo"><img src="${photos[i+1]}" alt=""><button class="notebtn" data-note="1" aria-label="Send a note">${ICO_NOTE}</button></div>`:"";
   const chip=(ic,t)=>t?`<span class="pv-chip"><i>${ic}</i>${esc(t)}</span>`:"";
   const km=distKm(me,p);
-  const about=[chip("📏",p.height?hLabel(p.height):""),chip("💼",p.work),
+  const about=[chip("📏",p.height?hLabel(p.height):""),chip(workIcon(p.work).replace("class=\"wic\"","class=\"wic\" style=\"margin:0\""),plain(p.work)),
     chip("🍷",p.drinking?"Drinking: "+p.drinking:""),chip("🚬",p.smoking?"Smoking: "+p.smoking:""),chip("👶",p.kids?"Kids: "+p.kids:"")].join("");
   const locLabel=(p.loc&&p.loc.label)||"";
   return [
@@ -2483,8 +2525,8 @@ function pvStreamHTML(p){
     im(1)+pr(1),                                                                                                               /* 6 */
     (p.langs||[]).length?`<div class="pv-sec"><h3>Languages</h3><div class="chips">${p.langs.map(l=>`<span class="chip" style="pointer-events:none">${esc(l)}</span>`).join("")}</div></div>`:"", /* 7 */
     im(2)+pr(2),                                                                                                               /* 8 */
-    locLabel?`<div class="pv-sec"><h3>My location</h3><div class="pv-loc"><span class="mp">${ICO_MAP}</span><div><b>${esc(locLabel)}</b>${km!=null?`<span>${km<1?"Less than 1 km away":km+" km away"}</span>`:""}</div></div></div>`:"", /* 9 */
-    (p.qualities||[]).length?`<div class="pv-sec"><h3>Qualities I value</h3><div class="pv-qual">${p.qualities.map(q=>`<span>${esc(q)}</span>`).join("")}</div></div>`:""
+    (p.qualities||[]).length?`<div class="pv-sec"><h3>Qualities I value</h3><div class="pv-qual">${p.qualities.map(q=>`<span>${esc(q)}</span>`).join("")}</div></div>`:"",
+    locLabel?`<div class="pv-sec"><h3>My location</h3><div class="pv-loc"><span class="mp">${ICO_MAP}</span><div><b>${esc(locLabel)}</b>${km!=null?`<span>${km<1?"Less than 1 km away":km+" km away"}</span>`:""}</div></div></div>`:"", 
   ].join("");
 }
 
@@ -2495,7 +2537,7 @@ function expandCard(p){
   const x=el("div","xprof");
   x.innerHTML=`<button class="xclose" aria-label="Back to card">${ICO_DOWN}</button>${pvHeroHTML(p)}${pvStreamHTML(p)}
     <div style="padding:22px 18px 40px;text-align:center">
-      <button class="linkbtn" id="xMore" style="color:var(--ink-3);font-size:13px">Report ${esc(p.name)}</button></div>`;
+      <button class="linkbtn" id="xMore" style="color:var(--ink-3);font-size:13px">Report or unmatch ${esc(p.name)}</button></div>`;
   deck.appendChild(x);
   requestAnimationFrame(()=>requestAnimationFrame(()=>x.classList.add("on")));
   $(".xclose",x).onclick=collapseCard;
@@ -2555,7 +2597,9 @@ function openProfileSheet(p,opts={}){
     <div class="scroll" style="padding-bottom:26px">
       ${pvHeroHTML(p)}${pvStreamHTML(p)}
       <div style="display:flex;gap:12px;padding:22px 18px 30px;justify-content:center">
-        ${opts.readonly?"":`<button class="act nope" id="sNope">${I.x}</button>
+        ${opts.readonly?"":opts.discover?`<button class="btn ghost" id="sPass" style="flex:1">Not for me</button>
+        <button class="btn" id="sLike" style="flex:1">${I.heart.replace("<svg","<svg style=\"width:18px;height:18px;margin-right:6px;vertical-align:-3px\"")}Like</button>`
+        :`<button class="act nope" id="sNope">${I.x}</button>
         <button class="act like big" id="sLike">${I.heart}</button>`}
         <button class="act" id="sFlag">${I.flag}</button>
       </div>
@@ -2565,6 +2609,8 @@ function openProfileSheet(p,opts={}){
   $$("[data-note]",sheet).forEach(b=>b.onclick=()=>openNote(p));
   $("#closeSheet",sheet).onclick=close;
   $("#moreBtn",sheet).onclick=()=>personMenu(p,close);
+  const pass=$("#sPass",sheet);
+  if(pass) pass.onclick=async()=>{ pass.disabled=true; await Social.pass(App.me,p.code); App.passes.push({to:p.code}); close(); toast("Removed from Discover"); if(opts.onLike) opts.onLike(p); };
   const nope=$("#sNope",sheet), like=$("#sLike",sheet);
   if(nope) nope.onclick=async()=>{ close(); swipeTop(-1); };
   if(like) like.onclick=async()=>{
@@ -2810,10 +2856,12 @@ async function viewLiked(root){
    CHATS
    ========================================================================== */
 async function viewChats(root){
-  root.innerHTML=`<div class="topbar"><h2>Chats</h2></div>
+  const FL={all:"All chats",recent:"Recent",unread:"Unread",older:"Older"};
+  App.chatFilter=App.chatFilter||"all";
+  root.innerHTML=`<div class="topbar"><h2>Chats</h2><button class="iconbtn" id="chFilter" aria-label="Filter chats">${I.filter}</button></div>
     <div class="searchwrap"><div class="search">${I.search}
       <input id="chatSearch" placeholder="Search your matches" autocomplete="off"></div></div>
-    <div id="newMatches"></div><div id="threadList"></div>`;
+    <div id="chipLine"></div><div id="newMatches"></div><div id="threadList"></div>`;
   const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
   const rows=[];
   for(const m of App.matches){
@@ -2822,8 +2870,9 @@ async function viewChats(root){
     rows.push({m,p:await profileOf(other)});
   }
   rows.sort((a,b)=>(b.m.lastAt||b.m.at)-(a.m.lastAt||a.m.at));
+  const waiting=App.likedYou.filter(l=>!blocked.has(l.from)&&!App.passes.some(x=>x.to===l.from)&&!App.myLikes.some(m=>m.to===l.from)&&!App.matches.some(m=>m.members.includes(l.from)));
 
-  if(!rows.length){
+  if(!rows.length && !waiting.length){
     $("#threadList").innerHTML=`<div style="text-align:center;padding:44px 34px">
       <div style="width:220px;margin:0 auto;position:relative;height:120px" class="pandas">
         <span class="spark">💛</span><div class="p m">${pandaSVG("m")}</div><div class="p f">${pandaSVG("f")}</div></div>
@@ -2831,38 +2880,100 @@ async function viewChats(root){
       <p class="muted small" style="margin-top:8px">Share at least 40% of your interests with someone and like each other — your inbox opens straight away.</p>
       <button class="btn sm" id="goSwipe2" style="margin:16px auto 0">Find people</button></div>`;
     $("#goSwipe2").onclick=()=>go("app",{tab:"people"});
+    $("#chFilter").style.display="none";
     return;
   }
+  /* ---- New Matches: likes waiting for you (blurred unless Zoo Member) + fresh matches ---- */
   const fresh=rows.filter(r=>!r.m.lastMsg);
-  if(fresh.length){
+  const member=isMember();
+  const likers=await Promise.all(waiting.slice(0,8).map(l=>profileOf(l.from)));
+  const img=p=>(p.photos&&p.photos[0])||artFor(p.code,p.name);
+  if(waiting.length||fresh.length){
     $("#newMatches").innerHTML=`<div class="newmatches">
-      <h3 style="padding:0 18px 4px;font-size:15px">New matches</h3>
-      <div class="nmrow">${fresh.map(r=>`<div class="nm-item" data-c="${r.p.code}">
-        <img src="${(r.p.photos&&r.p.photos[0])||artFor(r.p.code,r.p.name)}" alt="">
-        <span>${esc(r.p.name)}</span></div>`).join("")}</div></div>`;
-    $$(".nm-item").forEach(n=>n.onclick=()=>{ const r=rows.find(x=>x.p.code===n.dataset.c); openChat(r.m.id,r.p); });
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 18px 4px">
+        <h3 style="font-size:16px">New Matches</h3>
+        ${waiting.length?`<button class="linkbtn" id="nmSee" style="font-size:12.5px">See who liked you ›</button>`:""}</div>
+      <div class="nmrow">
+        ${waiting.length?`<div class="nmt gold" data-likes="1"><div class="ph likes"><span class="heartbig">${I.heart}</span><b class="cnt">${waiting.length}</b></div><span>Likes</span></div>`:""}
+        ${likers.map(p=>`<div class="nmt ${member?"":"lock"}" data-likes="1"><div class="ph"><i style="background-image:url('${img(p)}')"></i>${member?"":`<em class="lk">${I.lock}</em>`}</div><span>${member?esc(p.name):"Likes you"}</span></div>`).join("")}
+        ${fresh.map(r=>`<div class="nmt gold" data-c="${r.p.code}"><div class="ph"><i style="background-image:url('${img(r.p)}')"></i></div><span>${esc(r.p.name)}</span></div>`).join("")}
+      </div></div>`;
+    $$(".nmt[data-likes]").forEach(n=>n.onclick=()=>go("app",{tab:"liked"}));
+    const ns=$("#nmSee"); if(ns) ns.onclick=()=>go("app",{tab:"liked"});
+    $$(".nmt[data-c]").forEach(n=>n.onclick=()=>{ const r=rows.find(x=>x.p.code===n.dataset.c); openChat(r.m.id,r.p); });
   }
+  const convo=rows.filter(r=>r.m.lastMsg);
+  const isUnread=r=>r.m.lastFrom&&r.m.lastFrom!==App.me&&r.m.lastAt>readMark(r.m.id);
+  const isRecent=r=>Date.now()-(r.m.lastAt||r.m.at)<=48*3600*1000;
+  const paintChip=()=>{ $("#chipLine").innerHTML=App.chatFilter!=="all"?`<div style="padding:6px 18px 0"><button class="chip on" id="chipX" style="font-size:12.5px">${FL[App.chatFilter]} ✕</button></div>`:"";
+    const x=$("#chipX"); if(x) x.onclick=()=>{ App.chatFilter="all"; paintChip(); paint($("#chatSearch").value.trim()); }; };
   const paint=q=>{
     const list=$("#threadList"); list.innerHTML="";
-    const filtered=rows.filter(r=>!q||r.p.name.toLowerCase().includes(q.toLowerCase()));
-    if(!filtered.length){ list.innerHTML=`<p class="muted small" style="padding:28px;text-align:center">No match by that name.</p>`; return; }
-    filtered.forEach(r=>{
-      const unread=r.m.lastMsg&&r.m.lastFrom&&r.m.lastFrom!==App.me&&r.m.lastAt>readMark(r.m.id);
-      const row=el("button","thread");
-      row.innerHTML=`<img class="av sm" data-face="${(r.p.photos&&r.p.photos[0])||""}" src="${(r.p.photos&&r.p.photos[0])||artFor(r.p.code,r.p.name)}" alt="">
-        <div class="t"><b>${esc(r.p.name)}</b>
-          <p style="${unread?"color:var(--ink);font-weight:600":""}">${r.m.lastMsg?esc((r.m.lastFrom===App.me?"You: ":"")+r.m.lastMsg):"You matched — say something"}</p></div>
-        <div class="meta">${timeAgo(r.m.lastAt||r.m.at)}${unread?'<div style="margin-top:5px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pink)"></span></div>':""}</div>`;
-      row.onclick=()=>openChat(r.m.id,r.p);
-      list.appendChild(row);
-    });
+    let f=convo.filter(r=>!q||r.p.name.toLowerCase().includes(q.toLowerCase()));
+    if(App.chatFilter==="recent") f=f.filter(isRecent);
+    if(App.chatFilter==="unread") f=f.filter(isUnread);
+    if(App.chatFilter==="older") f=f.filter(r=>!isRecent(r));
+    if(!f.length){ list.innerHTML=`<p class="muted small" style="padding:28px;text-align:center">${convo.length?"No chats here.":"No conversations yet — say hi to a new match!"}</p>`; return; }
+    const draw=(title,arr)=>{
+      if(!arr.length) return;
+      list.insertAdjacentHTML("beforeend",`<h3 style="padding:14px 18px 4px;font-size:15px">${title}</h3>`);
+      arr.forEach(r=>{
+        const unread=isUnread(r);
+        const row=el("button","thread");
+        row.innerHTML=`<img class="av sm" data-face="${(r.p.photos&&r.p.photos[0])||""}" src="${img(r.p)}" alt="">
+          <div class="t"><b>${esc(r.p.name)}</b>
+            <p style="${unread?"color:var(--ink);font-weight:600":""}">${esc((r.m.lastFrom===App.me?"You: ":"")+previewText(r.m.lastMsg))}</p></div>
+          <div class="meta">${timeAgo(r.m.lastAt||r.m.at)}${unread?'<div style="margin-top:5px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pink)"></span></div>':""}</div>`;
+        row.onclick=()=>openChat(r.m.id,r.p);
+        list.appendChild(row);
+      });
+    };
+    if(App.chatFilter==="recent") draw("Chats (Recent)",f);
+    else if(App.chatFilter==="older") draw("Older Chats",f);
+    else if(App.chatFilter==="unread") draw("Unread",f);
+    else { draw("Chats (Recent)",f.filter(isRecent)); draw("Older Chats",f.filter(r=>!isRecent(r))); }
   };
-  paint("");
+  $("#chFilter").onclick=()=>{
+    const b=modal("Filter chats",Object.entries(FL).map(([k,l])=>`<button class="listopt" data-f="${k}"><span style="flex:1;${App.chatFilter===k?"font-weight:800":""}">${l}</span>${App.chatFilter===k?'<span>✓</span>':""}</button>`).join(""));
+    $$("[data-f]",b).forEach(x=>x.onclick=()=>{ App.chatFilter=x.dataset.f; closeModal(); paintChip(); paint($("#chatSearch").value.trim()); });
+  };
+  paintChip(); paint("");
   $("#chatSearch").oninput=e=>paint(e.target.value.trim());
 }
 
 /* ------------------------------ thread ----------------------------------- */
 let threadUnsub=null;
+const parseRx=t=>{ const m=/^\u2063rx:(.+)$/.exec(t||""); return m?m[1]:null; };
+const parseGif=t=>{ const m=/^\u2063gif:(https:\/\/.+)$/.exec(t||""); return m?m[1]:null; };
+const previewText=t=>parseRx(t)?"♥ Reacted to a message":parseGif(t)?"GIF":t;
+function fmtHead(ms){
+  const d=new Date(ms), n=new Date(), tm=d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+  const day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(), diff=Math.round((day(n)-day(d))/86400000);
+  if(diff===0) return "Today "+tm; if(diff===1) return "Yesterday "+tm;
+  if(diff<7) return d.toLocaleDateString("en-US",{weekday:"short"})+" "+tm;
+  return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",...(d.getFullYear()!==n.getFullYear()?{year:"numeric"}:{})})+", "+tm;
+}
+function openGifPicker(onPick){
+  const b=modal("Send a GIF",`<div class="search" style="margin-bottom:10px">${I.search}<input id="gifQ" placeholder="Search GIFs" autocomplete="off"></div>
+    <div class="gifgrid" id="gifGrid"><p class="muted small" style="padding:20px;text-align:center">Loading…</p></div>
+    <button class="btn ghost" id="gifNo" style="margin-top:10px">Close</button>`);
+  $("#gifNo",b).onclick=closeModal;
+  let t=0;
+  const load=async q=>{
+    const g=$("#gifGrid",b);
+    try{
+      const url=q?`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=24&rating=pg-13`
+                 :`https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_KEY}&limit=24&rating=pg-13`;
+      const j=await (await fetch(url)).json();
+      const items=(j.data||[]);
+      if(!items.length){ g.innerHTML='<p class="muted small" style="padding:20px;text-align:center">No GIFs found.</p>'; return; }
+      g.innerHTML=items.map(x=>`<img src="${esc(x.images.fixed_width_small?x.images.fixed_width_small.url:x.images.fixed_width.url)}" data-u="${esc(x.images.fixed_width.url)}" alt="">`).join("");
+      $$("img",g).forEach(im=>im.onclick=()=>{ closeModal(); onPick(im.dataset.u); });
+    }catch(e){ g.innerHTML='<p class="muted small" style="padding:20px;text-align:center">GIFs are unavailable right now.</p>'; }
+  };
+  $("#gifQ",b).oninput=e=>{ clearTimeout(t); t=setTimeout(()=>load(e.target.value.trim()),350); };
+  load("");
+}
 async function openChat(pid,other){
   App.openChatPid=pid;
   if(threadUnsub){ try{threadUnsub()}catch(e){} threadUnsub=null; }
@@ -2873,38 +2984,61 @@ async function openChat(pid,other){
       <button class="iconbtn" id="cBack">${I.back}</button>
       <img class="av sm" id="cAv" data-face="${(other.photos&&other.photos[0])||""}" style="width:38px;height:38px;border-radius:50%" src="${(other.photos&&other.photos[0])||artFor(other.code,other.name)}" alt="">
       <h2 style="flex:1;font-size:17px">${esc(other.name)}</h2>
-      <button class="iconbtn" id="cCall">${I.phone}</button>
-      <button class="iconbtn" id="cVid">${I.video}</button>
       <button class="iconbtn" id="cMore">⋯</button></div>
     <div class="msgs" id="msgs"></div>
     <div class="composer">
+      <button class="gifbtn" id="cGif" aria-label="Send a GIF">GIF</button>
       <textarea id="cText" rows="1" placeholder="Message ${esc(other.name)}"></textarea>
       <button class="roundbtn" id="cSend">${I.send}</button></div>`;
   $("#frame").appendChild(sheet);
   $("#cBack",sheet).onclick=()=>{ if(threadUnsub){try{threadUnsub()}catch(e){}} App.openChatPid=null; sheet.remove(); go("app",{tab:"chats"}); };
   $("#cAv",sheet).onclick=()=>openProfileSheet(other,{readonly:true});
   $("#cMore",sheet).onclick=()=>personMenu(other,()=>sheet.remove());
-  $("#cCall",sheet).onclick=()=>startCall(other,"audio");
-  $("#cVid",sheet).onclick=()=>startCall(other,"video");
 
   const box=$("#msgs",sheet);
+  const mm=App.matches.find(x=>x.id===pid||x.alias===pid||(x.members||[]).includes(other.code));
+  const md=new Date((mm&&mm.at)||Date.now()), nowD=new Date();
+  const matchDate=md.toLocaleDateString("en-GB",{day:"numeric",month:"long",...(md.getFullYear()!==nowD.getFullYear()?{year:"numeric"}:{})});
   const LCOL=["#FF2E8B","#F2309C","#E030B3","#C82CCB","#A428E8","#8A2CF0","#6B2BFF","#5B32FF"];
   const introHTML=`<div class="matchintro">
       <div class="mi-hearts">${[8,24,40,58,72,86].map((l,i)=>`<i style="left:${l}%;--d:${(i*.9).toFixed(1)}s">${I.heart}</i>`).join("")}</div>
       <div class="mi-stage"><img class="mi-panda" src="${PANDA_HAPPY}" alt=""><span class="mi-shadow"></span></div>
       <div class="mi-title" aria-label="Matched!">${"Matched!".split("").map((c,i)=>`<span style="--i:${i};color:${LCOL[i]}">${c}</span>`).join("")}</div>
-      <p class="mi-sub">You and ${esc(other.name)} liked each other.<br>${overlapPct(other.interests||[],App.profile.interests||[])}% of your interests overlap — say hi!</p></div>`;
+      <p class="mi-sub">You matched with ${esc(other.name)} on ${esc(matchDate)} - say hi!</p></div>`;
   const paint=msgs=>{
     /* build the intro once so its animation doesn't restart with every new message */
     if(!box.firstElementChild||!box.firstElementChild.classList.contains("matchintro")) box.innerHTML=introHTML;
     while(box.children.length>1) box.lastElementChild.remove();
+    const rx={};                                                  /* hearts: target message id -> set of senders */
+    msgs.forEach(m=>{ const r=parseRx(m.text); if(r) (rx[r]=rx[r]||new Set()).add(m.from); });
+    let prev=0;
     msgs.forEach(m=>{
-      const b=el("div","bub "+(m.from===App.me?"me":"them"));
-      b.innerHTML=`${esc(m.text)}<span class="tm">${clockOf(m.at)}</span>`;
+      if(parseRx(m.text)) return;
+      if(!prev || m.at-prev>=3600000){ const h=el("div","tmhead"); h.textContent=fmtHead(m.at); box.appendChild(h); }
+      prev=m.at;
+      const g=parseGif(m.text);
+      const b=el("div","bub "+(m.from===App.me?"me":"them")+(g?" gif":"")+(rx[m.id]?" hasrx":""));
+      b.dataset.id=m.id;
+      b.innerHTML=g?`<img class="gifmsg" src="${esc(g)}" alt="GIF" loading="lazy">`:esc(m.text);
+      if(rx[m.id]) b.insertAdjacentHTML("beforeend",`<span class="rx">♥${rx[m.id].size>1?" 2":""}</span>`);
       box.appendChild(b);
     });
     box.scrollTop=box.scrollHeight;
   };
+  /* double-tap (or double-click) a bubble = heart reaction */
+  let lastTap={id:null,t:0};
+  box.addEventListener("click",async e=>{
+    const b=e.target.closest(".bub"); if(!b) return;
+    const id=b.dataset.id, nowT=Date.now();
+    if(lastTap.id===id && nowT-lastTap.t<340){
+      lastTap={id:null,t:0};
+      if(list.some(x=>parseRx(x.text)===id && x.from===App.me)) return;       /* already hearted */
+      buzz(20);
+      const {data,error}=await Chat.send(pid,App.me,"\u2063rx:"+id,other.code);
+      if(error){ toast("Couldn't send the reaction",2600); return; }
+      if(data) addMsg(data);
+    } else lastTap={id,t:nowT};
+  });
   let list=await Chat.thread(pid,App.me,other.code); paint(list);
   const addMsg=m=>{ if(list.some(x=>x.id===m.id)) return; list.push(m); list.sort((a,b)=>a.at-b.at); paint(list); markRead(pid); };
   threadUnsub=Chat.subscribe(pid,addMsg,App.me,other.code);          /* live: new messages appear instantly */
@@ -2926,6 +3060,10 @@ async function openChat(pid,other){
     markRead(pid);
   };
   $("#cSend",sheet).onclick=send;
+  $("#cGif",sheet).onclick=()=>openGifPicker(async url=>{
+    const {data,error}=await Chat.send(pid,App.me,"\u2063gif:"+url,other.code);
+    if(error){ toast("GIF not sent: "+error.message,3200); return; }
+    if(data) addMsg(data); markRead(pid); });
   ta.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&window.innerWidth>900){ e.preventDefault(); send(); }});
 }
 
@@ -2993,15 +3131,15 @@ async function viewProfile(root){
       <h3 style="margin:24px 0 10px">Account</h3>
       <div class="card" style="padding:4px 14px">
         <button class="listopt" id="pwBtn">${I.lock}<span style="flex:1">Change password</span><span class="muted">›</span></button>
-        <button class="listopt" id="supBtn"><span style="width:20px;flex:none;display:block">${I.chat}</span><span style="flex:1">Get Support</span>${isMember()?'<span class="muted">›</span>':'<span class="vstate">Members</span>'}</button>
-        <button class="listopt" id="themeBtn">🌗<span style="flex:1">Appearance</span><span class="muted" id="themeNow">${LSget("zm:theme")||"auto"}</span></button>
+        <button class="listopt" id="supBtn"><span style="width:20px;flex:none;display:block">${I.chat}</span><span style="flex:1">Get Support</span>${isMember()?'<span class="muted">›</span>':'<span class="vstate">Members</span><span style="width:17px;display:block;color:var(--ink-3);flex:none">${I.lock}</span>'}</button>
+        <button class="listopt" id="themeBtn">${I.sunmoon}<span style="flex:1">Appearance</span><span class="muted" id="themeNow">${LSget("zm:theme")||"auto"}</span></button>
         <button class="listopt" id="outBtn">${I.out}<span style="flex:1;color:var(--alert)">Log out</span></button>
       </div>
       <div style="margin-top:34px;text-align:center">
         <button class="linkbtn" id="delBtn" style="color:var(--alert);font-weight:600;font-size:12.5px;opacity:.8">Delete account</button>
       </div>
       <p class="tiny muted" style="text-align:center;margin:20px 0 10px">ZOOIANS MATCH<br>
-        <span class="syncdot ${DB.mode==="cloud"?"":"local"}"><i></i>${DB.mode==="cloud"?"Synced":"On this device only"}</span></p>
+        <span class="tiny muted">Version ${APP_VERSION}</span></p>
     </div>`;
   $("#supBtn").onclick=()=>{ if(!isMember()){ openMemberGate("Get Support (direct WhatsApp help) is a premium feature."); return; } window.open(SUPPORT_URL,"_blank","noopener"); };
   $("#verBtn").onclick=()=>{ if(p.verified){
