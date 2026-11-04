@@ -582,7 +582,9 @@ html,body{overscroll-behavior-y:none}
 .pr-slot select.input{height:48px;margin-bottom:10px}
 .pr-slot textarea.input{min-height:78px}
 /* ---- match intro inside a chat (3D animated panda) ---- */
-.matchintro{position:relative;text-align:center;padding:22px 20px 10px;overflow:hidden}
+.msgs>*{flex-shrink:0}
+.bub.old{animation:none}
+.matchintro{flex:0 0 auto;min-height:248px;box-sizing:border-box;position:relative;text-align:center;padding:22px 20px 10px;overflow:hidden}
 .mi-hearts{position:absolute;inset:0;pointer-events:none}
 .mi-hearts i{position:absolute;bottom:34%;width:15px;height:15px;color:var(--pink);opacity:0;animation:miHeart 5.6s ease-in infinite;animation-delay:var(--d)}
 .mi-hearts i:nth-child(even){color:var(--violet)}
@@ -3133,8 +3135,9 @@ async function viewChats(root){
 /* ------------------------------ thread ----------------------------------- */
 let threadUnsub=null;
 const parseRx=t=>{ const m=/^\u2063rx:(.+)$/.exec(t||""); return m?m[1]:null; };
+const parseUn=t=>{ const m=/^\u2063un:(.+)$/.exec(t||""); return m?m[1]:null; };
 const parseGif=t=>{ const m=/^\u2063gif:(https:\/\/.+)$/.exec(t||""); return m?m[1]:null; };
-const previewText=t=>parseRx(t)?"♥ Reacted to a message":parseGif(t)?"GIF":t;
+const previewText=t=>parseRx(t)?"♥ Reacted to a message":parseUn(t)?"Reaction removed":parseGif(t)?"GIF":t;
 function fmtHead(ms){
   const d=new Date(ms), n=new Date(), tm=d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
   const day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(), diff=Math.round((day(n)-day(d))/86400000);
@@ -3223,39 +3226,64 @@ async function openChat(pid,other){
       <div class="mi-stage"><img class="mi-panda" src="${PANDA_HAPPY}" alt=""><span class="mi-shadow"></span></div>
       <div class="mi-title" aria-label="Matched!">${"Matched!".split("").map((c,i)=>`<span style="--i:${i};color:${LCOL[i]}">${c}</span>`).join("")}</div>
       <p class="mi-sub">You matched with ${esc(other.name)} on ${esc(matchDate)} - say hi!</p></div>`;
+  const seen=new Set(); let nReal=-1;
+  let lastSig="";
   const paint=msgs=>{
+    const rx={};                                                  /* hearts: target message id -> set of senders (a later "un" removes it) */
+    msgs.forEach(m=>{ const r=parseRx(m.text), u=parseUn(m.text);
+      if(r) (rx[r]=rx[r]||new Set()).add(m.from); else if(u&&rx[u]) rx[u].delete(m.from); });
+    const sig=msgs.filter(m=>!parseRx(m.text)&&!parseUn(m.text)).map(m=>m.id).join(",");
+    if(sig===lastSig && box.querySelector(".matchintro")){
+      /* only hearts changed: patch the badges in place — nothing is rebuilt, so the scroll position can't move */
+      box.querySelectorAll(".bub[data-id]").forEach(b=>{
+        const rn=rx[b.dataset.id]?rx[b.dataset.id].size:0;
+        if(rn===+(b.dataset.rn||0)) return;
+        b.dataset.rn=rn; const o=b.querySelector(".rx"); if(o) o.remove(); b.classList.toggle("hasrx",!!rn);
+        if(rn) b.insertAdjacentHTML("beforeend",`<span class="rx">♥${rn>1?" 2":""}</span>`); });
+      return; }
+    lastSig=sig;
     /* build the intro once so its animation doesn't restart with every new message */
+    const prevTop=box.scrollTop, atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<120;
     if(!box.firstElementChild||!box.firstElementChild.classList.contains("matchintro")) box.innerHTML=introHTML;
     while(box.children.length>1) box.lastElementChild.remove();
-    const rx={};                                                  /* hearts: target message id -> set of senders */
-    msgs.forEach(m=>{ const r=parseRx(m.text); if(r) (rx[r]=rx[r]||new Set()).add(m.from); });
-    let prev=0;
+    let prev=0; const real=[];
     msgs.forEach(m=>{
-      if(parseRx(m.text)) return;
+      if(parseRx(m.text)||parseUn(m.text)) return;
+      real.push(m);
       if(!prev || m.at-prev>=3600000){ const h=el("div","tmhead"); h.textContent=fmtHead(m.at); box.appendChild(h); }
       prev=m.at;
-      const g=parseGif(m.text);
-      const b=el("div","bub "+(m.from===App.me?"me":"them")+(g?" gif":"")+(rx[m.id]?" hasrx":""));
-      b.dataset.id=m.id;
+      const g=parseGif(m.text), rn=rx[m.id]?rx[m.id].size:0;
+      const b=el("div","bub "+(m.from===App.me?"me":"them")+(g?" gif":"")+(rn?" hasrx":"")+(seen.has(m.id)?" old":""));
+      b.dataset.id=m.id; b.dataset.rn=rn;
       if(!g && /^\p{Extended_Pictographic}[\p{Extended_Pictographic}\u200d\ufe0f]{0,5}$/u.test(m.text.trim())) b.classList.add("big");
       b.innerHTML=g?`<img class="gifmsg" src="${esc(g)}" alt="GIF" loading="lazy">`:esc(m.text);
-      if(rx[m.id]) b.insertAdjacentHTML("beforeend",`<span class="rx">♥${rx[m.id].size>1?" 2":""}</span>`);
-      box.appendChild(b);
+      if(rn) b.insertAdjacentHTML("beforeend",`<span class="rx">♥${rn>1?" 2":""}</span>`);
+      box.appendChild(b); seen.add(m.id);
     });
-    box.scrollTop=box.scrollHeight;
+    /* only jump to the newest message when there IS a new message; a heart never moves your place */
+    const last=real[real.length-1], grew=real.length>nReal;
+    if(nReal<0 || (grew && (atBottom || (last&&last.from===App.me)))) box.scrollTop=box.scrollHeight; else box.scrollTop=prevTop;
+    nReal=real.length;
   };
   /* double-tap (or double-click) a bubble = heart reaction */
-  let lastTap={id:null,t:0};
+  let lastTap={id:null,t:0}, rxBusy=false;
   box.addEventListener("click",async e=>{
     const b=e.target.closest(".bub"); if(!b) return;
     const id=b.dataset.id, nowT=Date.now();
     if(lastTap.id===id && nowT-lastTap.t<340){
       lastTap={id:null,t:0};
-      if(list.some(x=>parseRx(x.text)===id && x.from===App.me)) return;       /* already hearted */
-      buzz(20);
-      const {data,error}=await Chat.send(pid,App.me,"\u2063rx:"+id,other.code);
-      if(error){ toast("Couldn't send the reaction",2600); return; }
-      if(data) addMsg(data);
+      if(rxBusy) return; rxBusy=true;
+      try{
+        let on=false; list.forEach(x=>{ if(x.from!==App.me) return; if(parseRx(x.text)===id) on=true; else if(parseUn(x.text)===id) on=false; });
+        buzz(20);                                                                /* double-tap again = take YOUR heart back */
+        const tmp={id:"tmp"+nowT,from:App.me,to:other.code,text:(on?"\u2063un:":"\u2063rx:")+id,at:nowT};
+        list.push(tmp); paint(list);                                             /* instant feedback, no waiting for the network */
+        const {data,error}=await Chat.send(pid,App.me,tmp.text,other.code);
+        list=list.filter(x=>x!==tmp);
+        if(error){ paint(list); toast("Couldn't update the reaction",2600); }
+        else if(data) addMsg(data); else paint(list);
+      }catch(err){ console.warn(err); }
+      finally{ rxBusy=false; }
     } else lastTap={id,t:nowT};
   });
   let list=await Chat.thread(pid,App.me,other.code); paint(list);
