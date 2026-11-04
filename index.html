@@ -402,7 +402,9 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .radar .rr{position:absolute;inset:0;border-radius:50%;border:2px solid var(--honey-deep);opacity:0;animation:radarPing 3s ease-out infinite}
 .radar .rr.d1{animation-delay:1s}.radar .rr.d2{animation-delay:2s}
 .radar .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 68%,color-mix(in srgb,var(--honey) 55%,transparent) 100%);animation:radarSpin 2.2s linear infinite;-webkit-mask:radial-gradient(circle,transparent 0 36px,#000 37px);mask:radial-gradient(circle,transparent 0 36px,#000 37px)}
-.radar .me{position:absolute;left:50%;top:50%;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 8px 22px -6px rgba(0,0,0,.45)}
+.radar .me{opacity:0;transition:opacity .35s ease;position:absolute;left:50%;top:50%;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 8px 22px -6px rgba(0,0,0,.45)}
+
+.radar .me.ready{opacity:1}
 @keyframes radarPing{0%{transform:scale(.3);opacity:.85}100%{transform:scale(1);opacity:0}}
 @keyframes radarSpin{to{transform:rotate(360deg)}}
 #deck.reveal>*{animation:deckIn .5s var(--ease)}
@@ -2261,8 +2263,8 @@ async function viewPeople(root){
     </div>`;
   root.style.paddingBottom="8px"; root.classList.add("noscroll");
   $("#filtBtn").onclick=openFilters;
-  { const dk=$("#deck"); dk.innerHTML=radarHTML("Finding people near you","");
-    await Promise.all([buildDeck(true),new Promise(r=>setTimeout(r,1000))]);
+  { const dk=$("#deck"); dk.innerHTML=radarHTML("Finding people near you",""); fillRadar(dk);
+    await Promise.all([Quota.state().then(()=>buildDeck(true)),new Promise(r=>setTimeout(r,1000))]);
     const rw=$(".radarwrap",dk); if(rw){ rw.classList.add("out"); await new Promise(r=>setTimeout(r,260)); }
     if($("#deck")!==dk) return;
     dk.classList.add("reveal"); drawDeck(); }
@@ -2332,9 +2334,23 @@ const writeSwipes=a=>{ try{ localStorage.setItem(SW_KEY(App.me),JSON.stringify(a
 const logSwipe=()=>{ if(isMember()) return; const a=readSwipes(); a.push(Date.now()); writeSwipes(a); };
 const unlogSwipe=()=>{ const a=readSwipes(); a.pop(); writeSwipes(a); };
 const passedIds=()=>new Set(App.passes.filter(p=>!p.at||Date.now()-p.at<PASS_BACK_MS).map(p=>p.to));
+const Quota={
+  async state(){ try{ const {data,error}=await sb.rpc("zm_swipe_state"); if(error||!data) throw error||0; App.swipeSrv=data; }catch(e){ App.swipeSrv=null; } },
+  async use(){ try{ const {data,error}=await sb.rpc("zm_use_swipe"); if(error||!data) throw error||0; App.swipeSrv=data; }catch(e){} },
+  async undo(){ try{ const {data,error}=await sb.rpc("zm_undo_swipe"); if(!error&&data) App.swipeSrv=data; }catch(e){} },
+  bump(){ const sv=App.swipeSrv; if(!sv||isMember()) return; const now=Date.now();
+    if(!sv.reset_at||now>=sv.reset_at){ sv.left=SWIPE_LIMIT; sv.reset_at=now+SWIPE_WIN; }
+    sv.left=Math.max(0,(sv.left==null?SWIPE_LIMIT:sv.left)-1); sv.locked=sv.left<=0; }
+};
 function swipeState(){
   if(isMember()) return {locked:false,left:Infinity};
-  const now=Date.now(); let start=null,count=0;
+  const sv=App.swipeSrv, now=Date.now();
+  if(sv){                                            /* the database is the source of truth */
+    if(sv.member) return {locked:false,left:Infinity};
+    if(!sv.reset_at||now>=sv.reset_at) return {locked:false,left:SWIPE_LIMIT};
+    return sv.locked?{locked:true,left:0,resetAt:sv.reset_at}:{locked:false,left:sv.left};
+  }
+  let start=null,count=0;                            /* fallback while the SQL isn't installed: this device only */
   for(const t of readSwipes().sort((a,b)=>a-b)){ if(start===null||t>=start+SWIPE_WIN){ start=t; count=0; } count++; }
   if(start===null||now>=start+SWIPE_WIN) return {locked:false,left:SWIPE_LIMIT};
   return count>=SWIPE_LIMIT?{locked:true,left:0,resetAt:start+SWIPE_WIN}:{locked:false,left:SWIPE_LIMIT-count};
@@ -2372,8 +2388,13 @@ async function buildDeck(noDraw){
   if(!noDraw) drawDeck();
 }
 
+function fillRadar(root){ $$("img[data-rface]",root).forEach(im=>{
+  const u=im.dataset.rface; let done=false;
+  const show=src=>{ if(done||!im.isConnected) return; done=true; im.src=src; im.classList.add("ready"); };
+  faceCrop(u).then(c=>show(c||u)).catch(()=>show(u));
+  setTimeout(()=>show(u),7000); }); }
 const radarHTML=(title,sub)=>{ const me=App.profile||{}; const src=(me.photos&&me.photos[0])||artFor(me.code||"me",me.name||"");
-  return `<div class="radarwrap"><div class="radar"><i class="rr"></i><i class="rr d1"></i><i class="rr d2"></i><i class="sweep"></i><img class="me" data-face="${src}" src="${src}" alt=""></div>
+  return `<div class="radarwrap"><div class="radar"><i class="rr"></i><i class="rr d1"></i><i class="rr d2"></i><i class="sweep"></i><img class="me" data-rface="${src}" alt=""></div>
     <div style="padding:0 24px"><h2 style="font-size:22px">${title}</h2>${sub?`<p class="muted small" style="margin-top:6px;line-height:1.5">${sub}</p>`:""}</div></div>`; };
 function openBecomeZooian(){
   const tick='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:#1FA463"><path d="M4.5 12.7l5 5L19.5 7"/></svg>';
@@ -2391,30 +2412,39 @@ function openBecomeZooian(){
   $("#bzBuy",b).onclick=()=>{ window.open(MEMBERSHIP_URL,"_blank","noopener"); };
   $("#bzNo",b).onclick=closeModal;
 }
-function drawLocked(d,st){
-  clearInterval(drawLocked._t); clearInterval(drawLocked._p);
-  d.innerHTML=radarHTML("Finding more people for you",`Your next ${SWIPE_LIMIT} swipes unlock in <b id="lkT"></b>`)+
-    `<button class="zpop" id="zpop"><span class="zp">${pandaSVG("m")}</span><span style="flex:1;text-align:left"><b>Become a Zooian</b><small>Unlimited swipes for Zoo Members</small></span><span>›</span></button>`;
-  const pop=$("#zpop",d), t=$("#lkT",d);
+function drawRadarScreen(d,o){
+  clearInterval(drawRadarScreen._t); clearInterval(drawRadarScreen._p); clearInterval(drawRadarScreen._w);
+  const member=isMember();
+  d.innerHTML=radarHTML(o.title,o.sub)+(member?"":
+    `<button class="zpop" id="zpop"><span class="zp">${pandaSVG("m")}</span><span style="flex:1;text-align:left"><b>Become a Zooian</b><small>Unlimited swipes for Zoo Members</small></span><span>›</span></button>`);
+  fillRadar(d);
+  const pop=$("#zpop",d), t=$("#lkT",d), alive=()=>document.body.contains($(".radarwrap",d))&&$("#deck")===d;
   const fmt=ms=>{ const m=Math.max(1,Math.ceil(ms/6e4)), h=Math.floor(m/60); return h?`${h}h ${m%60}m`:`${m}m`; };
-  const tick=()=>{ if(!document.body.contains(pop)){ clearInterval(drawLocked._t); return; }
-    const left=st.resetAt-Date.now(); if(left<=0){ clearInterval(drawLocked._t); clearInterval(drawLocked._p); buildDeck(); return; }
-    t.textContent=fmt(left); };
-  tick(); drawLocked._t=setInterval(tick,20000);
-  const show=()=>{ if(!document.body.contains(pop)){ clearInterval(drawLocked._p); return; }
-    pop.classList.add("on"); setTimeout(()=>pop.classList.remove("on"),5500); };
-  setTimeout(show,2500); drawLocked._p=setInterval(show,15000);
-  pop.onclick=openBecomeZooian;
+  if(o.resetAt&&t){
+    const tick=()=>{ if(!alive()){ clearInterval(drawRadarScreen._t); return; }
+      const left=o.resetAt-Date.now(); if(left<=0){ clearInterval(drawRadarScreen._t); buildDeck(); return; }
+      t.textContent=fmt(left); };
+    tick(); drawRadarScreen._t=setInterval(tick,20000);
+  }
+  if(pop){
+    const show=()=>{ if(!alive()){ clearInterval(drawRadarScreen._p); return; }
+      pop.classList.add("on"); setTimeout(()=>pop.classList.remove("on"),5500); };
+    setTimeout(show,2500); drawRadarScreen._p=setInterval(show,15000);
+    pop.onclick=openBecomeZooian;
+  }
+  if(o.poll){                                          /* keep looking: new members may have joined */
+    drawRadarScreen._w=setInterval(async()=>{ if(!alive()){ clearInterval(drawRadarScreen._w); return; }
+      try{ await buildDeck(true); if(App.deck.length){ clearInterval(drawRadarScreen._w); drawDeck(); } }catch(e){} },45000);
+  }
 }
+const drawLocked=(d,st)=>drawRadarScreen(d,{title:"Finding more people for you",sub:`Your next ${SWIPE_LIMIT} swipes unlock in <b id="lkT"></b>`,resetAt:st.resetAt});
 function drawDeck(){
   const d=$("#deck"); if(!d) return;
   App.expanded=null;
   const st=swipeState();
   if(st.locked){ drawLocked(d,st); return; }
   if(!App.deck.length){
-    d.innerHTML=`<div class="emptydeck"><div style="width:150px">${pandaSVG("f")}</div>
-      <h2>That's everyone for now</h2>
-      <p class="muted small" style="max-width:270px">New people appear as they join. Profiles you passed on come back after 7 days. Widen your radius or check Liked You in the meantime.</p></div>`;
+    drawRadarScreen(d,{title:"Finding more people for you",sub:"No new people nearby right now. We'll keep looking and show them as soon as they join.",poll:true});
     return;
   }
   const top=App.deck.slice(0,3).reverse();
@@ -2601,9 +2631,10 @@ async function finishSwipe(card,p,dir,superLike){
   card.style.transform=`translate(${dir*window.innerWidth}px,-40px) rotate(${dir*22}deg)`;
   card.style.opacity="0";
   App.lastSwipe={code:p.code,dir};
-  App.deck.shift(); logSwipe();
+  App.deck.shift(); logSwipe(); Quota.bump();
   setTimeout(drawDeck,200);
-  if(dir>0){ await doLike(p,superLike); } else { await Social.pass(App.me,p.code); App.passes.push({to:p.code,at:Date.now()}); }
+  if(dir>0){ const r=await doLike(p,superLike); if(r==="limit") App.deck.unshift(p); else await Quota.state(); }
+  else { await Social.pass(App.me,p.code); App.passes.push({to:p.code,at:Date.now()}); await Quota.use(); }
   buzz(dir>0?[14]:8);
 }
 async function undoSwipe(){
@@ -2613,14 +2644,16 @@ async function undoSwipe(){
   await Social.unpass(App.me,last.code);
   App.myLikes=App.myLikes.filter(l=>l.to!==last.code);
   App.passes=App.passes.filter(l=>l.to!==last.code);
-  unlogSwipe(); App.lastSwipe=null; toast("Brought that one back");
+  unlogSwipe(); await Quota.undo(); App.lastSwipe=null; toast("Brought that one back");
   await buildDeck();
 }
 
 async function doLike(p,superLike){
   const {error}=await Social.like(App.me,p.code,superLike);
-  if(error){ toast("Couldn't send the like: "+error.message,3800); return; }
-  App.myLikes.push({to:p.code});
+  if(error){
+    if(String(error.message).includes("swipe_limit")){ await Quota.state(); setTimeout(()=>{ if(App.screen==="app"&&App.tab==="people") drawDeck(); },50); return "limit"; }
+    toast("Couldn't send the like: "+error.message,3800); return; }
+  App.myLikes.push({to:p.code,at:Date.now()});
   /* the database trigger creates the match instantly when both sides liked */
   const m=await Social.findMatch(App.me,p.code);
   if(m){ App.matches=await Social.matches(App.me); showMatch(p); }
