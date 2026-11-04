@@ -318,7 +318,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pv-nm .n i{font-style:normal;font-weight:500;font-size:22px}
 .pv-sec{padding:6px 18px 4px;margin-top:14px}
 .pv-sec>h3{font-family:var(--ff-d);font-size:19px;font-weight:700;margin-bottom:10px}
-.pv-sec .bio{font-size:15.5px;line-height:1.6}
+.pv-sec .bio{font-size:15.5px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
 .pv-loc{display:flex;align-items:center;gap:13px}
 .pv-loc .mp{width:44px;height:44px;border-radius:14px;background:#fff;border:1px solid #ddd;display:grid;place-items:center;flex:none}
 .pv-loc .mp svg{width:26px;height:26px}
@@ -542,6 +542,7 @@ html,body{overscroll-behavior-y:none}
 /* ---- profile sheet (Bumble-style) ---- */
 .pv-chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px 2px}
 .pv-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;background:var(--paper);border:1px solid var(--line);font-size:13.5px;font-weight:600}
+.pv-chip .wic{width:16px;height:16px}
 .pv-chip i{font-style:normal;font-size:15px;line-height:1}
 .pv-chip i:empty{display:none}
 .pv-looking{margin:12px 18px;padding:16px 18px;border-radius:22px;background:var(--love);color:#fff;box-shadow:0 14px 28px -16px rgba(164,40,232,.8)}
@@ -551,7 +552,8 @@ html,body{overscroll-behavior-y:none}
 .pv-prompt small{display:block;font-size:12px;font-weight:700;color:var(--ink-3)}
 .pv-prompt p{margin-top:7px;font-family:var(--ff-d);font-size:20px;font-weight:600;line-height:1.3;color:var(--ink)}
 .pv-qual{display:flex;flex-wrap:wrap;gap:8px}
-.pv-qual span{padding:8px 14px;border-radius:999px;background:var(--honey);color:#2A1C00;font-size:13.5px;font-weight:700}
+.pv-qual span{display:inline-flex;align-items:center;padding:8px 13px;border-radius:999px;background:var(--paper);border:1px solid var(--line);font-size:13.5px;font-weight:600}
+.pv-chip.com{border-color:var(--ink);font-weight:700}
 .pr-slot{margin-bottom:12px;padding:14px}
 .pr-slot select.input{height:48px;margin-bottom:10px}
 .pr-slot textarea.input{min-height:78px}
@@ -708,7 +710,7 @@ const PANDA = "data:image/webp;base64,UklGRhCAAABXRUJQVlA4WAoAAAAQAAAAowEAowEAQU
 
 /* ---------------------------- interest catalog ---------------------------- */
 const INTERESTS = {
-  "Self-care": ["🧘 Yoga","💪 Gym","🏃 Running","🧠 Mindfulness","💆 Spa days","🥗 Healthy eating","😴 Sleep routine","🚶 Long walks","🕉️ Meditation","🧴 Skincare","🏊 Swimming","🌿 Therapy talk"],
+  "Self-care": ["😴 Sleeping well","🧘 Yoga","💪 Gym","🏃 Running","🧠 Mindfulness","💆 Spa days","🥗 Healthy eating","🚶 Long walks","🕉️ Meditation","🧴 Skincare","🏊 Swimming","🌿 Therapy talk"],
   "Sports": ["🏏 Cricket","⚽ Football","🏀 Basketball","🏸 Badminton","🎾 Tennis","🏐 Volleyball","🚴 Cycling","🥊 Boxing","🏓 Table tennis","🎮 Esports","🏋️ Weightlifting","⛳ Golf"],
   "Creativity": ["📷 Photography","🎨 Painting","✍️ Writing","🎬 Filmmaking","🎹 Playing music","💃 Dancing","🧵 Fashion design","🖌️ Sketching","🖥️ Graphic design","🎤 Singing","🏺 Pottery","🏗️ Architecture"],
   "Going Out": ["☕ Café hopping","🍽️ Fine dining","🎵 Live music","🎤 Karaoke","🛍️ Shopping","🎳 Bowling","🎭 Theatre","🌃 Rooftop nights","🎡 Amusement parks","🏍️ Late-night rides","🎉 House parties","🖼️ Art galleries"],
@@ -722,6 +724,10 @@ const INTERESTS = {
   "Personality and Traits": ["😄 Extrovert","🤫 Introvert","🧠 Overthinker","😂 Sarcastic","🌙 Night owl","☀️ Early bird","💛 Empath","🎯 Ambitious","🗺️ Adventurous","🧊 Calm","🔥 Competitive","🤗 Affectionate"]
 };
 const INTEREST_PREVIEW = 7;
+const LS_ICONS={
+  drinking:'<svg class="wic" viewBox="0 0 24 24"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/></svg>',
+  smoking:'<svg class="wic" viewBox="0 0 24 24"><path d="M18 12H2v4h16"/><path d="M22 12v4"/><path d="M7 12v4"/><path d="M18 8c0-2.5-2-2.5-2-5"/><path d="M22 8c0-2.5-2-2.5-2-5"/></svg>',
+  kids:'<svg class="wic" viewBox="0 0 24 24"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></svg>'};
 const QUALITIES = ["Ambition","Confidence","Empathy","Generosity","Humour","Kindness","Openness","Optimism","Playfulness","Sassiness","Leadership","Curiosity","Gratitude","Humility","Loyalty","Sarcasm","Emotional intelligence"];
 const PROMPTS = ["Send a like if you…","Win me over by…","The way to my heart is…","My simple pleasures are…","A perfect weekend for me is…","Two truths and a lie…","My most controversial opinion is…","I geek out on…","Together we could…","I'm weirdly good at…","My go-to spot in Dhaka is…","The best way to ask me out is…"];
 const RELIGIONS = ["Muslim","Hinduism","Christianity","Buddhism","Spiritual","Not religious","Prefer not to say"];
@@ -1046,14 +1052,15 @@ async function processImage(file){
    profiles.js — profiles table (fetch / save) + member status + admin loaders
    photo_1..photo_3 <-> profile.photos[]
    =========================================================================== */
-const BAD_STATUS = ["banned","suspended","disabled"];
+const BAD_STATUS = ["banned","suspended","disabled","deactive"];
+const BANNED_SUPPORT_URL = SUPPORT_URL;   /* placeholder — change when the real support page exists */
 const toArr = v => Array.isArray(v) ? v
   : (typeof v==="string" && v ? v.replace(/^\{|\}$/g,"").split(",").map(s=>s.replace(/^"|"$/g,"").trim()).filter(Boolean) : []);
 
 function fromRow(r){
   const g=f=>pick(r,"profiles",f);
   const photos=[g("photo1"),g("photo2"),g("photo3")].filter(Boolean);
-  const interests=toArr(g("interests"));
+  const interests=toArr(g("interests")).map(i=>i==="😴 Sleep routine"?"😴 Sleeping well":i);
   const doneCol=g("done");
   let prompts=g("prompts"); if(typeof prompts==="string"){ try{ prompts=JSON.parse(prompts); }catch(e){ prompts=[]; } }
   prompts=(Array.isArray(prompts)?prompts:[]).filter(x=>x&&x.q&&String(x.a||"").trim());
@@ -1089,10 +1096,11 @@ function toRow(p){
   });
 }
 
+const PCOLS=()=>{ const c=Object.values(COL.profiles||{}).filter(Boolean); return c.length?[...new Set(c)].join(","):"*"; };
 const Profiles = {
   async get(code){
     await detectSchema(); if(!sb||!isUuid(code)) return null;
-    const {data,error}=await sb.from(TBL("profiles")).select("*").eq(COL.profiles.id,code).maybeSingle();
+    const {data,error}=await sb.from(TBL("profiles")).select(PCOLS()).eq(COL.profiles.id,code).maybeSingle();
     if(error){ console.warn("[profiles.get]",error.message); return null; }
     return data?fromRow(data):null;
   },
@@ -1109,16 +1117,16 @@ const Profiles = {
   /* everyone who finished their profile and isn't disabled */
   async all(){
     await detectSchema(); if(!sb) return [];
-    const {data,error}=await sb.from(TBL("profiles")).select("*").limit(500);
+    const {data,error}=await sb.from(TBL("profiles")).select(PCOLS()).limit(500);
     if(error){ console.warn("[profiles.all]",error.message); return []; }
-    return data.map(fromRow).filter(p=>p.done && !BAD_STATUS.includes(p.status));
+    return data.map(fromRow).filter(p=>p.done && !BAD_STATUS.includes(String(p.status).toLowerCase()));
   }
 };
 
 const Members = {
   async get(code){ const p=await Profiles.get(code); return p?{code,status:p.status,notes:"",createdAt:p.createdAt}:null; },
   async status(code){ if(!isUuid(code)) return "active"; const p=await Profiles.get(code); return p?(p.status||"active"):"active"; },
-  async isActive(code){ return !BAD_STATUS.includes(await Members.status(code)); },
+  async isActive(code){ return !BAD_STATUS.includes(String(await Members.status(code)).toLowerCase()); },
   async setStatus(code,status){
     await detectSchema(); const c=COL.profiles.status; if(!c) return false;
     const {error}=await sb.from(TBL("profiles")).update({[c]:status}).eq(COL.profiles.id,code);
@@ -1145,7 +1153,7 @@ const Members = {
 const Admin = {
   async load(){
     await detectSchema();
-    const q=(t,n)=>sb.from(TBL(t)).select("*").limit(n).then(r=>r.error?[]:r.data);
+    const q=(t,n)=>sb.from(TBL(t)).select(t==="profiles"?PCOLS():"*").limit(n).then(r=>r.error?[]:r.data);
     const [pr,li,ma,re,ms]=await Promise.all([q("profiles",1000),q("likes",2000),q("matches",1000),q("reports",500),q("messages",2000)]);
     return {
       profiles:pr.map(fromRow),
@@ -1540,7 +1548,16 @@ const App = {
 };
 const Screen = $("#screen");
 function render(html){ Screen.innerHTML = html; }
-function go(name,opts){ App.screen=name; (ROUTES[name]||ROUTES.login)(opts||{}); }
+function saveRoute(r){ try{ if(r) localStorage.setItem("zm:route",JSON.stringify(r)); else localStorage.removeItem("zm:route"); }catch(e){} }
+function loadRoute(){ try{ return JSON.parse(localStorage.getItem("zm:route")||"null"); }catch(e){ return null; } }
+function go(name,opts){
+  App.screen=name; opts=opts||{};
+  if(name==="app") saveRoute({n:"app",tab:opts.tab||App.tab||"people"});
+  else if(name==="edit"||name==="changepw") saveRoute({n:name});
+  else if(name==="interests"&&!opts.setup) saveRoute({n:"interests"});
+  else if(name==="login"||name==="banned") saveRoute(null);
+  return (ROUTES[name]||ROUTES.login)(opts);
+}
 
 function modal(title, bodyHTML, opts={}){
   const root=$("#modalRoot");
@@ -1555,6 +1572,19 @@ function modal(title, bodyHTML, opts={}){
 function closeModal(){ $("#modalRoot").innerHTML=""; }
 
 const ROUTES = {};
+
+/* ------------------------------ banned account --------------------------- */
+ROUTES.banned = ()=>{
+  const nav=$("#nav"); if(nav) nav.classList.add("hide");
+  render(`<div id="bannedPg" style="position:fixed;inset:0;z-index:900;background:#fff;color:#14102A;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;overflow:auto">
+    <div style="max-width:380px;width:100%">
+      <h1 style="font-family:var(--ff-d);font-size:30px;line-height:1.15;font-weight:800;margin-bottom:12px;color:#14102A">Your account has been banned</h1>
+      <p style="font-size:15.5px;line-height:1.6;color:#4a4566;margin-bottom:28px">Your profile has been banned for activity that violates our Terms of Service.</p>
+      <a class="btn" id="banSup" href="${BANNED_SUPPORT_URL}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">Contact Support</a>
+      <button class="btn ghost" id="banOut" style="margin-top:12px;background:#fff;color:#14102A;border:1.5px solid #d9d6e6">Log out</button>
+    </div></div>`);
+  $("#banOut").onclick=()=>logout("You've been logged out.");
+};
 
 /* ------------------------------ login / sign up -------------------------- */
 function showAlert(kind,msg){
@@ -1685,8 +1715,7 @@ function previewNewMember(){
 async function startSession(user){
   const code=codeOf(user);
   if(!(await Members.isActive(code))){
-    await Auth.signOut();
-    go("login"); setTimeout(()=>showAlert("err","Your account has been suspended. Contact support if you think this is a mistake."),50); return; }
+    go("banned"); return; }
   App.preview=false; App.me=code; App.email=user.email||"";
   Session.set(code);
   startGuard(); startRealtime();
@@ -1746,7 +1775,7 @@ ROUTES.changepw = ()=>{
    ========================================================================== */
 const SETUP_STEPS=5;
 const hasCol=f=>!!(COL.profiles&&COL.profiles[f]);       /* only ask for a field the database can actually store */
-const needsExtras=p=>(hasCol("religion")&&!p.religion)||(hasCol("qualities")&&(p.qualities||[]).length!==3)
+const needsExtras=p=>(hasCol("religion")&&!p.religion)||(hasCol("qualities")&&(p.qualities||[]).length<1)
   ||(hasCol("drinking")&&!p.drinking)||(hasCol("smoking")&&!p.smoking)||(hasCol("kids")&&!p.kids);
 ROUTES.setup = ({step=0})=>{
   $("#nav").classList.add("hide");
@@ -1803,11 +1832,11 @@ function validateStep(step,d){
   if(step===3){ if(!d.work) return "Pick your professional status";
     if(!d.looking) return "Pick what you're looking for";
     if(!d.religion) return "Pick your religion (or Prefer not to say)";
-    if(!d.drinking) return "Tell us about drinking (Yes or No)";
-    if(!d.smoking) return "Tell us about smoking (Yes or No)";
-    if(!d.kids) return "Tell us about kids (Yes or No)";
+    if(!d.drinking) return "Do you drink? Pick Yes, No or Sometimes";
+    if(!d.smoking) return "Do you smoke? Pick Yes, No or Sometimes";
+    if(!d.kids) return "Tell us if you have kids (Yes or No)";
     if(d.gc.member && !d.gc.which) return "Choose which Zoo GC you're in"; }
-  if(step===4 && (d.qualities||[]).length!==3) return "Pick exactly 3 qualities you value";
+  if(step===4 && (d.qualities||[]).length<1) return "Pick at least 1 quality you value";
   return null;
 }
 
@@ -1969,8 +1998,8 @@ function setupVibe(body,d){
         <button class="input" id="gcBtn" style="text-align:left;display:flex;align-items:center">
           <span id="gcLabel" style="flex:1">${esc(d.gc.which||"Choose your GC")}</span><span class="muted">▾</span></button></div>
       <div class="help">Totally optional. Pick NO and no Zoo badge appears on your profile.</div></div>
-    <div class="field"><label for="bio">Bio <span class="muted" style="font-weight:500">— <span id="bc">${(d.bio||"").length}</span>/200</span></label>
-      <textarea class="input" id="bio" maxlength="200" placeholder="One honest line beats five clever ones.">${esc(d.bio)}</textarea></div>`;
+    <div class="field"><label for="bio">Bio <span class="muted" style="font-weight:500">— <span id="bc">${(d.bio||"").length}</span>/300</span></label>
+      <textarea class="input" id="bio" maxlength="300" rows="6" placeholder="One honest line beats five clever ones.">${esc(d.bio)}</textarea></div>`;
   const wi=$("#wkOther"), wc=$("#wkOtherChip");
   const paintWk=()=>{ $$("#wk .chip[data-w]").forEach(x=>x.setAttribute("aria-pressed",!wkOther&&x.dataset.w===d.work));
     wc.setAttribute("aria-pressed",wkOther); wi.classList.toggle("hide",!wkOther); };
@@ -1991,9 +2020,9 @@ function setupVibe(body,d){
   $$("#rl .chip[data-r]").forEach(b=>b.onclick=()=>{ rlOther=false; d.religion=b.dataset.r; paintRl(); });
   rc.onclick=()=>{ rlOther=true; d.religion=ri.value.trim(); paintRl(); ri.focus(); };
   ri.oninput=()=>{ d.religion=ri.value.trim(); };
-  const LS=[["drinking","Drinking"],["smoking","Smoking"],["kids","Kids"]];
-  $("#rl").closest(".field").insertAdjacentHTML("afterend",LS.map(([k,l])=>`<div class="field"><label>${l}</label>
-    <div class="chips" data-ls="${k}">${["Yes","No"].map(v=>`<button class="chip" data-v="${v}" aria-pressed="${d[k]===v}">${v}</button>`).join("")}</div></div>`).join(""));
+  const LS=[["drinking","Do you drink?",["Yes","No","Sometimes"]],["smoking","Do you smoke?",["Yes","No","Sometimes"]],["kids","Do you have kids?",["Yes","No"]]];
+  $("#rl").closest(".field").insertAdjacentHTML("afterend",LS.map(([k,l,opts])=>`<div class="field"><label>${LS_ICONS[k]}${l}</label>
+    <div class="chips" data-ls="${k}">${opts.map(v=>`<button class="chip" data-v="${v}" aria-pressed="${d[k]===v}">${v}</button>`).join("")}</div></div>`).join(""));
   $$("[data-ls]").forEach(g=>{ const k=g.dataset.ls; $$(".chip",g).forEach(b=>b.onclick=()=>{ d[k]=b.dataset.v; $$(".chip",g).forEach(x=>x.setAttribute("aria-pressed",x===b)); }); });
   const openGC=()=>{
     const b=modal("Which Zoo GC are you in?", gcList.map(g=>
@@ -2017,7 +2046,7 @@ function setupPersonality(body,d){
   d.qualities=(d.qualities||[]).slice(0,3);
   d.prompts=Array.from({length:3},(_,i)=>(d.prompts||[])[i]||{q:"",a:""});
   body.innerHTML=`
-    <div class="field"><label>Qualities I value <span class="muted" style="font-weight:500">— pick 3 · <span id="qc">${d.qualities.length}</span>/3</span></label>
+    <div class="field"><label>Qualities I value <span class="muted" style="font-weight:500">— pick 1 to 3 · <span id="qc">${d.qualities.length}</span>/3</span></label>
       <div class="chips" id="ql">${QUALITIES.map(q=>`<button class="chip" data-q="${esc(q)}" aria-pressed="${d.qualities.includes(q)}">${esc(q)}</button>`).join("")}</div>
       <div class="help">These show on your profile, so people can see what kind of person you are.</div></div>
     <div class="field"><label>Prompts <span class="muted" style="font-weight:500">(optional · up to 3)</span></label>
@@ -2551,15 +2580,16 @@ function pvStreamHTML(p){
   const im=i=>photos[i+1]?`<div class="pv-photo"><img src="${photos[i+1]}" alt=""><button class="notebtn" data-note="1" aria-label="Send a note">${ICO_NOTE}</button></div>`:"";
   const chip=(ic,t)=>t?`<span class="pv-chip"><i>${ic}</i>${esc(t)}</span>`:"";
   const km=distKm(me,p);
+  const lsI=k=>LS_ICONS[k].replace('class="wic"','class="wic" style="margin:0"');
   const about=[chip("📏",p.height?hLabel(p.height):""),chip(relIcon(p.religion).replace('class="wic"','class="wic" style="margin:0"'),p.religion),chip(workIcon(p.work).replace("class=\"wic\"","class=\"wic\" style=\"margin:0\""),plain(p.work)),
-    chip("🍷",p.drinking?"Drinking: "+p.drinking:""),chip("🚬",p.smoking?"Smoking: "+p.smoking:""),chip("👶",p.kids?"Kids: "+p.kids:"")].join("");
+    chip(lsI("drinking"),p.drinking?"Drinks: "+p.drinking:""),chip(lsI("smoking"),p.smoking?"Smokes: "+p.smoking:""),chip(lsI("kids"),p.kids?"Has kids: "+p.kids:"")].join("");
   const locLabel=(p.loc&&p.loc.label)||"";
   return [
     p.bio?`<div class="pv-sec"><h3>My bio</h3><p class="bio">${esc(p.bio)}</p></div>`:"",                                   /* 1 */
     about?`<div class="pv-sec"><h3>About me</h3><div class="pv-chips" style="padding:0">${about}</div></div>`:"",              /* 2 */
     p.looking?`<div class="pv-looking" style="margin:14px 18px 4px"><small>I'm looking for</small><b>${ICO_SEARCH}${esc(plain(p.looking))}</b></div>`:"", /* 3 */
     `<div class="pv-sec"><h3>My interests ${com.length?`<span class="muted" style="font-size:12.5px;font-weight:600">· ${pct}% shared with you</span>`:""}</h3>
-      <div class="chips">${(p.interests||[]).map(i=>`<span class="chip ${com.includes(i)?"on":""}" style="pointer-events:none">${esc(i)}</span>`).join("")||'<span class="muted small">No interests yet</span>'}</div></div>`, /* 4 */
+      <div class="pv-chips" style="padding:0">${(p.interests||[]).map(i=>`<span class="pv-chip${com.includes(i)?" com":""}">${esc(i)}</span>`).join("")||'<span class="muted small">No interests yet</span>'}</div></div>`, /* 4 */
     im(0)+pr(0),                                                                                                               /* 5 */
     im(1)+pr(1),                                                                                                               /* 6 */
     (p.langs||[]).length?`<div class="pv-sec"><h3>Languages</h3><div class="chips">${p.langs.map(l=>`<span class="chip" style="pointer-events:none">${esc(l)}</span>`).join("")}</div></div>`:"", /* 7 */
@@ -2582,31 +2612,8 @@ function expandCard(p){
   $(".xclose",x).onclick=collapseCard;
   $("#xMore",x).onclick=()=>personMenu(p,collapseCard);
   $$("[data-note]",x).forEach(b=>b.onclick=()=>openNote(p));
-  /* swipe left / right works on the open profile too */
+  /* the open profile only scrolls up/down — horizontal swipe is disabled; pull down from the top to close */
   x.style.touchAction="pan-y";
-  const xl=el("div","stamp like"), xn=el("div","stamp nope"); xl.innerHTML=ICO_CHECK; xn.innerHTML=ICO_CROSS;
-  [xl,xn].forEach(n=>{ n.style.zIndex=80; deck.appendChild(n); });
-  let sx=0,sy=0,dx=0,hz=false,pid=null;
-  x.addEventListener("pointerdown",e=>{ if(e.target.closest("button")) return; if(e.pointerType==="mouse"&&e.button!==0) return;
-    sx=e.clientX; sy=e.clientY; dx=0; hz=false; pid=e.pointerId; });
-  x.addEventListener("pointermove",e=>{
-    if(pid==null||e.pointerId!==pid) return;
-    dx=e.clientX-sx; const dy=e.clientY-sy;
-    if(!hz && Math.abs(dx)>14 && Math.abs(dx)>Math.abs(dy)*1.4){ hz=true; x.style.transition="none"; try{x.setPointerCapture(e.pointerId)}catch(_){} }
-    if(hz){ x.style.transform=`translateX(${dx}px) rotate(${dx/30}deg)`;
-      const lo=clamp(dx/110,0,1), no=clamp(-dx/110,0,1);
-      xl.style.opacity=lo; xl.style.transform=`scale(${.5+lo*.55})`; xn.style.opacity=no; xn.style.transform=`scale(${.5+no*.55})`; }
-  });
-  const xend=()=>{
-    if(pid==null) return; pid=null; if(!hz) return; hz=false;
-    x.style.transition="transform .3s var(--ease),opacity .3s";
-    if(Math.abs(dx)>90){
-      const dir=dx>0?1:-1, card=$("#deck .swipecard:last-child");
-      x.style.transform=`translateX(${dir*130}%) rotate(${dir*14}deg)`; x.style.opacity="0";
-      setTimeout(()=>{ x.remove(); xl.remove(); xn.remove(); App.expanded=null; if(card) finishSwipe(card,p,dir,false); },200);
-    } else { x.style.transform=""; xl.style.opacity=0; xn.style.opacity=0; }
-  };
-  x.addEventListener("pointerup",xend); x.addEventListener("pointercancel",xend);
   let ty=0,atTop=false;
   x.addEventListener("touchstart",e=>{ ty=e.touches[0].clientY; atTop=x.scrollTop<=0; },{passive:true});
   x.addEventListener("touchend",e=>{ const dy=e.changedTouches[0].clientY-ty; if(atTop&&dy>90) collapseCard(); });
@@ -3049,7 +3056,7 @@ function openGifPicker(onPick,onSticker){
   gifs();
 }
 async function openChat(pid,other){
-  App.openChatPid=pid;
+  App.openChatPid=pid; { const r=loadRoute(); if(r&&r.n==="app") saveRoute({n:"app",tab:r.tab,chat:pid}); }
   if(threadUnsub){ try{threadUnsub()}catch(e){} threadUnsub=null; }
   markRead(pid);
   const sheet=el("div","sheet");
@@ -3139,7 +3146,7 @@ async function openChat(pid,other){
     const {data,error}=await Chat.send(pid,App.me,isEmoji?url:"\u2063gif:"+url,other.code);
     if(error){ toast("GIF not sent: "+error.message,3200); return; }
     if(data) addMsg(data); markRead(pid); });
-  ta.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&window.innerWidth>900){ e.preventDefault(); send(); }});
+  ta.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&!matchMedia("(pointer:coarse)").matches){ e.preventDefault(); send(); }});
 }
 
 const DEMO_LINES=["Okay that's a good opener, I'll allow it 😄","Hey! Finally someone with taste.",
@@ -3168,8 +3175,8 @@ function startCall(other,kind){
    ========================================================================== */
 async function viewProfile(root){
   const p=App.profile;
-  const pct=Math.round([p.photos.length>=2,p.name,p.age,p.gender,p.height,p.loc.label,p.work,p.looking,p.bio,p.interests.length>=5]
-    .filter(Boolean).length/10*100);
+  const pct=Math.round([p.photos.length>=2,p.name,p.age,p.gender,p.height,p.loc.label,p.work,p.looking,p.bio,p.interests.length>=5,p.verified]
+    .filter(Boolean).length/11*100);
   root.innerHTML=`
     <div class="topbar"><h2>Your profile</h2>
       <div style="display:flex;gap:8px"><button class="iconbtn" id="helpBtn" aria-label="Safety and help">${ICO_HELP}</button><button class="iconbtn" id="setBtn">${I.settings}</button></div></div>
@@ -3577,12 +3584,19 @@ async function boot(){
       setTimeout(done,700);
       if(!p||!p.done){ App.setupDraft=App.profile; go("setup",{step:0}); }
       else if(needsExtras(p)){ App.setupDraft=App.profile; go("setup",{step:3}); }
-      else go("app",{tab:"people"});
+      else {
+        const r=loadRoute()||{};
+        if(r.n==="edit"||r.n==="changepw"){ await go("app",{tab:"profile"}); go(r.n,{}); }
+        else if(r.n==="interests"){ await go("app",{tab:"profile"}); go("interests",{setup:false}); }
+        else {
+          await go("app",{tab:r.n==="app"&&r.tab?r.tab:"people"});
+          if(r.n==="app"&&r.chat){ try{ const m=(App.matches||[]).find(x=>x.id===r.chat);
+            if(m){ const o=await profileOf(m.members.find(c=>c!==App.me)); if(o) openChat(r.chat,o); } }catch(e){} }
+        }
+      }
       startGuard(); startRealtime(); return;
     }
-    await Auth.signOut();
-    setTimeout(done,900); go("login");
-    setTimeout(()=>showAlert("err","Your account has been suspended. Contact support if you think this is a mistake."),50);
+    setTimeout(done,500); go("banned");
     return;
   }
   setTimeout(done,900);
@@ -3647,9 +3661,8 @@ function startGuard(){
       clearInterval(startGuard._t);
       App.watchers.forEach(u=>{try{u()}catch(e){}}); App.watchers=[];
       closeModal(); $$("#frame .sheet").forEach(x=>x.remove()); $("#matchui").classList.remove("on"); $("#callui").classList.remove("on");
-      await Auth.signOut(); Session.clear(); App.me=null; App.profile=null; profileCache.clear();
-      go("login");
-      setTimeout(()=>showAlert("err","Your account has been banned."),50);
+      Session.clear(); App.me=null; App.profile=null; profileCache.clear();
+      go("banned");
     } else { Members.touch(App.me); }
   };
   startGuard._t=setInterval(check,20000);
