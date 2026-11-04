@@ -396,6 +396,23 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .act.nope svg{color:#FF5A78}
 .act.star svg{color:var(--violet)}
 .act.undo svg{color:var(--ink-3)}
+.radarwrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;text-align:center;transition:opacity .26s ease}
+.radarwrap.out{opacity:0}
+.radar{position:relative;width:240px;height:240px;flex:none}
+.radar .rr{position:absolute;inset:0;border-radius:50%;border:2px solid var(--honey-deep);opacity:0;animation:radarPing 3s ease-out infinite}
+.radar .rr.d1{animation-delay:1s}.radar .rr.d2{animation-delay:2s}
+.radar .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 68%,color-mix(in srgb,var(--honey) 55%,transparent) 100%);animation:radarSpin 2.2s linear infinite;-webkit-mask:radial-gradient(circle,transparent 0 36px,#000 37px);mask:radial-gradient(circle,transparent 0 36px,#000 37px)}
+.radar .me{position:absolute;left:50%;top:50%;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 8px 22px -6px rgba(0,0,0,.45)}
+@keyframes radarPing{0%{transform:scale(.3);opacity:.85}100%{transform:scale(1);opacity:0}}
+@keyframes radarSpin{to{transform:rotate(360deg)}}
+#deck.reveal>*{animation:deckIn .5s var(--ease)}
+@keyframes deckIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1}}
+.zpop{position:absolute;left:14px;right:14px;bottom:12px;z-index:30;display:flex;align-items:center;gap:12px;padding:10px 16px 10px 10px;border:1.5px solid var(--honey);border-radius:22px;background:var(--paper);color:var(--ink);box-shadow:0 16px 36px -14px rgba(0,0,0,.45);transform:translateY(160%);transition:transform .55s var(--ease)}
+.zpop.on{transform:none}
+.zpop .zp{width:54px;flex:none;animation:zpBob 1.4s ease-in-out infinite}
+.zpop b{display:block;font-family:var(--ff-d);font-size:18px;font-weight:800}
+.zpop small{display:block;color:var(--ink-3);font-size:12.5px;margin-top:1px}
+@keyframes zpBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
 .emptydeck{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:30px}
 
 /* ================= profile sheet ================= */
@@ -2244,7 +2261,11 @@ async function viewPeople(root){
     </div>`;
   root.style.paddingBottom="8px"; root.classList.add("noscroll");
   $("#filtBtn").onclick=openFilters;
-  await buildDeck();
+  { const dk=$("#deck"); dk.innerHTML=radarHTML("Finding people near you","");
+    await Promise.all([buildDeck(true),new Promise(r=>setTimeout(r,1000))]);
+    const rw=$(".radarwrap",dk); if(rw){ rw.classList.add("out"); await new Promise(r=>setTimeout(r,260)); }
+    if($("#deck")!==dk) return;
+    dk.classList.add("reveal"); drawDeck(); }
   $("#aUndo").onclick=undoSwipe;
   $("#aNope").onclick=()=>{ collapseCard(); swipeTop(-1); };
   $("#aLike").onclick=()=>{ collapseCard(); swipeTop(1); };
@@ -2258,7 +2279,7 @@ async function viewDiscover(root){
   root.classList.remove("noscroll");
   root.innerHTML=`<div class="topbar"><h2>Discover</h2></div><div class="dsc" id="dsc"><p class="muted small" style="padding:30px;text-align:center">Finding people for you…</p></div>`;
   const me=App.profile, want=me.gender==="Female"?"Male":"Female";
-  const seen=new Set([...App.myLikes.map(l=>l.to),...App.passes.map(p=>p.to),App.me]);
+  const seen=new Set([...App.myLikes.map(l=>l.to),...passedIds(),App.me]);
   const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
   const all=(await allProfiles()).filter(p=>p&&p.done&&p.gender===want&&!seen.has(p.code)&&!blocked.has(p.code));
   const myGoal=plain(me.looking||"").toLowerCase();
@@ -2303,10 +2324,25 @@ async function viewDiscover(root){
   box.style.paddingBottom="24px";
 }
 
-async function buildDeck(){
+/* ---- swipe limit: free members get 15 swipes per 12 hours; passed profiles come back after 7 days ---- */
+const SWIPE_LIMIT=15, SWIPE_WIN=12*36e5, PASS_BACK_MS=7*864e5;
+const SW_KEY=me=>"zm:sw:"+me;
+const readSwipes=()=>{ try{ return JSON.parse(localStorage.getItem(SW_KEY(App.me))||"[]").filter(t=>t>Date.now()-4*SWIPE_WIN); }catch(e){ return []; } };
+const writeSwipes=a=>{ try{ localStorage.setItem(SW_KEY(App.me),JSON.stringify(a)); }catch(e){} };
+const logSwipe=()=>{ if(isMember()) return; const a=readSwipes(); a.push(Date.now()); writeSwipes(a); };
+const unlogSwipe=()=>{ const a=readSwipes(); a.pop(); writeSwipes(a); };
+const passedIds=()=>new Set(App.passes.filter(p=>!p.at||Date.now()-p.at<PASS_BACK_MS).map(p=>p.to));
+function swipeState(){
+  if(isMember()) return {locked:false,left:Infinity};
+  const now=Date.now(); let start=null,count=0;
+  for(const t of readSwipes().sort((a,b)=>a-b)){ if(start===null||t>=start+SWIPE_WIN){ start=t; count=0; } count++; }
+  if(start===null||now>=start+SWIPE_WIN) return {locked:false,left:SWIPE_LIMIT};
+  return count>=SWIPE_LIMIT?{locked:true,left:0,resetAt:start+SWIPE_WIN}:{locked:false,left:SWIPE_LIMIT-count};
+}
+async function buildDeck(noDraw){
   const me=App.profile;
   const want = me.gender==="Female" ? "Male" : "Female";
-  const seen=new Set([...App.myLikes.map(l=>l.to),...App.passes.map(p=>p.to),App.me]);
+  const seen=new Set([...App.myLikes.map(l=>l.to),...passedIds(),App.me]);
   const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
   const all=await allProfiles();
   let list=all.filter(p=>p && p.done && p.gender===want && !seen.has(p.code) && !blocked.has(p.code));
@@ -2316,28 +2352,69 @@ async function buildDeck(){
     list=list.filter(p=>{ if(p.loc&&p.loc.mode==="global") return true;
       const d=distKm(me,p); return d==null || d<=r; });
   }
-  const likers=new Set(App.likedYou.map(l=>l.from));
-  list.sort((a,b)=>{
-    const la=likers.has(a.code)?1:0, lb=likers.has(b.code)?1:0;
-    if(la!==lb) return lb-la;
-    return overlapPct(b.interests,me.interests)-overlapPct(a.interests,me.interests);
-  });
-  App.deck=list.slice(0,30);
-  drawDeck();
+  /* order: shared interests + verified + recently active + brand-new members, with a little randomness.
+     People who already liked you are mixed in (about 1 card in 5) instead of all coming first. */
+  const likers=new Set(App.likedYou.map(l=>l.from)), now=Date.now(), DAY=864e5;
+  const sc=new Map(list.map(p=>{
+    let v=overlapPct(p.interests||[],me.interests||[])*0.5;
+    if(p.verified) v+=12;
+    if(p.lastSeen){ const a=now-p.lastSeen; v+=a<DAY?20:a<3*DAY?12:a<7*DAY?5:0; } else v+=8;
+    if(p.createdAt && now-p.createdAt<2*DAY) v+=25;
+    return [p.code,v+Math.random()*8]; }));
+  list.sort((a,b)=>sc.get(b.code)-sc.get(a.code));
+  const L=list.filter(p=>likers.has(p.code)), O=list.filter(p=>!likers.has(p.code)), mix=[];
+  while(L.length||O.length){
+    if(mix.length%5===2 && L.length) mix.push(L.shift());
+    else if(O.length) mix.push(O.shift());
+    else mix.push(L.shift());
+  }
+  App.deck=mix.slice(0,30);
+  if(!noDraw) drawDeck();
 }
 
+const radarHTML=(title,sub)=>{ const me=App.profile||{}; const src=(me.photos&&me.photos[0])||artFor(me.code||"me",me.name||"");
+  return `<div class="radarwrap"><div class="radar"><i class="rr"></i><i class="rr d1"></i><i class="rr d2"></i><i class="sweep"></i><img class="me" data-face="${src}" src="${src}" alt=""></div>
+    <div style="padding:0 24px"><h2 style="font-size:22px">${title}</h2>${sub?`<p class="muted small" style="margin-top:6px;line-height:1.5">${sub}</p>`:""}</div></div>`; };
+function openBecomeZooian(){
+  const tick='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:#1FA463"><path d="M4.5 12.7l5 5L19.5 7"/></svg>';
+  const b=modal("Become a Zooian",`
+    <div style="text-align:center;padding:0 2px 4px">
+      <div style="width:96px;margin:0 auto 6px">${pandaSVG("m")}</div>
+      <p class="muted" style="line-height:1.6;margin-bottom:14px">You've used your free swipes for now. Zoo Members get the full ZOOIANS MATCH experience:</p>
+      <div style="text-align:left;display:grid;gap:10px;margin-bottom:18px;font-weight:600;font-size:14.5px">
+        <div style="display:flex;gap:10px;align-items:center">${tick}Unlimited swipes, no waiting</div>
+        <div style="display:flex;gap:10px;align-items:center">${tick}See everyone who liked you</div>
+        <div style="display:flex;gap:10px;align-items:center">${tick}Send likes straight from Discover</div>
+        <div style="display:flex;gap:10px;align-items:center">${tick}Direct support on WhatsApp</div></div>
+      <button class="btn" id="bzBuy">Become a Member</button>
+      <button class="btn ghost" id="bzNo" style="margin-top:9px">Maybe later</button></div>`);
+  $("#bzBuy",b).onclick=()=>{ window.open(MEMBERSHIP_URL,"_blank","noopener"); };
+  $("#bzNo",b).onclick=closeModal;
+}
+function drawLocked(d,st){
+  clearInterval(drawLocked._t); clearInterval(drawLocked._p);
+  d.innerHTML=radarHTML("Finding more people for you",`Your next ${SWIPE_LIMIT} swipes unlock in <b id="lkT"></b>`)+
+    `<button class="zpop" id="zpop"><span class="zp">${pandaSVG("m")}</span><span style="flex:1;text-align:left"><b>Become a Zooian</b><small>Unlimited swipes for Zoo Members</small></span><span>›</span></button>`;
+  const pop=$("#zpop",d), t=$("#lkT",d);
+  const fmt=ms=>{ const m=Math.max(1,Math.ceil(ms/6e4)), h=Math.floor(m/60); return h?`${h}h ${m%60}m`:`${m}m`; };
+  const tick=()=>{ if(!document.body.contains(pop)){ clearInterval(drawLocked._t); return; }
+    const left=st.resetAt-Date.now(); if(left<=0){ clearInterval(drawLocked._t); clearInterval(drawLocked._p); buildDeck(); return; }
+    t.textContent=fmt(left); };
+  tick(); drawLocked._t=setInterval(tick,20000);
+  const show=()=>{ if(!document.body.contains(pop)){ clearInterval(drawLocked._p); return; }
+    pop.classList.add("on"); setTimeout(()=>pop.classList.remove("on"),5500); };
+  setTimeout(show,2500); drawLocked._p=setInterval(show,15000);
+  pop.onclick=openBecomeZooian;
+}
 function drawDeck(){
   const d=$("#deck"); if(!d) return;
   App.expanded=null;
+  const st=swipeState();
+  if(st.locked){ drawLocked(d,st); return; }
   if(!App.deck.length){
     d.innerHTML=`<div class="emptydeck"><div style="width:150px">${pandaSVG("f")}</div>
       <h2>That's everyone for now</h2>
-      <p class="muted small" style="max-width:260px">New people appear as they join. Widen your radius or check Liked You in the meantime.</p>
-      <button class="btn ghost sm" id="resetPasses">Show passed profiles again</button></div>`;
-    const r=$("#resetPasses"); if(r) r.onclick=async()=>{
-      await Social.clearPasses(App.me);
-      App.passes=[]; toast("Passed profiles are back"); await buildDeck();
-    };
+      <p class="muted small" style="max-width:270px">New people appear as they join. Profiles you passed on come back after 7 days. Widen your radius or check Liked You in the meantime.</p></div>`;
     return;
   }
   const top=App.deck.slice(0,3).reverse();
@@ -2516,7 +2593,7 @@ async function runVerify(cv){
 
 function swipeTop(dir,superLike){
   const card=$("#deck .swipecard:last-child"); const p=App.deck[0];
-  if(!card||!p) return;
+  if(!card||!p||swipeState().locked) return;
   card.style.transition="transform .34s var(--ease), opacity .34s";
   finishSwipe(card,p,dir,superLike);
 }
@@ -2524,9 +2601,9 @@ async function finishSwipe(card,p,dir,superLike){
   card.style.transform=`translate(${dir*window.innerWidth}px,-40px) rotate(${dir*22}deg)`;
   card.style.opacity="0";
   App.lastSwipe={code:p.code,dir};
-  App.deck.shift();
+  App.deck.shift(); logSwipe();
   setTimeout(drawDeck,200);
-  if(dir>0){ await doLike(p,superLike); } else { await Social.pass(App.me,p.code); App.passes.push({to:p.code}); }
+  if(dir>0){ await doLike(p,superLike); } else { await Social.pass(App.me,p.code); App.passes.push({to:p.code,at:Date.now()}); }
   buzz(dir>0?[14]:8);
 }
 async function undoSwipe(){
@@ -2536,7 +2613,7 @@ async function undoSwipe(){
   await Social.unpass(App.me,last.code);
   App.myLikes=App.myLikes.filter(l=>l.to!==last.code);
   App.passes=App.passes.filter(l=>l.to!==last.code);
-  App.lastSwipe=null; toast("Brought that one back");
+  unlogSwipe(); App.lastSwipe=null; toast("Brought that one back");
   await buildDeck();
 }
 
