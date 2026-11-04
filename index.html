@@ -409,8 +409,8 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 @keyframes radarSpin{to{transform:rotate(360deg)}}
 #deck.reveal>*{animation:deckIn .5s var(--ease)}
 @keyframes deckIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1}}
-.zpop{position:absolute;left:14px;right:14px;bottom:12px;z-index:30;display:flex;align-items:center;gap:12px;padding:10px 16px 10px 10px;border:1.5px solid var(--honey);border-radius:22px;background:var(--paper);color:var(--ink);box-shadow:0 16px 36px -14px rgba(0,0,0,.45);transform:translateY(160%);transition:transform .55s var(--ease)}
-.zpop.on{transform:none}
+.zpop{position:absolute;left:14px;right:14px;bottom:12px;z-index:30;display:flex;align-items:center;gap:12px;padding:10px 16px 10px 10px;border:1.5px solid var(--honey);border-radius:22px;background:var(--paper);color:var(--ink);box-shadow:0 16px 36px -14px rgba(0,0,0,.45);transform:translateY(160%);opacity:0;visibility:hidden;pointer-events:none;transition:transform .55s var(--ease),opacity .35s ease,visibility 0s linear .55s}
+.zpop.on{transform:none;opacity:1;visibility:visible;pointer-events:auto;transition:transform .55s var(--ease),opacity .3s ease,visibility 0s}
 .zpop .zp{width:54px;flex:none;animation:zpBob 1.4s ease-in-out infinite}
 .zpop b{display:block;font-family:var(--ff-d);font-size:18px;font-weight:800}
 .zpop small{display:block;color:var(--ink-3);font-size:12.5px;margin-top:1px}
