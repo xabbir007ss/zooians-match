@@ -396,6 +396,79 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .act.nope svg{color:#FF5A78}
 .act.star svg{color:var(--violet)}
 .act.undo svg{color:var(--ink-3)}
+#frame img[data-face]{opacity:0}
+#frame img[data-face].fc{opacity:1;transition:opacity .25s ease}
+.pgbtn{display:inline-flex;align-items:center;gap:5px;height:40px;padding:0 11px 0 4px;border-radius:13px;border:1px solid var(--line);background:var(--paper);font-family:var(--ff-d);font-weight:800;font-size:13.5px;color:var(--ink);flex:none}
+.pgl{display:block;overflow:visible;flex:none}
+.pgl .pr{transform-box:fill-box;transform-origin:center;opacity:.35}
+.pgl.live .p1{animation:pglPing 2.6s ease-out infinite}.pgl.live .p2{animation:pglPing 2.6s ease-out 1.3s infinite}
+@keyframes pglPing{0%{transform:scale(.78);opacity:.8}100%{transform:scale(1.16);opacity:0}}
+.pgtag{display:inline-flex;align-items:center;gap:3px;margin-left:7px;padding:2px 8px 2px 3px;border-radius:999px;background:var(--honey-soft);color:#7A5200;font-size:10.5px;font-weight:800;vertical-align:2px;letter-spacing:.02em}
+.chhead{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 4px}
+.chhead h3{font-size:15px}
+.pgpill{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 12px 0 4px;border-radius:999px;border:1.5px solid var(--honey);background:var(--paper);font-family:var(--ff-d);font-weight:800;font-size:13px;color:var(--ink)}
+.pgpill.on{background:var(--honey);color:#2A1C00}
+.pg{z-index:60;background:linear-gradient(#fffdf5,#fff3d6);overflow:hidden}
+.pg-top{display:flex;align-items:center;gap:10px;padding:12px 14px;position:relative;z-index:6}
+.pg-ttl{display:flex;align-items:center;gap:6px;flex:1;font-family:var(--ff-d);font-size:21px}
+.pg-live{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--ink-3)}
+.pg-live i{width:8px;height:8px;border-radius:50%;background:#bbb}
+.pg-live.on i{background:#1FBF6B;box-shadow:0 0 0 4px rgba(31,191,107,.2)}.pg-live.off i{background:#F0384F}
+.pg-stage{position:relative;flex:1;min-height:0;transform-origin:50% 60%;animation:pgLand 1.9s cubic-bezier(.2,.75,.2,1) both}
+@keyframes pgLand{0%,38%{transform:scale(.3);opacity:0;filter:blur(10px)}100%{transform:none;opacity:1;filter:none}}
+.pg-room{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.pg-room.hide,.pg-road.hide{display:none}
+.radar.pgr{width:320px;height:320px}
+.radar.pgr .sweep{-webkit-mask:radial-gradient(circle,transparent 0 40px,#000 41px);mask:radial-gradient(circle,transparent 0 40px,#000 41px)}
+.pg-r30{position:absolute;inset:0;border-radius:50%;border:2px dashed color-mix(in srgb,var(--honey-deep) 65%,transparent)}
+.pg-r30 em{position:absolute;top:-9px;left:50%;transform:translateX(-50%);padding:0 7px;background:#fff6dc;font-style:normal;font-size:11px;font-weight:800;color:#8A6200;border-radius:99px}
+#pgBub{position:absolute;inset:0}
+.pgb{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;padding:0;border:0;background:none;animation:pgPop .5s var(--ease) both,pgFloat 3.6s ease-in-out infinite;z-index:3}
+.pgb img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 0 0 2px var(--honey-deep),0 8px 18px -6px rgba(0,0,0,.5);display:block}
+.pgb small{position:absolute;left:50%;top:60px;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;border-radius:99px;background:rgba(30,26,51,.82);color:#fff;font-size:10.5px;font-weight:700}
+.pgb.flow{position:relative;margin:0;flex:none;animation:none;width:62px;height:62px}
+.pgb.flow img{width:62px;height:62px}.pgb.flow small{top:66px}
+@keyframes pgPop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes pgFloat{0%,100%{translate:0 0}50%{translate:0 -5px}}
+.pg-cap{font-size:13.5px;font-weight:600;color:var(--ink-3);text-align:center;padding:0 24px}
+.pg-road{position:absolute;inset:0;overflow:hidden;background:#e9e5d6}
+#pgMap{position:absolute;inset:-18% -30% -2%;transform:perspective(760px) rotateX(36deg);transform-origin:50% 72%;background:#e9e5d6 repeating-linear-gradient(0deg,rgba(0,0,0,.04) 0 1px,transparent 1px 38px),repeating-linear-gradient(90deg,rgba(0,0,0,.04) 0 1px,transparent 1px 38px)}
+.pgmk{background:none;border:0}.pgmk .pgl{filter:drop-shadow(0 8px 6px rgba(0,0,0,.35));animation:pgBounce 1.1s ease-in-out infinite}
+@keyframes pgBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.pg-fade{position:absolute;left:0;right:0;top:0;height:90px;background:linear-gradient(#fffdf5,transparent);pointer-events:none;z-index:500}
+.pg-hud{position:absolute;right:14px;top:14px;z-index:500;min-width:66px;padding:8px 12px;border-radius:16px;background:rgba(30,26,51,.86);color:#fff;text-align:center}
+.pg-hud b{display:block;font-family:var(--ff-d);font-size:26px;line-height:1}.pg-hud small{font-size:10.5px;opacity:.8}
+.pg-strip{position:absolute;left:0;right:0;bottom:0;z-index:500;display:flex;gap:14px;padding:14px 16px 28px;overflow-x:auto;background:linear-gradient(transparent,rgba(255,246,220,.95) 55%)}
+.pg-nomap{padding:60px 20px;text-align:center;color:var(--ink-3)}
+.pg-foot{padding:10px 20px calc(14px + env(safe-area-inset-bottom,0px));text-align:center;font-size:12px;color:var(--ink-3);line-height:1.5;position:relative;z-index:6}
+.pg-sky{position:absolute;inset:0;z-index:20;background:linear-gradient(#1f5fd6 0%,#59a9f7 50%,#d8efff 100%);overflow:hidden;pointer-events:none;animation:pgSkyOut 2s ease-in forwards}
+@keyframes pgSkyOut{0%,52%{opacity:1}100%{opacity:0}}
+.pg-sky .cl{position:absolute;top:0;width:150px;height:56px;border-radius:999px;background:#fff;opacity:.92;filter:blur(1.5px);transform:translateY(120vh) scale(var(--s));animation:pgCloud 1.5s cubic-bezier(.5,0,.9,.5) var(--d) forwards}
+@keyframes pgCloud{to{transform:translateY(-60vh) scale(calc(var(--s)*1.9))}}
+.pg-fall{position:absolute;left:50%;top:34%;margin-left:-35px;animation:pgFallA 1.4s ease-in forwards}
+@keyframes pgFallA{0%{transform:translateY(-30px) scale(.8) rotate(-8deg)}60%{transform:translateY(60px) scale(1.2) rotate(6deg);opacity:1}100%{transform:translateY(140px) scale(2.6);opacity:0}}
+.pgcard{position:absolute;inset:0;z-index:30;display:flex;align-items:flex-end}
+.pgcard .bk{position:absolute;inset:0;background:rgba(20,14,50,.45);opacity:0;transition:opacity .25s}
+.pgcard.on .bk{opacity:1}
+.pgcard .sh{position:relative;width:100%;padding:62px 20px calc(18px + env(safe-area-inset-bottom,0px));border-radius:34px 34px 0 0;background:var(--paper);text-align:center;transform:translateY(100%);transition:transform .35s var(--ease)}
+.pgcard.on .sh{transform:none}
+.pgcard .x{position:absolute;right:14px;top:14px;width:34px;height:34px;border-radius:50%;border:0;background:var(--cream);font-size:14px}
+.pgface{position:absolute;left:50%;top:-52px;width:104px;height:104px;margin-left:-52px}
+.pgface img{position:relative;width:104px;height:104px;border-radius:50%;object-fit:cover;border:4px solid #fff;box-shadow:0 12px 28px -8px rgba(0,0,0,.5);display:block}
+.pgface i{position:absolute;inset:-10px;border-radius:50%;border:2px solid var(--honey-deep);opacity:0;animation:pgRing 2.4s ease-out infinite}
+.pgface i+i{animation-delay:1.2s}
+@keyframes pgRing{0%{transform:scale(.85);opacity:.8}100%{transform:scale(1.35);opacity:0}}
+.pgcard h3{font-size:22px}.pgcard .dd{margin-top:3px;font-size:13px;color:var(--ink-3);font-weight:600}
+.pgcard .cm{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.pgcard .cm span{padding:6px 11px;border-radius:999px;background:var(--cream);border:1px solid var(--line);font-size:12.5px;font-weight:600}
+.pgcard .bio{margin-top:10px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.pgcard .qk{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.pgcard .qk button{padding:7px 12px;border-radius:999px;border:1px solid var(--honey);background:var(--honey-wash);font-size:12.5px;font-weight:700;color:var(--ink)}
+.pgcard .snd{display:flex;gap:8px;margin-top:12px}
+.pgcard .snd input{flex:1;height:48px;border-radius:999px;border:1.5px solid var(--line);padding:0 16px;font-size:15px;background:var(--cream);color:var(--ink)}
+.pgcard .snd button{width:48px;height:48px;border-radius:50%;border:0;background:var(--love);color:#fff;display:grid;place-items:center;flex:none}
+.pgcard .snd button svg{width:21px;height:21px}
+.pgcard .hint{margin-top:8px;font-size:11.5px;color:var(--ink-3)}
 .radarwrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;text-align:center;transition:opacity .26s ease}
 .radarwrap.out{opacity:0}
 .radar{position:relative;width:240px;height:240px;flex:none}
@@ -1207,7 +1280,7 @@ const Admin = {
    =========================================================================== */
 const mapLike = r=>({ from:pick(r,"likes","from"), to:pick(r,"likes","to"), super:!!pick(r,"likes","super"), at:toMs(pick(r,"likes","created")) });
 const mapMatch = r=>{ const a=pick(r,"matches","a"), b=pick(r,"matches","b");
-  return { id:r[COL.matches.id], members:[a,b], at:toMs(pick(r,"matches","created")), lastMsg:"", lastAt:0, lastFrom:null }; };
+  return { id:r[COL.matches.id], members:[a,b], at:toMs(pick(r,"matches","created")), lastMsg:"", lastAt:0, lastFrom:null, pg:!!r.via_pandago }; };
 
 const PASS_KEY = me=>"zm:passes:"+me;                         // passes are private, kept on the device
 const readPasses = me=>{ try{ return JSON.parse(localStorage.getItem(PASS_KEY(me))||"{}"); }catch(e){ return {}; } };
@@ -2253,9 +2326,9 @@ async function profileOf(code){
    ========================================================================== */
 async function viewPeople(root){
   root.innerHTML=`<div class="topbar">
-      ${brandTile(38)}
-      <h2 style="display:flex;align-items:center">${brandText(22)}</h2>
-      <button class="iconbtn" id="filtBtn" aria-label="Filters">${I.filter}</button></div>
+      <h2 style="display:flex;align-items:center;flex:1;min-width:0">${brandText(22)}</h2>
+      <button class="iconbtn" id="filtBtn" aria-label="Filters">${I.filter}</button>
+      <button class="pgbtn" id="pgBtn" aria-label="PandaGo">${pgLogo(30)}<span>PandaGo</span></button></div>
     <div id="deck"></div>
     <div class="deckact">
       <button class="act undo" id="aUndo" aria-label="Undo">${I.undo}</button>
@@ -2265,6 +2338,7 @@ async function viewPeople(root){
     </div>`;
   root.style.paddingBottom="8px"; root.classList.add("noscroll");
   $("#filtBtn").onclick=openFilters;
+  $("#pgBtn").onclick=openPandaGo;
   { const dk=$("#deck"); dk.innerHTML=radarHTML("Finding people near you",""); fillRadar(dk);
     await Promise.all([Quota.state().then(()=>buildDeck(true)),new Promise(r=>setTimeout(r,1000))]);
     const rw=$(".radarwrap",dk); if(rw){ rw.classList.add("out"); await new Promise(r=>setTimeout(r,260)); }
@@ -2917,13 +2991,17 @@ function faceCrop(url){
   _faceQ=job.catch(()=>{}); _faceCache.set(url,job); return job;
 }
 function hydrateFaces(root){
+  /* the picture stays invisible until the face crop is ready, so the full photo never flashes first */
   $$("img[data-face]:not([data-fdone])",root||document).forEach(im=>{
-    im.dataset.fdone="1"; const u=im.dataset.face;
-    faceCrop(u).then(c=>{ if(c && im.isConnected) im.src=c; });
+    im.dataset.fdone="1"; const u=im.dataset.face; let done=false;
+    const fin=c=>{ if(done) return; done=true; if(c&&im.isConnected) im.src=c; im.classList.add("fc"); };
+    if(!u){ fin(null); return; }
+    faceCrop(u).then(fin,()=>fin(null));
+    setTimeout(()=>fin(null),8000);                       /* no face / slow model: fall back to the photo */
   });
 }
 (function(){ let t=0; const fr=document.getElementById("frame"); if(!fr) return;
-  new MutationObserver(()=>{ clearTimeout(t); t=setTimeout(()=>hydrateFaces(fr),60); }).observe(fr,{childList:true,subtree:true}); })();
+  new MutationObserver(()=>{ clearTimeout(t); t=setTimeout(()=>hydrateFaces(fr),16); }).observe(fr,{childList:true,subtree:true}); })();
 
 function personMenu(p,after){
   if(p.code===App.me){ toast("That's you"); return; }
@@ -3047,7 +3125,7 @@ async function viewLiked(root){
    CHATS
    ========================================================================== */
 async function viewChats(root){
-  const FL={all:"All chats",recent:"Recent",unread:"Unread",older:"Older"};
+  const FL={all:"All chats",recent:"Recent",unread:"Unread",older:"Older",pandago:"PandaGo"};
   App.chatFilter=App.chatFilter||"all";
   root.innerHTML=`<div class="topbar"><h2>Chats</h2><button class="iconbtn" id="chFilter" aria-label="Filter chats">${I.filter}</button></div>
     <div class="searchwrap"><div class="search">${I.search}
@@ -3096,23 +3174,27 @@ async function viewChats(root){
   const convo=rows.filter(r=>r.m.lastMsg);
   const isUnread=r=>r.m.lastFrom&&r.m.lastFrom!==App.me&&r.m.lastAt>readMark(r.m.id);
   const isRecent=r=>Date.now()-(r.m.lastAt||r.m.at)<=48*3600*1000;
-  const paintChip=()=>{ $("#chipLine").innerHTML=App.chatFilter!=="all"?`<div style="padding:6px 18px 0"><button class="chip on" id="chipX" style="font-size:12.5px">${FL[App.chatFilter]} ✕</button></div>`:"";
+  const paintChip=()=>{ $("#chipLine").innerHTML=(App.chatFilter!=="all"&&App.chatFilter!=="pandago")?`<div style="padding:6px 18px 0"><button class="chip on" id="chipX" style="font-size:12.5px">${FL[App.chatFilter]} ✕</button></div>`:"";
     const x=$("#chipX"); if(x) x.onclick=()=>{ App.chatFilter="all"; paintChip(); paint($("#chatSearch").value.trim()); }; };
   const paint=q=>{
     const list=$("#threadList"); list.innerHTML="";
+    let headDone=false;
+    const pill=()=>`<button class="pgpill ${App.chatFilter==="pandago"?"on":""}" id="pgFilt">${pgLogo(22,false)}PandaGo</button>`;
+    const wirePill=()=>{ const b=$("#pgFilt"); if(b) b.onclick=()=>{ App.chatFilter=App.chatFilter==="pandago"?"all":"pandago"; paintChip(); paint($("#chatSearch").value.trim()); }; };
     let f=convo.filter(r=>!q||r.p.name.toLowerCase().includes(q.toLowerCase()));
     if(App.chatFilter==="recent") f=f.filter(isRecent);
     if(App.chatFilter==="unread") f=f.filter(isUnread);
     if(App.chatFilter==="older") f=f.filter(r=>!isRecent(r));
-    if(!f.length){ list.innerHTML=`<p class="muted small" style="padding:28px;text-align:center">${convo.length?"No chats here.":"No conversations yet — say hi to a new match!"}</p>`; return; }
+    if(App.chatFilter==="pandago") f=f.filter(r=>r.m.pg);
+    if(!f.length){ list.innerHTML=`<div class="chhead"><h3>${App.chatFilter==="pandago"?"PandaGo":"Chats"}</h3>${pill()}</div><p class="muted small" style="padding:28px;text-align:center">${App.chatFilter==="pandago"?"No PandaGo chats yet — open PandaGo in People and say hi to someone nearby.":convo.length?"No chats here.":"No conversations yet — say hi to a new match!"}</p>`; wirePill(); return; }
     const draw=(title,arr)=>{
       if(!arr.length) return;
-      list.insertAdjacentHTML("beforeend",`<h3 style="padding:14px 18px 4px;font-size:15px">${title}</h3>`);
+      list.insertAdjacentHTML("beforeend",`<div class="chhead"><h3>${title}</h3>${headDone?"":pill()}</div>`); headDone=true;
       arr.forEach(r=>{
         const unread=isUnread(r);
         const row=el("button","thread");
         row.innerHTML=`<img class="av sm" data-face="${(r.p.photos&&r.p.photos[0])||""}" src="${img(r.p)}" alt="">
-          <div class="t"><b>${esc(r.p.name)}</b>
+          <div class="t"><b>${esc(r.p.name)}${r.m.pg?pgTag():""}</b>
             <p style="${unread?"color:var(--ink);font-weight:600":""}">${esc((r.m.lastFrom===App.me?"You: ":"")+previewText(r.m.lastMsg))}</p></div>
           <div class="meta">${timeAgo(r.m.lastAt||r.m.at)}${unread?'<div style="margin-top:5px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pink)"></span></div>':""}</div>`;
         row.onclick=()=>openChat(r.m.id,r.p);
@@ -3122,7 +3204,9 @@ async function viewChats(root){
     if(App.chatFilter==="recent") draw("Chats (Recent)",f);
     else if(App.chatFilter==="older") draw("Older Chats",f);
     else if(App.chatFilter==="unread") draw("Unread",f);
+    else if(App.chatFilter==="pandago") draw("PandaGo",f);
     else { draw("Chats (Recent)",f.filter(isRecent)); draw("Older Chats",f.filter(r=>!isRecent(r))); }
+    wirePill();
   };
   $("#chFilter").onclick=()=>{
     const b=modal("Filter chats",Object.entries(FL).map(([k,l])=>`<button class="listopt" data-f="${k}"><span style="flex:1;${App.chatFilter===k?"font-weight:800":""}">${l}</span>${App.chatFilter===k?'<span>✓</span>':""}</button>`).join(""));
@@ -3218,6 +3302,7 @@ async function openChat(pid,other){
 
   const box=$("#msgs",sheet);
   const mm=App.matches.find(x=>x.id===pid||x.alias===pid||(x.members||[]).includes(other.code));
+  if(mm&&mm.pg) $("#cName",sheet).insertAdjacentHTML("beforeend",pgTag());
   const md=new Date((mm&&mm.at)||Date.now()), nowD=new Date();
   const matchDate=md.toLocaleDateString("en-GB",{day:"numeric",month:"long",...(md.getFullYear()!==nowD.getFullYear()?{year:"numeric"}:{})});
   const LCOL=["#FF2E8B","#F2309C","#E030B3","#C82CCB","#A428E8","#8A2CF0","#6B2BFF","#5B32FF"];
@@ -3791,7 +3876,8 @@ function startRealtime(){
         $$("#frame .sheet").forEach(x=>x.remove()); App.openChatPid=null;
         go("app",{tab:"chats"}); return;
       }
-      if(fresh.length){ const other=await profileOf(fresh[0].members.find(c=>c!==me)); showMatch(other); }
+      const fm=fresh.filter(m=>!m.pg);          /* PandaGo chats start as a message, not a "match" */
+      if(fm.length){ const other=await profileOf(fm[0].members.find(c=>c!==me)); showMatch(other); }
       if(onList()){
         if(App.tab==="chats" && (fresh.length||gone.length||msgChanged)) go("app",{tab:"chats"});
         else if(App.tab==="liked" && (fresh.length||gone.length)) go("app",{tab:"liked"});
@@ -3837,6 +3923,251 @@ function startGuard(){
 window.addEventListener("hashchange",()=>{ if(location.hash==="#/admin") openAdmin(); else closeAdmin(); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal();
   const s=$("#frame .sheet:last-of-type"); if(s) s.remove(); } });
+
+/* ==========================================================================
+   PANDAGO — people within 30 m (road view when moving, radar view when still)
+   ========================================================================== */
+const PG_RADIUS=30;
+const pgLogo=(sz=32,live=true)=>`<svg class="pgl${live?" live":""}" width="${sz}" height="${sz}" viewBox="0 0 80 80" aria-hidden="true">
+  <circle class="pr p1" cx="40" cy="40" r="33" fill="none" stroke="#F2A50C" stroke-width="2"/>
+  <circle class="pr p2" cx="40" cy="40" r="33" fill="none" stroke="#F2A50C" stroke-width="2"/>
+  <g transform="translate(8 8)">
+    <circle cx="32" cy="32" r="29" fill="#FFC93C"/>
+    <rect x="7" y="43" width="50" height="12" rx="6" fill="#2B2840"/>
+    <path d="M14 49h36" stroke="#fff" stroke-width="1.6" stroke-dasharray="5 4" stroke-linecap="round"/>
+    <path d="M23 35l3.2-7h11.6l3.2 7z" fill="#7A35FF"/>
+    <rect x="17" y="34" width="30" height="11" rx="5" fill="#FF2E8B"/>
+    <circle cx="25" cy="46" r="3.4" fill="#1E1A33"/><circle cx="25" cy="46" r="1.2" fill="#fff"/>
+    <circle cx="39" cy="46" r="3.4" fill="#1E1A33"/><circle cx="39" cy="46" r="1.2" fill="#fff"/>
+    <ellipse cx="32" cy="28.5" rx="5.4" ry="3" fill="#fff" stroke="#1E1A33" stroke-width=".8"/>
+    <circle cx="25.6" cy="15.2" r="3" fill="#1E1A33"/><circle cx="38.4" cy="15.2" r="3" fill="#1E1A33"/>
+    <circle cx="32" cy="21.5" r="7.6" fill="#fff" stroke="#1E1A33" stroke-width=".9"/>
+    <ellipse cx="28.7" cy="21.4" rx="2.2" ry="2.9" fill="#1E1A33" transform="rotate(14 28.7 21.4)"/>
+    <ellipse cx="35.3" cy="21.4" rx="2.2" ry="2.9" fill="#1E1A33" transform="rotate(-14 35.3 21.4)"/>
+    <circle cx="28.9" cy="21" r=".8" fill="#fff"/><circle cx="35.1" cy="21" r=".8" fill="#fff"/>
+    <ellipse cx="32" cy="24.2" rx="1.5" ry="1" fill="#1E1A33"/>
+  </g></svg>`;
+const pgTag=()=>`<span class="pgtag">${pgLogo(15,false)}PandaGo</span>`;
+const geoM=(a,b,c,d)=>{ const R=6371000,r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b);
+  const h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
+
+function loadLeaflet(){
+  if(window.L) return Promise.resolve(window.L);
+  if(loadLeaflet._p) return loadLeaflet._p;
+  loadLeaflet._p=new Promise((res,rej)=>{
+    const css=document.createElement("link"); css.rel="stylesheet"; css.href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"; document.head.appendChild(css);
+    const sc=document.createElement("script"); sc.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+    sc.onload=()=>res(window.L); sc.onerror=()=>{ loadLeaflet._p=null; rej(new Error("leaflet")); }; document.head.appendChild(sc);
+  });
+  return loadLeaflet._p;
+}
+
+function openPandaGo(){
+  if($("#pgui")) return;
+  const me=App.profile||{}, want=me.gender==="Female"?"Male":"Female";
+  const ui=el("div","sheet pg"); ui.id="pgui";
+  const src=(me.photos&&me.photos[0])||artFor(me.code||"me",me.name||"");
+  ui.innerHTML=`
+    <div class="pg-top">
+      <button class="iconbtn" id="pgBack" aria-label="Back">${I.back}</button>
+      <div class="pg-ttl">${pgLogo(34)}<b>PandaGo</b></div>
+      <span class="pg-live" id="pgLive"><i></i><em>Locating…</em></span>
+      <button class="iconbtn" id="pgTest" aria-label="Test options">${I.filter}</button></div>
+    <div class="pg-stage" id="pgStage">
+      <div class="pg-room" id="pgRoom">
+        <div class="radar pgr"><i class="rr"></i><i class="rr d1"></i><i class="rr d2"></i><i class="sweep"></i>
+          <span class="pg-r30"><em>${PG_RADIUS} m</em></span>
+          <img class="me" data-rface="${src}" alt=""><div id="pgBub"></div></div>
+        <p class="pg-cap" id="pgRoomCap">Scanning for people within ${PG_RADIUS} metres…</p></div>
+      <div class="pg-road hide" id="pgRoad"><div id="pgMap"></div><div class="pg-fade"></div>
+        <div class="pg-hud"><b id="pgSpd">0</b><small>km/h</small></div>
+        <div class="pg-strip" id="pgStrip"></div></div>
+    </div>
+    <div class="pg-foot" id="pgFoot">You're visible only to people within ${PG_RADIUS} m while PandaGo is open.</div>
+    <div class="pg-sky" id="pgSky">${[8,22,38,52,66,80,92,30,60].map((l,i)=>`<i class="cl" style="left:${l}%;--s:${.8+(i%4)*.35};--d:${(i*.11).toFixed(2)}s"></i>`).join("")}
+      <div class="pg-fall">${pgLogo(70,false)}</div></div>`;
+  $("#frame").appendChild(ui);
+  fillRadar(ui);
+  setTimeout(()=>{ const s=$("#pgSky",ui); if(s) s.remove(); },2300);
+
+  const st={mode:LSget("zm:pgmode")||"auto",test:false,pos:null,last:null,speed:0,fast:0,slow:0,moving:false,
+    real:[],tests:[],shown:"",map:null,sim:null,closed:false,srv:null,geo:"wait",ids:[]};
+  const T=(fn,ms)=>{ const t=setInterval(()=>{ if(st.closed) clearInterval(t); else fn(); },ms); st.ids.push(t); return t; };
+  const effMode=()=>st.mode==="room"?"room":st.mode==="road"?"road":(st.moving?"road":"room");
+
+  /* ---- status pill ---- */
+  const paintLive=()=>{ const b=$("#pgLive",ui); if(!b) return;
+    let t="Locating…",c="";
+    if(st.geo==="denied"){ t="Location off"; c="off"; }
+    else if(st.pos&&st.srv===false){ t="Setup needed"; c="off"; }
+    else if(st.pos){ t="Live"; c="on"; }
+    b.className="pg-live "+c; $("em",b).textContent=t; };
+
+  /* ---- nearby people ---- */
+  const nearAll=()=>st.real.concat(st.test?st.tests:[]).sort((a,b)=>a.d-b.d);
+  const hashA=s=>{ let h=0; for(const ch of s) h=(h*31+ch.charCodeAt(0))|0; return Math.abs(h%628)/100; };
+  const bubble=(it,pos)=>{ const p=it.p, b=el("button","pgb"+(pos?"":" flow")); b.dataset.c=p.code;
+    const ph=(p.photos&&p.photos[0])||"";
+    b.innerHTML=`<img data-face="${ph}" src="${ph||artFor(p.code,p.name)}" alt=""><small>${esc(p.name)} · ${it.d} m</small>`;
+    if(pos){ b.style.left=`calc(50% + ${pos.x}px)`; b.style.top=`calc(50% + ${pos.y}px)`; }
+    b.onclick=()=>pgCard(it); return b; };
+  const paintNear=()=>{
+    const list=nearAll(), room=$("#pgBub",ui), strip=$("#pgStrip",ui); if(!room) return;
+    room.innerHTML=""; strip.innerHTML="";
+    const base=list.length?hashA(list[0].p.code):0;
+    list.forEach((it,i)=>{
+      const a=base+i*(2*Math.PI/Math.max(list.length,1))+(i%2?.35:0);      /* spread evenly so faces never overlap */
+      const r=70+Math.min(it.d,PG_RADIUS)/PG_RADIUS*62;
+      room.appendChild(bubble(it,{x:Math.round(Math.cos(a)*r),y:Math.round(Math.sin(a)*r)}));
+      strip.appendChild(bubble(it,null));
+    });
+    const n=list.length;
+    $("#pgRoomCap",ui).textContent=n?`${n} ${n===1?"person":"people"} within ${PG_RADIUS} m — tap a face to say hi`:`Scanning for people within ${PG_RADIUS} metres…`;
+    $("#pgFoot",ui).textContent=n?`${n} nearby · You're visible only to people within ${PG_RADIUS} m while PandaGo is open.`:`You're visible only to people within ${PG_RADIUS} m while PandaGo is open.`;
+  };
+  const makeTests=async()=>{
+    const matched=new Set(App.matches.flatMap(m=>m.members));
+    const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
+    const all=(await allProfiles()).filter(p=>p&&p.done&&p.gender===want&&p.code!==App.me&&!blocked.has(p.code));
+    st.tests=all.slice(0,4).map((p,i)=>({p,d:[7,13,19,26][i],test:true,matched:matched.has(p.code)}));
+  };
+
+  /* ---- server: publish my spot, read who's close ---- */
+  let lastPing=0, busy=false;
+  const sync=async(force)=>{
+    if(st.closed||!sb||!st.pos||busy) return; if(!force&&Date.now()-lastPing<7000) return;
+    if(st.pos.acc>150) return;
+    busy=true; lastPing=Date.now();
+    try{
+      const a=await sb.rpc("zm_pandago_ping",{p_lat:st.pos.lat,p_lng:st.pos.lng,p_speed:st.speed});
+      if(a.error) throw a.error;
+      const {data,error}=await sb.rpc("zm_pandago_nearby"); if(error) throw error;
+      st.srv=true;
+      const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from)), out=[];
+      for(const r of (data||[])){ if(blocked.has(r.user_id)) continue;
+        const p=await profileOf(r.user_id); if(p&&p.done&&p.gender===want) out.push({p,d:r.dist_m}); }
+      st.real=out; paintNear();
+    }catch(e){ console.warn("[pandago]",e&&e.message||e); if(/function|schema cache|not exist/i.test(String(e&&e.message))) st.srv=false; }
+    busy=false; paintLive();
+  };
+
+  /* ---- road mode: real map ---- */
+  const center=()=>st.sim||st.pos||{lat:23.8103,lng:90.4125};
+  const OSM="https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+  const initMap=async()=>{
+    if(st.map||st.closed) return;
+    try{ await loadLeaflet(); }catch(e){ $("#pgMap",ui).innerHTML='<p class="pg-nomap">Map couldn\'t load — check your connection.</p>'; return; }
+    if(st.map||st.closed||!$("#pgMap",ui)) return;
+    const c=center(), L=window.L;
+    st.map=L.map("pgMap",{zoomControl:false,attributionControl:true,zoomSnap:.5,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false,keyboard:false}).setView([c.lat,c.lng],17.5);
+    L.tileLayer(OSM,{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(st.map);
+    st.trail=L.polyline([],{color:"#FFB300",weight:7,opacity:.9,lineCap:"round"}).addTo(st.map);
+    st.mk=L.marker([c.lat,c.lng],{icon:L.divIcon({className:"pgmk",html:pgLogo(72),iconSize:[72,72],iconAnchor:[36,36]}),interactive:false}).addTo(st.map);
+    setTimeout(()=>st.map&&st.map.invalidateSize(),60);
+  };
+  const updMap=()=>{ if(!st.map) return; const c=center();
+    st.mk.setLatLng([c.lat,c.lng]); st.trail.addLatLng([c.lat,c.lng]);
+    const tr=st.trail.getLatLngs(); if(tr.length>80) st.trail.setLatLngs(tr.slice(-80));
+    st.map.panTo([c.lat,c.lng],{animate:true,duration:.9,easeLinearity:1,noMoveStart:true}); };
+  const spd=()=>{ const kmh=Math.round((st.sim?st.sim.v:st.speed)*3.6); const e=$("#pgSpd",ui); if(e) e.textContent=kmh; };
+
+  /* ---- switch between road and room ---- */
+  const apply=()=>{
+    const m=effMode(), changed=m!==st.shown; st.shown=m;
+    $("#pgRoom",ui).classList.toggle("hide",m!=="room"); $("#pgRoad",ui).classList.toggle("hide",m!=="road");
+    if(changed&&m==="road"){ initMap().then(()=>{ if(st.map){ st.map.invalidateSize(); st.map.setView([center().lat,center().lng],17.5,{animate:false}); } }); }
+    /* test drive: when Road is forced while you're sitting still, the car drives itself so you can see the view */
+    if(m==="road"&&st.mode==="road"&&!st.moving){ if(!st.sim){ const c=st.pos||{lat:23.8103,lng:90.4125}; st.sim={lat:c.lat,lng:c.lng,hd:.9,v:9}; } }
+    else if(m!=="road"||st.moving) st.sim=null;
+  };
+  T(()=>{ if(!st.sim||!st.map) return;
+    st.sim.v=8+Math.sin(Date.now()/2500)*3; st.sim.hd+=Math.sin(Date.now()/4000)*.05;
+    const d=st.sim.v*1.0/111320; st.sim.lat+=Math.cos(st.sim.hd)*d; st.sim.lng+=Math.sin(st.sim.hd)*d/Math.cos(st.sim.lat*Math.PI/180);
+    updMap(); spd(); },1000);
+
+  /* ---- GPS ---- */
+  let wid=null;
+  const onPos=p=>{
+    const c=p.coords, t=p.timestamp||Date.now(); st.geo="ok";
+    let sp=(c.speed!=null&&isFinite(c.speed))?c.speed:null;
+    if(sp===null&&st.last){ const dt=(t-st.last.t)/1000, d=geoM(st.last.lat,st.last.lng,c.latitude,c.longitude);
+      if(dt>=1&&dt<30&&d>Math.max(8,(c.accuracy||0)*.8)) sp=d/dt; else sp=0; }
+    st.last={lat:c.latitude,lng:c.longitude,t}; st.pos={lat:c.latitude,lng:c.longitude,acc:c.accuracy||0,t};
+    st.speed=st.speed*.55+(sp||0)*.45;
+    if(st.speed>2.5){ st.fast++; st.slow=0; } else if(st.speed<1.2){ st.slow++; st.fast=0; }
+    if(st.fast>=2) st.moving=true; if(st.slow>=4) st.moving=false;
+    apply(); if(!st.sim){ updMap(); spd(); } paintLive(); sync();
+  };
+  if(navigator.geolocation){
+    wid=navigator.geolocation.watchPosition(onPos,e=>{ st.geo=e&&e.code===1?"denied":"err"; paintLive();
+      if(e&&e.code===1) $("#pgRoomCap",ui).textContent="Allow location to find people within 30 m."; },{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
+  } else { st.geo="denied"; paintLive(); }
+  T(()=>sync(),7000);
+  paintLive(); apply();
+
+  /* ---- test options ---- */
+  $("#pgTest",ui).onclick=()=>{
+    const b=modal("PandaGo test options",`
+      <p class="muted small" style="line-height:1.55;margin-bottom:12px">Use these to try both views while you're sitting in a room.</p>
+      <div class="field"><label>View</label>
+        <div class="chips" id="pgModes">${[["auto","Auto"],["room","Room (radar)"],["road","Road (map)"]].map(([k,l])=>`<button class="chip" data-m="${k}" aria-pressed="${st.mode===k}">${l}</button>`).join("")}</div>
+        <div class="help">Auto switches to Road when you're moving faster than a walk (about 9 km/h), and to Room when you stop. Road also runs a test drive when you're not moving.</div></div>
+      <div class="field"><label>Test people</label>
+        <div class="chips"><button class="chip" id="pgTP" aria-pressed="${st.test}">${st.test?"Showing 4 test people":"Show test people"}</button></div>
+        <div class="help">Adds sample faces from the app so you can see how nearby people look. Messages to test people are not sent.</div></div>`);
+    $$("#pgModes .chip",b).forEach(x=>x.onclick=()=>{ st.mode=x.dataset.m; LSset("zm:pgmode",st.mode);
+      $$("#pgModes .chip",b).forEach(y=>y.setAttribute("aria-pressed",y===x)); apply(); });
+    $("#pgTP",b).onclick=async e=>{ st.test=!st.test; if(st.test&&!st.tests.length) await makeTests();
+      e.target.setAttribute("aria-pressed",st.test); e.target.textContent=st.test?"Showing 4 test people":"Show test people"; paintNear(); };
+  };
+
+  /* ---- a nearby person's PandaGo card (not the swipe card) ---- */
+  function pgCard(it){
+    const p=it.p, mine=me.interests||[], com=commonInterests(p.interests||[],mine).slice(0,3);
+    const ph=(p.photos&&p.photos[0])||"";
+    const box=el("div","pgcard");
+    box.innerHTML=`<div class="bk"></div><div class="sh">
+      <button class="x" aria-label="Close">✕</button>
+      <div class="pgface"><i></i><i></i><img data-face="${ph}" src="${ph||artFor(p.code,p.name)}" alt=""></div>
+      <h3>${esc(p.name)}${p.age?`, ${p.age}`:""}</h3>
+      <p class="dd">${it.d} m away${p.verified?" · Photo verified":""}${p.work?" · "+esc(plain(p.work)):""}</p>
+      ${com.length?`<div class="cm">${com.map(c=>`<span>${esc(c)}</span>`).join("")}</div>`:""}
+      ${p.bio?`<p class="bio">${esc(p.bio.length>110?p.bio.slice(0,108)+"…":p.bio)}</p>`:""}
+      <div class="qk">${["👋 Hi!","Hey, you're nearby 🐼","Coffee?"].map(t=>`<button>${t}</button>`).join("")}</div>
+      <div class="snd"><input id="pgMsg" maxlength="200" placeholder="Say hi to ${esc(p.name)}…" autocomplete="off"><button id="pgSend" aria-label="Send">${I.send}</button></div>
+      <button class="linkbtn" id="pgProf" style="margin-top:10px;font-size:13px">View full profile</button>
+      <p class="hint">Messages from PandaGo go to Chats → PandaGo.</p></div>`;
+    ui.appendChild(box);
+    requestAnimationFrame(()=>box.classList.add("on"));
+    const close=()=>{ box.classList.remove("on"); setTimeout(()=>box.remove(),260); };
+    $(".bk",box).onclick=close; $(".x",box).onclick=close;
+    $$(".qk button",box).forEach(b=>b.onclick=()=>{ $("#pgMsg",box).value=b.textContent; $("#pgMsg",box).focus(); });
+    $("#pgProf",box).onclick=()=>openProfileSheet(p,{readonly:true});
+    const send=async()=>{
+      const t=$("#pgMsg",box).value.trim(); if(!t) return;
+      if(it.test){ toast("Test person — message not sent",2600); return; }
+      const btn=$("#pgSend",box); btn.disabled=true;
+      try{
+        const r=await sb.rpc("zm_pandago_start",{other:p.code});
+        if(r.error) throw r.error;
+        const mid=r.data, res=await Chat.send(mid,App.me,t,p.code);
+        if(res.error) throw res.error;
+        App.matches=await Social.matches(App.me); paintBadges();
+        close(); toast("Sent ✓ — find it in Chats → PandaGo",3200);
+      }catch(e){ btn.disabled=false; const m=String(e&&e.message||e);
+        toast(/not_nearby/.test(m)?"They moved out of range":/blocked/.test(m)?"You can't message this person":/function/i.test(m)?"PandaGo isn't set up yet (run zm-pandago.sql)":"Couldn't send: "+m,3600); }
+    };
+    $("#pgSend",box).onclick=send;
+    $("#pgMsg",box).addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); send(); } });
+  }
+
+  const close=()=>{ st.closed=true; st.ids.forEach(clearInterval);
+    if(wid!=null&&navigator.geolocation) navigator.geolocation.clearWatch(wid);
+    try{ if(st.map) st.map.remove(); }catch(e){}
+    if(sb&&st.pos) sb.rpc("zm_pandago_stop").then(()=>{},()=>{});
+    ui.remove(); };
+  $("#pgBack",ui).onclick=close;
+}
 
 boot();
 </script>
