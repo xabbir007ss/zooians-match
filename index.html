@@ -398,9 +398,10 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .act.undo svg{color:var(--ink-3)}
 #frame img[data-face]{opacity:0}
 #frame img[data-face].fc{opacity:1;transition:opacity .25s ease}
-.pgbtn{display:inline-flex;align-items:center;gap:6px;height:56px;padding:0 12px 0 3px;border-radius:18px;border:1px solid var(--line);background:var(--paper);font-family:var(--ff-d);font-weight:800;font-size:13.5px;color:var(--ink);flex:none}
+.pgbtn{display:grid;place-items:center;width:40px;height:40px;padding:0;border:0;background:none;border-radius:13px;flex:none}
+.pgbtn span{display:none}
 .pgl{display:block;overflow:visible;flex:none}
-@media(max-width:379px){.pgbtn span{display:none}.pgbtn{padding:0 3px}}
+
 .pgl .pg-sc,.pgl .pg-dash,.pgl .pg-car,.pgl .pg-wind,.pgl .pgw{transform-box:fill-box}
 .pgl .pgw{transform-origin:center}
 .pgl.live .pg-sc{animation:pgScroll 3.4s linear infinite}
@@ -418,6 +419,10 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pg-net i:nth-child(2){animation-delay:1.8s}.pg-net i:nth-child(3){animation-delay:3.6s}.pg-net i:nth-child(4){animation-delay:5.4s}
 @keyframes pgNet{0%{transform:scale(.15);opacity:.65}100%{transform:scale(4.2);opacity:0}}
 .pg-mesh{position:absolute;left:0;top:0}
+.pg-emit{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:8}
+.pg-emit i{position:absolute;left:var(--x,85%);top:var(--y,30px);width:40px;height:40px;transform:translate(-50%,-50%);border-radius:26%;border:1.5px solid rgba(242,165,12,.6);opacity:0;animation:pgEmit 6.6s ease-out infinite}
+.pg-emit i:nth-child(2){animation-delay:2.2s}.pg-emit i:nth-child(3){animation-delay:4.4s}
+@keyframes pgEmit{0%{width:40px;height:40px;opacity:.75}100%{width:1500px;height:1500px;opacity:0}}
 .pg-net b{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--honey-deep);opacity:0;animation:pgNode 3.4s ease-in-out infinite}
 @keyframes pgNode{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.7;transform:scale(1)}}
 .pgl .pr{transform-box:fill-box;transform-origin:center;opacity:.35}
@@ -2348,7 +2353,7 @@ async function viewPeople(root){
   root.innerHTML=`<div class="topbar">
       <h2 style="display:flex;align-items:center;flex:1;min-width:0">${brandText(22)}</h2>
       <button class="iconbtn" id="filtBtn" aria-label="Filters">${I.filter}</button>
-      <button class="pgbtn" id="pgBtn" aria-label="PandaGo">${pgLogo(52)}<span>PandaGo</span></button></div>
+      <button class="pgbtn" id="pgBtn" aria-label="PandaGo">${pgLogo(40)}<span>PandaGo</span></button></div>
     <div id="deck"></div>
     <div class="deckact">
       <button class="act undo" id="aUndo" aria-label="Undo">${I.undo}</button>
@@ -2359,6 +2364,10 @@ async function viewPeople(root){
   root.style.paddingBottom="8px"; root.classList.add("noscroll");
   $("#filtBtn").onclick=openFilters;
   $("#pgBtn").onclick=openPandaGo;
+  { root.style.position="relative"; const em=el("div","pg-emit"); em.innerHTML="<i></i><i></i><i></i>"; root.appendChild(em);
+    const place=()=>{ const b=$("#pgBtn",root); if(!b||!em.isConnected) return; const r=root.getBoundingClientRect(), q=b.getBoundingClientRect();
+      em.style.setProperty("--x",(q.left+q.width/2-r.left)+"px"); em.style.setProperty("--y",(q.top+q.height/2-r.top)+"px"); };
+    place(); setTimeout(place,350); }
   { const dk=$("#deck"); dk.innerHTML=radarHTML("Finding people near you",""); fillRadar(dk);
     await Promise.all([Quota.state().then(()=>buildDeck(true)),new Promise(r=>setTimeout(r,1000))]);
     const rw=$(".radarwrap",dk); if(rw){ rw.classList.add("out"); await new Promise(r=>setTimeout(r,260)); }
