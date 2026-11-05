@@ -3454,7 +3454,7 @@ async function viewProfile(root){
         <span class="iconbtn" style="background:${p.verified?"#2FE38F":"var(--honey)"};border-color:transparent;color:#102;flex:none"><span style="width:20px;display:block">${ICO_VER}</span></span>
         <span style="flex:1"><b style="display:block;font-size:15px">Verify my profile
           ${p.verified?'<span class="vstate ok" style="margin-left:6px">Verified</span>':App.verifyState==="review"?'<span class="vstate" style="margin-left:6px"><i class="spin"></i>In Review</span>':App.verifyState==="failed"?'<span class="vstate bad" style="margin-left:6px">Try again</span>':""}</b>
-        <span class="small muted">${p.verified?"Tap to remove your verification":App.verifyState==="review"?"We're checking your selfie in the background":App.verifyState==="failed"?"We couldn't match your selfie. Tap to retry":"Take a selfie to get a Photo verified badge"}</span></span>
+        <span class="small muted">${p.verified?"Tap to remove your verification":App.verifyState==="review"?"We're checking your selfie in the background":App.verifyState==="failed"?"We couldn't match your selfie. Tap to retry":"Takes a selfie to get a Photo verified badge"}</span></span>
         ${p.verified||App.verifyState==="review"?"":'<span class="muted">›</span>'}</button>
       <button class="btn" id="editBtn" style="margin-top:12px">${I.edit} Edit profile</button>
       <button class="btn ghost" id="intBtn" style="margin-top:10px">Edit interests (${p.interests.length})</button>
