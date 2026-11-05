@@ -2567,7 +2567,7 @@ function cardHTML(p){
         ${p.work?`<div class="wline">${workIcon(p.work)}${esc(plain(p.work))}</div>`:""}
         <button class="notebtn" data-note="${p.code}" aria-label="Send a note">${ICO_NOTE}</button>
       </div>
-      ${chips?`<div class="incard" data-open="${p.code}"><small>You both have in common</small><div class="row">${chips}</div></div>`:""}
+      ${chips?`<div class="incard" data-open="${p.code}"><small>You both have in common.</small><div class="row">${chips}</div></div>`:""}
       <div class="shint" data-open="${p.code}">${ICO_DOWN}<span>Scroll down for full profile</span></div>
     </div></div>
   </article>`;
