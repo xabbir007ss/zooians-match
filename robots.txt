@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://zooians-match.netlify.app/sitemap.xml
+Sitemap: https://zooians-match.vercel.app/sitemap.xml
