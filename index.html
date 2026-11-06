@@ -4335,7 +4335,51 @@ function openPandaGo(){
       sync(true);
     }
   };
+/* ---- PandaGo manual refresh ---- */
+let refreshQueued=false;
 
+const refreshPeople=()=>{
+  if(st.closed) return;
+  lastPing=0;
+
+  if(busy){
+    refreshQueued=true;
+    return;
+  }
+
+  sync(true);
+};
+
+$("#pgRefresh",ui).addEventListener("click",refreshPeople);
+
+/* Pull down from the top to refresh */
+let pgPullStartY=null;
+
+ui.addEventListener("touchstart",e=>{
+  if(e.touches.length!==1) return;
+
+  const y=e.touches[0].clientY;
+  const rect=ui.getBoundingClientRect();
+
+  if(y-rect.top>120) return;
+
+  pgPullStartY=y;
+},{passive:true});
+
+ui.addEventListener("touchend",e=>{
+  if(pgPullStartY===null) return;
+
+  const distance=e.changedTouches[0].clientY-pgPullStartY;
+  pgPullStartY=null;
+
+  if(distance>75){
+    refreshPeople();
+  }
+},{passive:true});
+
+ui.addEventListener("touchcancel",()=>{
+  pgPullStartY=null;
+},{passive:true});
   /* ---- the map: always on, always centred on you ---- */
   const OSM="https://tile.openstreetmap.org/{z}/{x}/{y}.png";
   const start=()=>st.pos||PGLoc.pos||lp||{lat:23.8103,lng:90.4125};
