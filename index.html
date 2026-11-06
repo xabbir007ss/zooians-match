@@ -2965,7 +2965,7 @@ function expandCard(p){
   const x=el("div","xprof");
   x.innerHTML=`<button class="xclose" aria-label="Back to card">${ICO_DOWN}</button>${pvHeroHTML(p)}${pvStreamHTML(p)}
     <div style="padding:22px 18px 40px;text-align:center">
-      <button class="linkbtn" id="xMore" style="color:var(--ink-3);font-size:13px">Report or unmatch ${esc(p.name)}</button></div>`;
+      <button class="linkbtn" id="xMore" style="color:var(--ink-3);font-size:13px">Report ${esc(p.name)}</button></div>`;
   deck.appendChild(x);
   requestAnimationFrame(()=>requestAnimationFrame(()=>x.classList.add("on")));
   $(".xclose",x).onclick=collapseCard;
