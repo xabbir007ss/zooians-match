@@ -3250,7 +3250,7 @@ $("#chFilter").style.display="none";    return;
   };
   const paintTabs=()=>{ const dot='<i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pink);margin-left:6px;vertical-align:1px"></i>';
     $$("#chTabs button").forEach(b=>{ const k=b.dataset.t; b.classList.toggle("on",k===App.chatTab);
-      b.innerHTML=(k==="pandago"?"PandaGo":"Recent")+(convoAll.some(r=>(k==="pandago"?!!r.m.pg:!r.m.pg)&&isUnread(r))?dot:""); });
+      b.innerHTML=(k==="pandago"?"PandaGo":"Your Matches")+(convoAll.some(r=>(k==="pandago"?!!r.m.pg:!r.m.pg)&&isUnread(r))?dot:""); });
     const nm=$("#newMatches"); if(nm) nm.style.display=App.chatTab==="pandago"?"none":""; };
   const wireTabs=()=>{ $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; paint($("#chatSearch").value.trim()); }); };
     paintChip(); paint("");
