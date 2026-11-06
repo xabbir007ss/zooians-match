@@ -430,7 +430,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pgl .pr{transform-box:fill-box;transform-origin:center;opacity:.35}
 .pgl.live .p1{animation:pglPing 2.6s ease-out infinite}.pgl.live .p2{animation:pglPing 2.6s ease-out 1.3s infinite}
 @keyframes pglPing{0%{transform:scale(.78);opacity:.8}100%{transform:scale(1.16);opacity:0}}
-.pgtag{display:inline-flex;align-items:center;gap:3px;margin-left:7px;padding:2px 8px 2px 3px;border-radius:999px;background:var(--honey-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--honey-deep) 55%,transparent);font-size:10.5px;font-weight:800;vertical-align:2px;letter-spacing:.02em}
+.pgtag{display:inline-block;margin-left:7px;padding:2px 8px;border-radius:7px;background:linear-gradient(135deg,#FFC93C,#F2A50C);color:#2A1C00;font-size:10px;font-weight:800;letter-spacing:.03em;line-height:1.35;vertical-align:1px;box-shadow:0 0 0 1px rgba(123,59,255,.28)}
 .chhead{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 4px}
 .chtabs2{display:flex;gap:16px}
 .chtabs2 button{background:transparent;border:0;padding:4px 0;font-family:var(--ff-d);font-weight:700;font-size:14px;color:var(--ink-3);border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
@@ -817,18 +817,30 @@ html,body{overscroll-behavior-y:none}
 .mi-pgw{display:flex;justify-content:center;font-family:var(--ff-d);font-weight:800;font-size:46px;line-height:1.05;margin-top:2px}
 .mi-pgw span{display:inline-block;background:linear-gradient(135deg,#FFC93C 0%,#FF2E8B 60%,#6B2BFF 100%);-webkit-background-clip:text;background-clip:text;color:transparent;animation:miLetter 1.8s ease-in-out infinite;animation-delay:calc(var(--i) * .1s);filter:drop-shadow(0 4px 10px rgba(242,165,12,.35))}
 /* ================= PandaGo strip (Chats → PandaGo tab) ================= */
-.pgrow{padding:16px 26px 18px;gap:18px}
+@property --pga{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes pgSpinA{to{--pga:360deg}}
+@keyframes pgGlow{0%,100%{box-shadow:0 0 14px -3px rgba(255,201,60,.75)}50%{box-shadow:0 0 14px -3px rgba(123,59,255,.75)}}
+.nmt.pgc .ph{animation:pgGlow 3.2s ease-in-out infinite}
+.nmt.pgc .ph::after{content:"";position:absolute;inset:0;border-radius:18px;padding:3px;pointer-events:none;z-index:3;background:conic-gradient(from var(--pga),#FFC93C,#FFC93C 22%,#7B3BFF 50%,#FFC93C 78%,#FFC93C);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);animation:pgSpinA 2.6s linear infinite}
 .nmt .ph.pgbox{background:#FFC93C}
-.nmt .ph.pgbox .pgl{display:block}
-.nmt.pgp .ph{background:transparent;overflow:visible;box-shadow:none}
+.nmt .ph.pgbox .pgl{position:absolute;left:50%;top:50%;width:122px;height:122px;transform:translate(-50%,-50%);display:block}
+.nmt .ph.pgph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.nmt .ph.pgph::before{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(transparent,rgba(10,6,30,.62));z-index:1;pointer-events:none}
+.nmt .ph b.dist{position:absolute;left:6px;bottom:7px;z-index:2;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.92);color:#2A1C00;font-size:10.5px;font-weight:800;line-height:1.35}
+.nmt.pgp .ph{background:transparent;overflow:visible}
 .nmt.pgp .pgin{position:absolute;inset:0;border-radius:18px;overflow:hidden;background:#0b0a14;display:block}
 .nmt.pgp .pgin svg{width:100%;height:100%;display:block}
-.nmt.pgp1 .pgin,.nmt.pgp1>span{opacity:.7}      /* Person 1: ektu kom */
-.nmt.pgp2 .pgin,.nmt.pgp2>span{opacity:.4}      /* Person 2: aro kom */
+.nmt.pgp1{opacity:.8}.nmt.pgp2{opacity:.55}.nmt.pgp3{opacity:.32}
 .nmt.srch .rip{position:absolute;inset:0;border-radius:18px;border:2px solid var(--honey-deep);opacity:0;pointer-events:none;animation:pgRip 2.4s ease-out infinite}
 .nmt.srch .rip:nth-child(2){animation-delay:.8s}
 .nmt.srch .rip:nth-child(3){animation-delay:1.6s}
-@keyframes pgRip{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.28,1.2);opacity:0}}
+@keyframes pgRip{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.2,1.16);opacity:0}}
+.nmrow.pgrow{padding:16px 18px 18px;margin-top:-6px}
+@media (prefers-reduced-motion:reduce){.nmt.pgc .ph,.nmt.pgc .ph::after{animation:none}}
+.chhead.chtabrow{padding:12px 22px 4px}
+.chtabrow .chtabs2{width:100%;justify-content:space-between;gap:0}
+.chtabrow .chtabs2 button{font-size:15px}
+.chsec{padding:10px 18px 0}.chsec h3{font-size:15px}
 /* ================= toast / modal ================= */
 #toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%) translateY(-18px) scale(.96);
   max-width:min(88vw,380px);padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;line-height:1.35;text-align:center;
@@ -3306,7 +3318,7 @@ async function viewChats(root){
   const waiting=App.likedYou.filter(l=>!blocked.has(l.from)&&!App.passes.some(x=>x.to===l.from)&&!App.myLikes.some(m=>m.to===l.from)&&!App.matches.some(m=>m.members.includes(l.from)));
 
   if(!rows.length && !waiting.length && App.chatTab!=="pandago"){
-    $("#threadList").innerHTML=`<div class="chhead"><h3>Chats</h3><div class="chtabs2" id="chTabs"><button data-t="recent" class="on">Your Matches</button><button data-t="pandago">PandaGo</button></div></div><div style="text-align:center;padding:44px 34px">
+    $("#threadList").innerHTML=`${CHTABS}<div style="text-align:center;padding:44px 34px">
       <div style="width:220px;margin:0 auto;position:relative;height:120px" class="pandas">
         <span class="spark">💛</span><div class="p m">${pandaSVG("m")}</div><div class="p f">${pandaSVG("f")}</div></div>
       <h2 style="margin-top:14px">No matches yet</h2>
@@ -3352,10 +3364,10 @@ $("#chFilter").style.display="none";    return;
     if(App.chatFilter==="unread") f=f.filter(isUnread);
     if(App.chatFilter==="older") f=f.filter(r=>!isRecent(r));
     if(App.chatFilter==="pandago") f=f.filter(r=>r.m.pg);
-    if(!f.length){ list.innerHTML=`<div class="chhead"><h3>${App.chatTab==="pandago"?"PandaGo":"Chats"}</h3><div class="chtabs2" id="chTabs"><button data-t="recent">Your Matches</button><button data-t="pandago">PandaGo</button></div></div><p class="muted small" style="padding:28px;text-align:center">${App.chatTab==="pandago"?"No PandaGo chats yet — open PandaGo in People and say hi to someone nearby.":convo.length?"No chats here.":"No conversations yet — say hi to a new match!"}</p>`; wirePill(); paintTabs(); wireTabs(); return; }
+    if(!f.length){ list.innerHTML=`${CHTABS}<p class="muted small" style="padding:28px;text-align:center">${App.chatTab==="pandago"?"No PandaGo chats yet — open PandaGo in People and say hi to someone nearby.":convo.length?"No chats here.":"No conversations yet — say hi to a new match!"}</p>`; wirePill(); paintTabs(); wireTabs(); return; }
     const draw=(title,arr)=>{
       if(!arr.length) return;
-      list.insertAdjacentHTML("beforeend",`<div class="chhead"><h3>${title}</h3>${headDone?"":'<div class="chtabs2" id="chTabs"><button data-t="recent">Your Matches</button><button data-t="pandago">PandaGo</button></div>'}</div>`); headDone=true;
+      list.insertAdjacentHTML("beforeend",headDone?"":CHTABS); headDone=true;
       arr.forEach(r=>{
         const unread=isUnread(r);
         const row=el("button","thread");
@@ -3422,15 +3434,25 @@ async function pgNearLoad(){
 }
 function pgNearHTML(list){
   const img=p=>(p.photos&&p.photos[0])||artFor(p.code,p.name);
-  const logoBox=`<div class="nmt gold" data-pgopen="1"><div class="ph pgbox">${pgLogo(76)}</div><span>PandaGo</span></div>`;
-  const rest=list.length
-    ? list.map(it=>`<div class="nmt gold" data-pgopen="1"><div class="ph"><i style="background-image:url('${img(it.p)}')"></i></div><span>${esc(it.p.name)} · ${it.d} m</span></div>`).join("")
-    : [1,2].map(n=>`<div class="nmt pgp pgp${n}${n===1?" srch":""}"><div class="ph">${n===1?'<b class="rip"></b><b class="rip"></b><b class="rip"></b>':""}<div class="pgin">${pgSilhouette()}</div></div><span>(Person ${n})</span></div>`).join("");
+  const logoBox=`<div class="nmt pgc" data-pgopen="1"><div class="ph pgbox">${pgLogo(120).replace("<svg",'<svg preserveAspectRatio="xMidYMid slice"')}</div><span>PandaGo</span></div>`;
+
+  const shown=list.slice(0,3);
+
+  const real=shown.map(it=>{
+    const ph=(it.p.photos&&it.p.photos[0])||"";
+    return `<div class="nmt pgc" data-pgopen="1"><div class="ph pgph"><img data-face="${ph}" src="${ph||img(it.p)}" alt=""><b class="dist">${it.d} m</b></div><span>${esc((it.p.name||"").split(" ")[0])}</span></div>`;
+  }).join("");
+
+  let slots="";
+  for(let n=shown.length+1;n<=3;n++){
+    slots+=`<div class="nmt pgc pgp pgp${n}${n===shown.length+1?" srch":""}"><div class="ph">${n===shown.length+1?'<b class="rip"></b><b class="rip"></b><b class="rip"></b>':""}<div class="pgin">${pgSilhouette()}</div></div><span>(Person ${n})</span></div>`;
+  }
+
   return `<div class="newmatches">
     <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 18px 4px">
       <h3 style="font-size:16px">Finding for you</h3>
       <button class="linkbtn" id="pgSee" style="font-size:12.5px">See who nearby you ›</button></div>
-    <div class="nmrow pgrow">${logoBox}${rest}</div>${PGLoc.note()}</div>`;
+    <div class="nmrow pgrow">${logoBox}${real}${slots}</div>${PGLoc.note()}</div>`;
 }
 function wirePgNear(box){
   const open=async()=>{ await go("app",{tab:"people"}); openPandaGo(); };
@@ -4286,7 +4308,8 @@ const pgLogo=(sz=32,live=true)=>{ const u="pgc"+(pgLogo._n=(pgLogo._n||0)+1);
         </g></g>
   </g></g>
   <rect x="4" y="4" width="72" height="72" rx="17" fill="none" stroke="#E09600" stroke-width="1.4"/></svg>`; };
-const pgTag=()=>`<span class="pgtag">${pgLogo(20,false)}PandaGo</span>`;
+const pgTag=()=>`<span class="pgtag">PandaGo</span>`;
+const CHTABS=`<div class="chhead chtabrow"><div class="chtabs2" id="chTabs"><button data-t="pandago">PandaGo</button><button data-t="recent">Your Matches</button></div></div>`;
 const geoM=(a,b,c,d)=>{ const R=6371000,r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b);
   const h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
 
