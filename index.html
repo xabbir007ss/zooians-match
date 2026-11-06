@@ -4335,9 +4335,7 @@ function openPandaGo(){
       sync(true);
     }
   };
-
-  /* ---- the map: always on, always centred on you ---- */
-  /* ---- PandaGo manual refresh ---- */
+/* ---- PandaGo manual refresh ---- */
 let refreshQueued=false;
 
 const refreshPeople=()=>{
@@ -4382,6 +4380,7 @@ ui.addEventListener("touchend",e=>{
 ui.addEventListener("touchcancel",()=>{
   pgPullStartY=null;
 },{passive:true});
+  /* ---- the map: always on, always centred on you ---- */
   const OSM="https://tile.openstreetmap.org/{z}/{x}/{y}.png";
   const start=()=>st.pos||PGLoc.pos||lp||{lat:23.8103,lng:90.4125};
   const initMap=async()=>{
