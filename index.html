@@ -856,6 +856,31 @@ html,body{overscroll-behavior-y:none}
   content:"";
   position:absolute;
   inset:0;
+  box-sizing:border-box;
+  border-radius:18px;
+  border:1px solid rgba(255,201,60,.22);
+  pointer-events:none;
+  z-index:3;
+  opacity:.35;
+  box-shadow:0 0 2px rgba(255,201,60,.10);
+  animation:pgCardNetwork 2.6s ease-in-out infinite;
+}
+
+@keyframes pgCardNetwork{
+  0%,100%{
+    opacity:.28;
+    box-shadow:0 0 2px rgba(255,201,60,.08);
+  }
+  50%{
+    opacity:.48;
+    box-shadow:
+      0 0 5px rgba(255,201,60,.16),
+      0 0 4px rgba(123,59,255,.12);
+  }
+}
+  content:"";
+  position:absolute;
+  inset:0;
   border-radius:18px;
   border:1px solid rgba(255,201,60,.5);
   pointer-events:none;
@@ -893,6 +918,19 @@ html,body{overscroll-behavior-y:none}
 .nmt.srch .rip:nth-child(3){animation-delay:1.6s}
 @keyframes pgRip{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.2,1.16);opacity:0}}
 .nmrow.pgrow{
+  /* Person cards: each one slightly smaller than the previous */
+.nmrow.pgrow .nmt.pgc:nth-child(2){
+  transform:scale(.96);
+  transform-origin:top center;
+}
+.nmrow.pgrow .nmt.pgc:nth-child(3){
+  transform:scale(.92);
+  transform-origin:top center;
+}
+.nmrow.pgrow .nmt.pgc:nth-child(4){
+  transform:scale(.88);
+  transform-origin:top center;
+}
   padding:4px 18px 10px;
   margin-top:0;
   gap:14px;
