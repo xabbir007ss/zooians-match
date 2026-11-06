@@ -431,6 +431,9 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 @keyframes pglPing{0%{transform:scale(.78);opacity:.8}100%{transform:scale(1.16);opacity:0}}
 .pgtag{display:inline-flex;align-items:center;gap:3px;margin-left:7px;padding:2px 8px 2px 3px;border-radius:999px;background:var(--honey-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--honey-deep) 55%,transparent);font-size:10.5px;font-weight:800;vertical-align:2px;letter-spacing:.02em}
 .chhead{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 4px}
+.chtabs2{display:flex;gap:16px}
+.chtabs2 button{background:transparent;border:0;padding:4px 0;font-family:var(--ff-d);font-weight:700;font-size:14px;color:var(--ink-3);border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.chtabs2 button.on{color:var(--ink);border-bottom-color:var(--ink)}
 .chhead h3{font-size:15px}
 .pgpill{display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 12px 0 4px;border-radius:999px;border:1.5px solid var(--honey);background:var(--paper);font-family:var(--ff-d);font-weight:800;font-size:13px;color:var(--ink)}
 .pgpill.on{background:var(--honey);color:#2A1C00}
@@ -3163,8 +3166,7 @@ async function viewChats(root){
   root.innerHTML=`<div class="topbar"><h2>Chats</h2><button class="iconbtn" id="chFilter" aria-label="Filter chats">${I.filter}</button></div>
     <div class="searchwrap"><div class="search">${I.search}
       <input id="chatSearch" placeholder="Search your matches" autocomplete="off"></div></div>
-<div id="chTabs" class="authtabs" style="margin:0 16px 10px"><button data-t="recent">Recent</button><button data-t="pandago">PandaGo</button></div>
-    <div id="chipLine"></div><div id="newMatches"></div><div id="threadList"></div>`;  const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
+<div id="chipLine"></div><div id="newMatches"></div><div id="threadList"></div>`;  const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
   const rows=[];
   for(const m of App.matches){
     const other=m.members.find(c=>c!==App.me);
@@ -3219,10 +3221,10 @@ $("#chFilter").style.display="none"; $("#chTabs").style.display="none";    retur
     if(App.chatFilter==="unread") f=f.filter(isUnread);
     if(App.chatFilter==="older") f=f.filter(r=>!isRecent(r));
     if(App.chatFilter==="pandago") f=f.filter(r=>r.m.pg);
-    if(!f.length){ list.innerHTML=`<div class="chhead"><h3>${App.chatTab==="pandago"?"PandaGo":"Chats"}</h3>${pill()}</div><p class="muted small" style="padding:28px;text-align:center">${App.chatTab==="pandago"?"No PandaGo chats yet — open PandaGo in People and say hi to someone nearby.":convo.length?"No chats here.":"No conversations yet — say hi to a new match!"}</p>`; wirePill(); return; }
+    if(!f.length){ list.innerHTML=`<div class="chhead"><h3>${App.chatTab==="pandago"?"PandaGo":"Chats"}</h3><div class="chtabs2" id="chTabs"><button data-t="recent">Recent</button><button data-t="pandago">PandaGo</button></div></div><p class="muted small" style="padding:28px;text-align:center">${App.chatTab==="pandago"?"No PandaGo chats yet — open PandaGo in People and say hi to someone nearby.":convo.length?"No chats here.":"No conversations yet — say hi to a new match!"}</p>`; wirePill(); paintTabs(); wireTabs(); return; }
     const draw=(title,arr)=>{
       if(!arr.length) return;
-      list.insertAdjacentHTML("beforeend",`<div class="chhead"><h3>${title}</h3>${headDone?"":pill()}</div>`); headDone=true;
+      list.insertAdjacentHTML("beforeend",`<div class="chhead"><h3>${title}</h3>${headDone?"":'<div class="chtabs2" id="chTabs"><button data-t="recent">Recent</button><button data-t="pandago">PandaGo</button></div>'}</div>`); headDone=true;
       arr.forEach(r=>{
         const unread=isUnread(r);
         const row=el("button","thread");
@@ -3240,13 +3242,18 @@ $("#chFilter").style.display="none"; $("#chTabs").style.display="none";    retur
     else if(App.chatFilter==="unread") draw("Unread",f);
     else if(App.chatFilter==="pandago") draw("PandaGo",f);
     else { draw("Chats (Recent)",f.filter(isRecent)); draw("Older Chats",f.filter(r=>!isRecent(r))); }
-    wirePill();
+    wirePill(); paintTabs(); wireTabs();
   };
   $("#chFilter").onclick=()=>{
     const b=modal("Filter chats",Object.entries(FL).map(([k,l])=>`<button class="listopt" data-f="${k}"><span style="flex:1;${App.chatFilter===k?"font-weight:800":""}">${l}</span>${App.chatFilter===k?'<span>✓</span>':""}</button>`).join(""));
     $$("[data-f]",b).forEach(x=>x.onclick=()=>{ App.chatFilter=x.dataset.f; closeModal(); paintChip(); paint($("#chatSearch").value.trim()); });
   };
-  const paintTabs=()=>{ const dot='<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pink);margin-left:7px;vertical-align:1px"></i>';
+  const paintTabs=()=>{ const dot='<i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pink);margin-left:6px;vertical-align:1px"></i>';
+    $$("#chTabs button").forEach(b=>{ const k=b.dataset.t; b.classList.toggle("on",k===App.chatTab);
+      b.innerHTML=(k==="pandago"?"PandaGo":"Recent")+(convoAll.some(r=>(k==="pandago"?!!r.m.pg:!r.m.pg)&&isUnread(r))?dot:""); });
+    const nm=$("#newMatches"); if(nm) nm.style.display=App.chatTab==="pandago"?"none":""; };
+  const wireTabs=()=>{ $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; paint($("#chatSearch").value.trim()); }); };
+  paintChip(); paint(""); const dot='<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pink);margin-left:7px;vertical-align:1px"></i>';
     $$("#chTabs button").forEach(b=>{ const k=b.dataset.t; b.classList.toggle("on",k===App.chatTab);
       b.innerHTML=(k==="pandago"?"PandaGo":"Recent")+(convoAll.some(r=>(k==="pandago"?!!r.m.pg:!r.m.pg)&&isUnread(r))?dot:""); });
     const nm=$("#newMatches"); if(nm) nm.style.display=App.chatTab==="pandago"?"none":""; };
