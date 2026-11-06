@@ -3636,7 +3636,6 @@ const PGLoc={
   }
 };
 /* ---------------- PandaGo block (only available for PandaGo people / chats) ---------------- */
-async function pgBlock(p){
   async function pgLoadMyBlocks(){
   if(!sb||!App.me||App.preview) return [];
   const {data,error}=await sb.from("pandago_blocks")
