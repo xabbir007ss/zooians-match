@@ -3674,10 +3674,14 @@ async function pgBlockedProfilesDialog(){
       b.innerHTML=`<div style="padding:18px">
         <h3 style="margin-bottom:14px"></h3>
         ${rows.length?rows.map(p=>`
-          <div class="listopt" style="gap:10px">
-            <span style="flex:1">${esc(p.name||"Profile")}</span>
-            <button class="btn ghost" data-pgunblock="${p.code}" style="padding:7px 12px">Unblock</button>
-          </div>`).join(""):'<p class="muted small">You haven’t blocked anyone on PandaGo.</p>'}
+          <div class="listopt" style="gap:10px;align-items:center">
+  <img src="${(p.photos&&p.photos[0])||artFor(p.code,p.name)}"
+       onerror="this.src='${artFor(p.code,p.name)}'"
+       style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex:none"
+       alt="">
+  <span style="flex:1">${esc(p.name||"Profile")}</span>
+  <button class="btn ghost" data-pgunblock="${p.code}" style="padding:7px 12px">Unblock</button>
+</div>`).join(""):'<p class="muted small">You haven’t blocked anyone on PandaGo.</p>'}
         <button class="btn ghost" id="pgBlkClose" style="margin-top:14px">Close</button>
       </div>`;
       $("#pgBlkClose",b).onclick=closeModal;
