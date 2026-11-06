@@ -466,6 +466,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pg-scan .pgb{pointer-events:auto}
 .pgcap2{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;width:max-content;max-width:90%;padding:7px 15px;border-radius:99px;background:rgba(255,253,245,.93);box-shadow:0 6px 18px -8px rgba(0,0,0,.35);pointer-events:none}
 .pg-stage .pg-hud{z-index:3}
+.pggate{margin:0 14px 8px;padding:9px 13px;border-radius:14px;background:var(--paper);border:1px solid var(--line);font-size:12.5px;line-height:1.45;color:var(--ink-3);text-align:center}
 .pgcar{width:64px;height:64px;transition:transform .25s}.pgcar.flip{transform:scaleX(-1)}
 .pgmk{background:none;border:0}.pgmk .pgl{filter:drop-shadow(0 8px 6px rgba(0,0,0,.35));animation:pgBounce 1.1s ease-in-out infinite}
 @keyframes pgBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
@@ -3062,8 +3063,11 @@ function personMenu(p,after){
   const isMatch=App.matches.some(m=>m.members.includes(p.code));
   const b=modal(p.name,`
     ${isMatch?`<button class="listopt" id="mUnmatch">${I.x}<span>Unmatch ${esc(p.name)}</span></button>`:""}
-    <button class="listopt" id="mReport">${I.flag}<span>Report ${esc(p.name)}</span></button>`);
+    <button class="listopt" id="mReport">${I.flag}<span>Report ${esc(p.name)}</span></button>
+    ${App.matches.some(m=>m.pg&&m.members.includes(p.code))?`<button class="listopt" id="mBlock">${I.x}<span>Block ${esc(p.name)} (PandaGo)</span></button>`:""}`);
   $("#mReport",b).onclick=()=>{ closeModal(); reportDialog(p); };
+  const bl=$("#mBlock",b);
+  if(bl) bl.onclick=()=>{ closeModal(); pgBlockDialog(p,()=>{ if(threadUnsub){ try{threadUnsub()}catch(e){} threadUnsub=null; } App.openChatPid=null; after&&after(); go("app",{tab:"chats"}); }); };
   const un=$("#mUnmatch",b);
   if(un) un.onclick=()=>{
     const c=modal(`Unmatch ${p.name}?`,`<p class="muted small" style="margin-bottom:14px;line-height:1.55">The chat disappears for both of you, and you'll both show up in each other's discovery again.</p>
@@ -3345,12 +3349,16 @@ const PGLoc={
     if(this.wid!=null) return;
     if(!navigator.geolocation){ this.state="unsupported"; this.refresh(); return; }
     this.state="nofix";
-    this.wid=navigator.geolocation.watchPosition(p=>{
+    this.fine=false;
+    const got=(p,fine)=>{ if(fine) this.fine=true; else if(this.fine) return;
       this.pos={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy||0,speed:p.coords.speed};
+      LSset("zm:lastpos",JSON.stringify({lat:this.pos.lat,lng:this.pos.lng}));
       if(this.state==="nofix"||this.state==="denied") this.state="ok";
       this.tick(!this.sent);
-    },e=>{ this.state=e&&e.code===1?"denied":"nofix"; this.refresh(); },
+    };
+    this.wid=navigator.geolocation.watchPosition(p=>got(p,true),e=>{ this.state=e&&e.code===1?"denied":"nofix"; this.refresh(); },
     {enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+    navigator.geolocation.getCurrentPosition(p=>got(p,false),()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:5000});   /* quick coarse fix while GPS warms up */
     this.timer=setInterval(()=>this.tick(false),7000);
   },
   stop(){
@@ -3391,6 +3399,22 @@ const PGLoc={
     window.addEventListener("pagehide",()=>{ try{ if(this.sent&&sb) sb.rpc("zm_pandago_stop").then(()=>{},()=>{}); }catch(e){} });
   }
 };
+/* ---------------- PandaGo block (only available for PandaGo people / chats) ---------------- */
+async function pgBlock(p){
+  if(!sb) return false;
+  const r=await sb.rpc("zm_pandago_block",{other:p.code});
+  if(r.error){ toast(/function|schema cache/i.test(r.error.message)?"Run zm-pandago-rules.sql in Supabase first":"Couldn't block: "+r.error.message,4200); return false; }
+  App.blocks=(App.blocks||[]).filter(b=>!(b.from===App.me&&b.to===p.code)); App.blocks.push({from:App.me,to:p.code,at:Date.now()});
+  App.pgNear=(App.pgNear||[]).filter(x=>x.p.code!==p.code);
+  return true;
+}
+function pgBlockDialog(p,done){
+  const b=modal("Block "+p.name+"?",`<p class="small muted" style="margin-bottom:14px;line-height:1.55">They won't appear for you on PandaGo and you won't appear for them, even within ${PG_RADIUS} m. They also can't message you.</p>
+    <button class="btn danger" id="okBlk">Block</button><button class="btn ghost" id="noBlk" style="margin-top:10px">Cancel</button>`);
+  $("#noBlk",b).onclick=closeModal;
+  $("#okBlk",b).onclick=async()=>{ $("#okBlk",b).disabled=true; const ok=await pgBlock(p); closeModal(); if(ok){ toast("Blocked "+p.name); if(done) done(); } };
+}
+const pgLastPos=()=>{ try{ const x=JSON.parse(LSget("zm:lastpos")||"null"); return x&&isFinite(x.lat)&&isFinite(x.lng)?x:null; }catch(e){ return null; } };
 /* ------------------------------ thread ----------------------------------- */
 let threadUnsub=null;
 const parseRx=t=>{ const m=/^\u2063rx:(.+)$/.exec(t||""); return m?m[1]:null; };
@@ -3546,7 +3570,7 @@ async function openChat(pid,other){
     } else lastTap={id,t:nowT};
   });
   let list=await Chat.thread(pid,App.me,other.code); paint(list);
-  const addMsg=m=>{ if(list.some(x=>x.id===m.id)) return; list.push(m); list.sort((a,b)=>a.at-b.at); paint(list); markRead(pid); };
+  const addMsg=m=>{ if(list.some(x=>x.id===m.id)) return; list.push(m); list.sort((a,b)=>a.at-b.at); paint(list); markRead(pid); gate(); };
   threadUnsub=Chat.subscribe(pid,addMsg,App.me,other.code);          /* live: new messages appear instantly */
   /* safety net: even if the websocket drops, the chat re-syncs every 3 s */
   const poll=setInterval(async()=>{
@@ -3556,12 +3580,30 @@ async function openChat(pid,other){
   },3000);
 
   const ta=$("#cText",sheet);
+  /* PandaGo rule: after your first message you can't send another until they reply (they have 3 days) */
+  const gate=()=>{
+    if(!(mm&&mm.pg)) return;
+    const real=list.filter(x=>!parseRx(x.text)&&!parseUn(x.text));
+    const mine=real.filter(x=>x.from===App.me), theirs=real.filter(x=>x.from!==App.me);
+    const locked=mine.length>=1&&theirs.length===0;
+    let note=$("#pgGate",sheet);
+    if(!locked){ if(note) note.remove(); }
+    else{
+      if(!note){ note=el("div","pggate"); note.id="pgGate"; $(".composer",sheet).before(note); }
+      const left=3*864e5-(Date.now()-mine[0].at), d=Math.ceil(left/864e5);
+      note.textContent=left>0?`Message sent. You can send another once ${other.name} replies — they have ${d} day${d>1?"s":""} left to reply.`
+                             :`${other.name} didn't reply within 3 days, so this PandaGo chat is closed.`;
+    }
+    ta.disabled=locked; $("#cSend",sheet).disabled=locked; $("#cGif",sheet).disabled=locked;
+    ta.placeholder=locked?"Waiting for their reply…":"Message "+other.name;
+  };
+  gate();
   ta.addEventListener("input",()=>{ ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,110)+"px"; });
   const send=async()=>{
-    const t=ta.value.trim(); if(!t) return;
+    const t=ta.value.trim(); if(!t||ta.disabled) return;
     ta.value=""; ta.style.height="auto";
     const {data,error}=await Chat.send(pid,App.me,t,other.code);
-    if(error){ ta.value=t; toast("Message not sent: "+error.message,3800); return; }
+    if(error){ ta.value=t; toast(/pandago_wait/.test(error.message||"")?"Wait for their reply before sending another message":/blocked/.test(error.message||"")?"You can't message this person":"Message not sent: "+error.message,3800); return; }
     if(data) addMsg(data);
     markRead(pid);
   };
@@ -4203,6 +4245,9 @@ function openPandaGo(){
   const st={pos:null,last:null,speed:0,fast:0,slow:0,moving:false,flip:false,
     real:[],map:null,mk:null,trail:null,zoom:0,closed:false,srv:null,geo:"wait",ids:[]};
   const T=(fn,ms)=>{ const t=setInterval(()=>{ if(st.closed) clearInterval(t); else fn(); },ms); st.ids.push(t); return t; };
+  /* start instantly from the position the app already has (no waiting for a fresh GPS fix) */
+  const lp=pgLastPos();
+  if(PGLoc.pos){ st.pos={lat:PGLoc.pos.lat,lng:PGLoc.pos.lng,acc:PGLoc.pos.acc||0,t:Date.now()}; st.geo="ok"; st.real=(App.pgNear||[]).slice(); }
 
   /* ---- status pill ---- */
   const paintLive=()=>{ const b=$("#pgLive",ui); if(!b) return;
@@ -4254,7 +4299,7 @@ function openPandaGo(){
 
   /* ---- the map: always on, always centred on you ---- */
   const OSM="https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-  const start=()=>st.pos||PGLoc.pos||{lat:23.8103,lng:90.4125};
+  const start=()=>st.pos||PGLoc.pos||lp||{lat:23.8103,lng:90.4125};
   const initMap=async()=>{
     try{ await loadLeaflet(); }catch(e){ const m=$("#pgMap",ui); if(m) m.innerHTML='<p class="pg-nomap">Map couldn\'t load — check your connection.</p>'; return; }
     if(st.map||st.closed||!$("#pgMap",ui)) return;
@@ -4287,6 +4332,7 @@ function openPandaGo(){
     if(st.last){ const dE=(c.longitude-st.last.lng)*Math.cos(c.latitude*Math.PI/180);
       if(Math.abs(dE)>1e-6) st.flip=dE>0; }                       /* the car faces left by default; flip when heading right */
     st.last={lat:c.latitude,lng:c.longitude,t}; st.pos={lat:c.latitude,lng:c.longitude,acc:c.accuracy||0,t};
+    LSset("zm:lastpos",JSON.stringify({lat:c.latitude,lng:c.longitude}));
     st.speed=st.speed*.55+(sp||0)*.45;
     if(st.speed>1.8){ st.fast++; st.slow=0; } else if(st.speed<.9){ st.slow++; st.fast=0; }
     if(st.fast>=2) st.moving=true; if(st.slow>=4) st.moving=false;
@@ -4296,11 +4342,13 @@ function openPandaGo(){
   };
   initMap().then(()=>{ if(st.pos) follow(); });
   if(navigator.geolocation){
-    wid=navigator.geolocation.watchPosition(onPos,e=>{ st.geo=e&&e.code===1?"denied":"err"; paintLive();
+    navigator.geolocation.getCurrentPosition(p=>{ if(!st.closed&&!st.fine) onPos(p); },()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:4000});   /* fast rough fix first */
+    wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },e=>{ st.geo=e&&e.code===1?"denied":"err"; paintLive();
       if(e&&e.code===1) $("#pgRoomCap",ui).textContent="Allow location to find people within 30 m."; },{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
   } else { st.geo="denied"; paintLive(); }
   T(()=>sync(),7000);
   paintLive();
+  if(st.pos){ paintNear(); sync(true); }
 
   /* ---- a nearby person's PandaGo card (not the swipe card) ---- */
   function pgCard(it){
@@ -4317,6 +4365,7 @@ function openPandaGo(){
       <div class="qk">${["👋 Hi!","Hey, you're nearby 🐼","Coffee?"].map(t=>`<button>${t}</button>`).join("")}</div>
       <div class="snd"><input id="pgMsg" maxlength="200" placeholder="Say hi to ${esc(p.name)}…" autocomplete="off"><button id="pgSend" aria-label="Send">${I.send}</button></div>
       <button class="linkbtn" id="pgProf" style="margin-top:10px;font-size:13px">View full profile</button>
+      <button class="linkbtn" id="pgBlk" style="margin-top:2px;font-size:13px;color:var(--pink)">Block</button>
       <p class="hint">Messages from PandaGo go to Chats → PandaGo.</p></div>`;
     ui.appendChild(box);
     requestAnimationFrame(()=>box.classList.add("on"));
@@ -4324,6 +4373,7 @@ function openPandaGo(){
     $(".bk",box).onclick=close; $(".x",box).onclick=close;
     $$(".qk button",box).forEach(b=>b.onclick=()=>{ $("#pgMsg",box).value=b.textContent; $("#pgMsg",box).focus(); });
     $("#pgProf",box).onclick=()=>openProfileSheet(p,{readonly:true});
+    $("#pgBlk",box).onclick=()=>{ if(it.test){ toast("Test person"); return; } pgBlockDialog(p,()=>{ st.real=st.real.filter(x=>x.p.code!==p.code); paintNear(); close(); }); };
     const send=async()=>{
       const t=$("#pgMsg",box).value.trim(); if(!t) return;
       if(it.test){ toast("Test person — message not sent",2600); return; }
@@ -4336,7 +4386,7 @@ function openPandaGo(){
         App.matches=await Social.matches(App.me); paintBadges();
         close(); toast("Sent ✓ — find it in Chats → PandaGo",3200);
       }catch(e){ btn.disabled=false; const m=String(e&&e.message||e);
-        toast(/not_nearby/.test(m)?"They moved out of range":/blocked/.test(m)?"You can't message this person":/function/i.test(m)?"PandaGo isn't set up yet (run zm-pandago.sql)":"Couldn't send: "+m,3600); }
+        toast(/pandago_wait/.test(m)?"Wait for their reply — you can message again once they answer":/not_nearby/.test(m)?"They moved out of range":/blocked/.test(m)?"You can't message this person":/function/i.test(m)?"PandaGo isn't set up yet (run zm-pandago.sql)":"Couldn't send: "+m,3600); }
     };
     $("#pgSend",box).onclick=send;
     $("#pgMsg",box).addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); send(); } });
