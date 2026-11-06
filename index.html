@@ -3346,7 +3346,7 @@ async function openChat(pid,other){
   const introHTML=`<div class="matchintro">
       <div class="mi-hearts">${[8,24,40,58,72,86].map((l,i)=>`<i style="left:${l}%;--d:${(i*.9).toFixed(1)}s">${I.heart}</i>`).join("")}</div>
       <div class="mi-stage"><img class="mi-panda" src="${PANDA_HAPPY}" alt=""><span class="mi-shadow"></span></div>
-      <div c${(mm&&mm.pg)?`<div class="mi-pg"><small>I found you on ${esc(md.toLocaleDateString("en-GB"))}</small><div class="mi-pgw" aria-label="PandaGo">${"PandaGo".split("").map((c,i)=>`<span style="--i:${i}">${c}</span>`).join("")}</div></div>`:`<div class="mi-title" aria-label="Matched!">${"Matched!".split("").map((c,i)=>`<span style="--i:${i};color:${LCOL[i]}">${c}</span>`).join("")}</div>`}lass="mi-title" aria-label="Matched!">${"Matched!".split("").map((c,i)=>`<span style="--i:${i};color:${LCOL[i]}">${c}</span>`).join("")}</div>
+      <div ${(mm&&mm.pg)?`<div class="mi-pg"><small>I found you on ${esc(md.toLocaleDateString("en-GB"))}</small><div class="mi-pgw" aria-label="PandaGo">${"PandaGo".split("").map((c,i)=>`<span style="--i:${i}">${c}</span>`).join("")}</div></div>`:`<div class="mi-title" aria-label="Matched!">${"Matched!".split("").map((c,i)=>`<span style="--i:${i};color:${LCOL[i]}">${c}</span>`).join("")}</div>`}class="mi-title" aria-label="Matched!">${"Matched!".split("").map((c,i)=>`<span style="--i:${i};color:${LCOL[i]}">${c}</span>`).join("")}</div>
 ${(mm&&mm.pg)?"":`<p class="mi-sub">You matched with ${esc(other.name)} on ${esc(matchDate)} - say hi!</p>`}</div>`;  const seen=new Set(); let nReal=-1;
   let lastSig="";
   const paint=msgs=>{
