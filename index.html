@@ -541,8 +541,25 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pgcap2{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;width:max-content;max-width:90%;padding:7px 15px;border-radius:99px;background:rgba(255,253,245,.93);box-shadow:0 6px 18px -8px rgba(0,0,0,.35);pointer-events:none}
 .pg-stage .pg-hud{z-index:3}
 .pggate{margin:0 14px 8px;padding:9px 13px;border-radius:14px;background:var(--paper);border:1px solid var(--line);font-size:12.5px;line-height:1.45;color:var(--ink-3);text-align:center}
-.pgcar{width:64px;height:64px;transition:transform .25s;display:grid;place-items:center}
-.pgcar.flip{transform:scaleX(-1)}
+.pgcar{
+  width:64px;
+  height:64px;
+  display:grid;
+  place-items:center;
+}
+
+.pg-avatar-marker{
+  width:56px;
+  height:56px;
+  aspect-ratio:1/1;
+  border-radius:50%;
+  object-fit:cover;
+  object-position:center;
+  border:3px solid #fff;
+  box-shadow:0 0 0 3px #D89000,0 8px 18px rgba(0,0,0,.35);
+  animation:pgBounce 1.1s ease-in-out infinite;
+  display:block;
+}
 .pg-avatar-marker{
   width:54px;
   height:54px;
@@ -4479,15 +4496,26 @@ ui.addEventListener("touchcancel",()=>{
     L.tileLayer(OSM,{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(st.map);
     st.trail=L.polyline([],{color:"#FFB300",weight:6,opacity:.85,lineCap:"round"}).addTo(st.map);
     const myPhoto=(App.profile&&App.profile.photos&&App.profile.photos[0])||artFor(App.me,App.profile&&App.profile.name);
-st.mk=L.marker([c.lat,c.lng],{icon:L.divIcon({className:"pgmk",html:`<div class="pgcar"><img class="pg-avatar-marker" src="${myPhoto}" alt="My profile"></div>`,iconSize:[64,64],iconAnchor:[32,32]}),interactive:false,zIndexOffset:1000}).addTo(st.map);
+const croppedPhoto=await faceCrop(myPhoto).catch(()=>null);
+const markerPhoto=croppedPhoto||myPhoto;
+
+st.mk=L.marker([c.lat,c.lng],{
+  icon:L.divIcon({
+    className:"pgmk",
+    html:`<div class="pgcar"><img class="pg-avatar-marker" src="${markerPhoto}" alt="My profile"></div>`,
+    iconSize:[64,64],
+    iconAnchor:[32,32]
+  }),
+  interactive:false,
+  zIndexOffset:1000
+}).addTo(st.map);
     setTimeout(()=>st.map&&st.map.invalidateSize(),60);
     setTimeout(()=>st.map&&st.map.invalidateSize(),2000);   /* after the pop-in animation settles */
   };
   const follow=()=>{
     if(!st.map||!st.pos) return; const ll=[st.pos.lat,st.pos.lng], z=st.moving?17:18;
     st.mk.setLatLng(ll);
-    const car=st.mk.getElement(); if(car){ const c=car.firstChild; if(c) c.classList.toggle("flip",st.flip);
-      const g=car.querySelector(".pgl"); if(g) g.classList.toggle("live",st.moving); }
+    const car=st.mk.getElement();
     if(st.moving){ st.trail.addLatLng(ll); const tr=st.trail.getLatLngs(); if(tr.length>60) st.trail.setLatLngs(tr.slice(-60)); }
     else if(st.trail.getLatLngs().length) st.trail.setLatLngs([]);
     if(st.zoom!==z){ st.zoom=z; st.map.setView(ll,z,{animate:true,duration:.8}); }
