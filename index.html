@@ -464,32 +464,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 #pgMap{position:absolute;inset:0;z-index:0;background:#e9e5d6}
 .pg-scan{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .pg-scan .pgb{pointer-events:auto}
-#pgRoomCap{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:5px;
-  pointer-events:auto;
-}
-
-#pgRefresh{
-  border:0;
-  background:transparent;
-  color:#D89000;
-  font-size:13px;
-  cursor:pointer;
-  padding:2px 8px;
-  border-radius:8px;
-}
-
-#pgRefresh b{
-  font-weight:900;
-  text-decoration:underline;
-}
-
-#pgRefresh:active{
-  transform:scale(.94);
-}
+.pgcap2{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;width:max-content;max-width:90%;padding:7px 15px;border-radius:99px;background:rgba(255,253,245,.93);box-shadow:0 6px 18px -8px rgba(0,0,0,.35);pointer-events:none}
 .pg-stage .pg-hud{z-index:3}
 .pggate{margin:0 14px 8px;padding:9px 13px;border-radius:14px;background:var(--paper);border:1px solid var(--line);font-size:12.5px;line-height:1.45;color:var(--ink-3);text-align:center}
 .pgcar{width:64px;height:64px;transition:transform .25s}.pgcar.flip{transform:scaleX(-1)}
@@ -4257,12 +4232,7 @@ function openPandaGo(){
       <div class="pg-scan"><div class="radar pgr"><i class="rr"></i><i class="rr d1"></i><i class="rr d2"></i><i class="sweep"></i>
         <span class="pg-r30"><em>${PG_RADIUS} m</em></span><div id="pgBub"></div></div></div>
       <div class="pg-hud hide" id="pgHud"><b id="pgSpd">0</b><small>km/h</small></div>
-      <div class="pg-cap pgcap2" id="pgRoomCap">
-  <span>Scanning for people</span>
-  <button type="button" id="pgRefresh">
-    <b>Tap to refresh</b>
-  </button>
-</div>
+      <p class="pg-cap pgcap2" id="pgRoomCap">Scanning for people within ${PG_RADIUS} metres…</p>
     </div>
     <div class="pg-net"><i></i><i></i><i></i><i></i></div>
     <div class="pg-foot" id="pgFoot">You're visible only to people within ${PG_RADIUS} m while the app is open.</div>
@@ -4324,32 +4294,8 @@ function openPandaGo(){
         const p=await profileOf(r.user_id); if(p&&p.done&&p.gender===want) out.push({p,d:r.dist_m}); }
       st.real=out; App.pgNear=out.slice(); paintNear();
     }catch(e){ console.warn("[pandago]",e&&e.message||e); if(/function|schema cache|not exist/i.test(String(e&&e.message))) st.srv=false; }
-      const refreshPeople=()=>{
-    if(st.closed) return;
-    lastPing=0;
-    sync(true);
+    busy=false; paintLive();
   };
-
-  $("#pgRefresh",ui).onclick=refreshPeople;
-
-  /* Pull down to refresh */
-  let pullStartY=0;
-
-  ui.addEventListener("touchstart",e=>{
-    if(ui.scrollTop!==0) return;
-    pullStartY=e.touches[0].clientY;
-  },{passive:true});
-
-  ui.addEventListener("touchend",e=>{
-    if(!pullStartY) return;
-
-    const distance=e.changedTouches[0].clientY-pullStartY;
-    pullStartY=0;
-
-    if(ui.scrollTop===0 && distance>85){
-      refreshPeople();
-    }
-  },{passive:true});
 
   /* ---- the map: always on, always centred on you ---- */
   const OSM="https://tile.openstreetmap.org/{z}/{x}/{y}.png";
