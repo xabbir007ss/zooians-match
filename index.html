@@ -3303,7 +3303,7 @@ async function viewLiked(root){
    ========================================================================== */
 async function viewChats(root){
   const FL={all:"All chats",recent:"Recent",unread:"Unread",older:"Older"};
-  App.chatFilter=App.chatFilter||"all"; App.chatTab=App.chatTab||"recent";
+  App.chatFilter=App.chatFilter||"all"; App.chatTab=LSget("zm:chatTab")||App.chatTab||"recent";
   root.innerHTML=`<div class="topbar"><h2>Chats</h2><button class="iconbtn" id="chFilter" aria-label="Filter chats">${I.filter}</button></div>
     <div class="searchwrap"><div class="search">${I.search}
       <input id="chatSearch" placeholder="Search your matches" autocomplete="off"></div></div>
@@ -3325,7 +3325,7 @@ async function viewChats(root){
       <p class="muted small" style="margin-top:8px">Share at least 40% of your interests with someone and like each other — your inbox opens straight away.</p>
       <button class="btn sm" id="goSwipe2" style="margin:16px auto 0">Find people</button></div>`;
     $("#goSwipe2").onclick=()=>go("app",{tab:"people"});
-    $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; viewChats(root); });
+    $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; LSset("zm:chatTab",App.chatTab); viewChats(root); });
     $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; viewChats(root); });
 $("#chFilter").style.display="none";    return;
   }
@@ -3396,7 +3396,7 @@ $("#chFilter").style.display="none";    return;
       b.innerHTML=(k==="pandago"?"PandaGo":"Your Matches")+(convoAll.some(r=>(k==="pandago"?!!r.m.pg:!r.m.pg)&&isUnread(r))?dot:""); });
     const nm=$("#newMatches"); if(nm) nm.style.display=App.chatTab==="pandago"?"none":"";
     const pnb=$("#pgNear"); if(pnb) pnb.style.display=App.chatTab==="pandago"?"":"none"; };
-  const wireTabs=()=>{ $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; paint($("#chatSearch").value.trim()); }); };
+  const wireTabs=()=>{ $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; LSset("zm:chatTab",App.chatTab); paint($("#chatSearch").value.trim()); }); };
       const pn=$("#pgNear");
   const paintPg=()=>{ viewChats._sig=(App.pgNear||[]).map(x=>x.p.code).join(); pn.innerHTML=pgNearHTML(App.pgNear||[]); wirePgNear(pn); };
   const pgAlive=()=>App.screen==="app"&&App.tab==="chats"&&$("#pgNear")===pn;
@@ -4309,7 +4309,7 @@ const pgLogo=(sz=32,live=true)=>{ const u="pgc"+(pgLogo._n=(pgLogo._n||0)+1);
   </g></g>
   <rect x="4" y="4" width="72" height="72" rx="17" fill="none" stroke="#E09600" stroke-width="1.4"/></svg>`; };
 const pgTag=()=>`<span class="pgtag">PandaGo</span>`;
-const CHTABS=`<div class="chhead chtabrow"><div class="chtabs2" id="chTabs"><button data-t="pandago">PandaGo</button><button data-t="recent">Your Matches</button></div></div>`;
+const CHTABS=`<div class="chhead chtabrow"><div class="chtabs2" id="chTabs"><button data-t="recent">Your Matches</button><button data-t="pandago">PandaGo</button></div></div>`;
 const geoM=(a,b,c,d)=>{ const R=6371000,r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b);
   const h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
 
