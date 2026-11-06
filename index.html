@@ -3661,14 +3661,14 @@ async function pgUnblock(code){
 }
 async function pgBlockedProfilesDialog(){
   if(!sb||App.preview){ toast("Not available in preview mode"); return; }
-  const b=modal("🚫 Blocked profiles",'<p class="muted small">Loading…</p>');
+  const b=modal(" Blocked profiles",'<p class="muted small">Loading…</p>');
   const paint=async()=>{
     try{
       const ids=await pgLoadMyBlocks();
       const people=await Promise.all(ids.map(code=>profileOf(code)));
       const rows=people.filter(Boolean);
       b.innerHTML=`<div style="padding:18px">
-        <h3 style="margin-bottom:14px">🚫 Blocked profiles</h3>
+        <h3 style="margin-bottom:14px"></h3>
         ${rows.length?rows.map(p=>`
           <div class="listopt" style="gap:10px">
             <span style="flex:1">${esc(p.name||"Profile")}</span>
