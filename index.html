@@ -3029,7 +3029,9 @@ ${opts.readonly && App.matches.some(m=>m.members.includes(p.code))?`<button clas
       close(); await doLike(p,false); toast("Like sent ♥"); if(opts.onLike) opts.onLike(p); return; }
     close(); swipeTop(1); };
   const unmatchBtn=$("#sUnmatch",sheet);
-if(unmatchBtn) unmatchBtn.onclick=()=>personMenu(p,close);
+if(unmatchBtn) unmatchBtn.onclick=()=>personMenu(p,()=>{
+  $$("#frame .sheet").forEach(s=>s.remove());
+});
 }
 
 
