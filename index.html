@@ -4775,7 +4775,26 @@ st.mk=L.marker([c.lat,c.lng],{
     $$(".qk button",box).forEach(b=>b.onclick=()=>{ $("#pgMsg",box).value=b.textContent; $("#pgMsg",box).focus(); });
     $("#pgProf",box).onclick=()=>openProfileSheet(p,{readonly:true});
     $("#pgBlk",box).onclick=()=>{ if(it.test){ toast("Test person"); return; } pgBlockDialog(p,()=>{ st.real=st.real.filter(x=>x.p.code!==p.code); paintNear(); close(); }); };
-    const send=async()=>{
+      let sending=false;
+  const send=async()=>{
+    const t=ta.value.trim(); if(!t||ta.disabled||sending) return;
+    const btn=$("#cSend",sheet);
+    sending=true; btn.disabled=true;
+    ta.value=""; ta.style.height="auto";
+    try{
+      const {data,error}=await Chat.send(pid,App.me,t,other.code);
+      if(error) throw error;
+      if(data) addMsg(data);
+      markRead(pid);
+    }catch(e){
+      ta.value=t;
+      toast("Connection problem. Message may not have sent — check chat before retrying.",4500);
+      console.warn("[PandaGo send]",e);
+    }finally{
+      sending=false;
+      btn.disabled=ta.disabled;
+    }
+  };
       const t=$("#pgMsg",box).value.trim(); if(!t) return;
       if(it.test){ toast("Test person — message not sent",2600); return; }
       const btn=$("#pgSend",box); btn.disabled=true;
