@@ -852,7 +852,7 @@ html,body{overscroll-behavior-y:none}
 }
 @keyframes pgGlow{0%,100%{box-shadow:0 0 14px -3px rgba(255,201,60,.75)}50%{box-shadow:0 0 14px -3px rgba(123,59,255,.75)}}
 .nmt.pgc .ph{animation:none}
-.nmt.pgc .ph::after{
+.nmt.pgp .ph::after{
   content:"";
   position:absolute;
   inset:0;
@@ -874,6 +874,8 @@ html,body{overscroll-behavior-y:none}
     border-color:rgba(255,201,60,.42);
   }
 }
+.nmt.pgp2 .ph::after{animation-delay:.45s}
+.nmt.pgp3 .ph::after{animation-delay:.9s}
 @keyframes pgSearchWave{
   0%,100%{transform:translateY(0)}
   25%{transform:translateY(-5px)}
