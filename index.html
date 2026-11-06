@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -4379,8 +4380,10 @@ function openPandaGo(){
     paintLive();
 
     if(refreshQueued&&!st.closed){
-      refreshQueued=false;
+            refreshQueued=false;
       sync(true);
+    }else{
+      pgIndicator.classList.remove("show","refreshing");
     }
   };
 /* ---- PandaGo pull-to-refresh ---- */
@@ -4395,6 +4398,7 @@ const refreshPeople=()=>{
 
   lastPing=0;
   pgIndicator.classList.add("show","refreshing");
+    setTimeout(()=>pgIndicator.classList.remove("show","refreshing"),4000);
 
   if(busy){
     refreshQueued=true;
