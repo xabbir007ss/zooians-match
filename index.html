@@ -2364,7 +2364,7 @@ ROUTES.app = async ({tab})=>{
   await loadSocial();
   paintBadges();
   const tb=$("#tabbody"); tb.classList.remove("noscroll");
-  if(App.tab!=="people") wirePullRefresh(tb);
+  wirePullRefresh(tb);
   ({people:viewPeople,discover:viewDiscover,chats:viewChats,liked:viewLiked,profile:viewProfile}[App.tab]||viewPeople)(tb);
 };
 
