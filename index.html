@@ -707,6 +707,19 @@ html,body{overscroll-behavior-y:none}
 .mi-pg small{display:block;font-size:12.5px;font-weight:600;color:var(--ink-3)}
 .mi-pgw{display:flex;justify-content:center;font-family:var(--ff-d);font-weight:800;font-size:46px;line-height:1.05;margin-top:2px}
 .mi-pgw span{display:inline-block;background:linear-gradient(135deg,#FFC93C 0%,#FF2E8B 60%,#6B2BFF 100%);-webkit-background-clip:text;background-clip:text;color:transparent;animation:miLetter 1.8s ease-in-out infinite;animation-delay:calc(var(--i) * .1s);filter:drop-shadow(0 4px 10px rgba(242,165,12,.35))}
+/* ================= PandaGo strip (Chats → PandaGo tab) ================= */
+.pgrow{padding:16px 26px 18px;gap:18px}
+.nmt .ph.pgbox{background:#FFC93C}
+.nmt .ph.pgbox .pgl{display:block}
+.nmt.pgp .ph{background:transparent;overflow:visible;box-shadow:none}
+.nmt.pgp .pgin{position:absolute;inset:0;border-radius:18px;overflow:hidden;background:#0b0a14;display:block}
+.nmt.pgp .pgin svg{width:100%;height:100%;display:block}
+.nmt.pgp1 .pgin,.nmt.pgp1>span{opacity:.7}      /* Person 1: ektu kom */
+.nmt.pgp2 .pgin,.nmt.pgp2>span{opacity:.4}      /* Person 2: aro kom */
+.nmt.srch .rip{position:absolute;inset:0;border-radius:18px;border:2px solid var(--honey-deep);opacity:0;pointer-events:none;animation:pgRip 2.4s ease-out infinite}
+.nmt.srch .rip:nth-child(2){animation-delay:.8s}
+.nmt.srch .rip:nth-child(3){animation-delay:1.6s}
+@keyframes pgRip{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.28,1.2);opacity:0}}
 /* ================= toast / modal ================= */
 #toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%) translateY(-18px) scale(.96);
   max-width:min(88vw,380px);padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;line-height:1.35;text-align:center;
@@ -3166,7 +3179,7 @@ async function viewChats(root){
   root.innerHTML=`<div class="topbar"><h2>Chats</h2><button class="iconbtn" id="chFilter" aria-label="Filter chats">${I.filter}</button></div>
     <div class="searchwrap"><div class="search">${I.search}
       <input id="chatSearch" placeholder="Search your matches" autocomplete="off"></div></div>
-<div id="chipLine"></div><div id="newMatches"></div><div id="threadList"></div>`;  const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
+<div id="chipLine"></div><div id="newMatches"></div><div id="pgNear"></div><div id="threadList"></div>`;  const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
   const rows=[];
   for(const m of App.matches){
     const other=m.members.find(c=>c!==App.me);
@@ -3176,14 +3189,16 @@ async function viewChats(root){
   rows.sort((a,b)=>(b.m.lastAt||b.m.at)-(a.m.lastAt||a.m.at));
   const waiting=App.likedYou.filter(l=>!blocked.has(l.from)&&!App.passes.some(x=>x.to===l.from)&&!App.myLikes.some(m=>m.to===l.from)&&!App.matches.some(m=>m.members.includes(l.from)));
 
-  if(!rows.length && !waiting.length){
-    $("#threadList").innerHTML=`<div style="text-align:center;padding:44px 34px">
+  if(!rows.length && !waiting.length && App.chatTab!=="pandago"){
+    $("#threadList").innerHTML=`<div class="chhead"><h3>Chats</h3><div class="chtabs2" id="chTabs"><button data-t="recent" class="on">Your Matches</button><button data-t="pandago">PandaGo</button></div></div><div style="text-align:center;padding:44px 34px">
       <div style="width:220px;margin:0 auto;position:relative;height:120px" class="pandas">
         <span class="spark">💛</span><div class="p m">${pandaSVG("m")}</div><div class="p f">${pandaSVG("f")}</div></div>
       <h2 style="margin-top:14px">No matches yet</h2>
       <p class="muted small" style="margin-top:8px">Share at least 40% of your interests with someone and like each other — your inbox opens straight away.</p>
       <button class="btn sm" id="goSwipe2" style="margin:16px auto 0">Find people</button></div>`;
     $("#goSwipe2").onclick=()=>go("app",{tab:"people"});
+    $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; viewChats(root); });
+    $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; viewChats(root); });
 $("#chFilter").style.display="none";    return;
   }
   /* ---- New Matches: likes waiting for you (blurred unless Zoo Member) + fresh matches ---- */
@@ -3251,12 +3266,60 @@ $("#chFilter").style.display="none";    return;
   const paintTabs=()=>{ const dot='<i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pink);margin-left:6px;vertical-align:1px"></i>';
     $$("#chTabs button").forEach(b=>{ const k=b.dataset.t; b.classList.toggle("on",k===App.chatTab);
       b.innerHTML=(k==="pandago"?"PandaGo":"Your Matches")+(convoAll.some(r=>(k==="pandago"?!!r.m.pg:!r.m.pg)&&isUnread(r))?dot:""); });
-    const nm=$("#newMatches"); if(nm) nm.style.display=App.chatTab==="pandago"?"none":""; };
+    const nm=$("#newMatches"); if(nm) nm.style.display=App.chatTab==="pandago"?"none":"";
+    const pnb=$("#pgNear"); if(pnb) pnb.style.display=App.chatTab==="pandago"?"":"none"; };
   const wireTabs=()=>{ $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; paint($("#chatSearch").value.trim()); }); };
-    paintChip(); paint("");
+      const pn=$("#pgNear");
+  const paintPg=()=>{ viewChats._sig=(App.pgNear||[]).map(x=>x.p.code).join(); pn.innerHTML=pgNearHTML(App.pgNear||[]); wirePgNear(pn); };
+  const pgAlive=()=>App.screen==="app"&&App.tab==="chats"&&$("#pgNear")===pn;
+  paintPg();
+  pgNearLoad().then(()=>{ if(pgAlive()) paintPg(); });
+  clearInterval(viewChats._pg);
+  viewChats._pg=setInterval(()=>{
+    if(!pgAlive()){ clearInterval(viewChats._pg); return; }
+    if(App.chatTab!=="pandago"||document.hidden) return;
+    pgNearLoad().then(()=>{ if(pgAlive() && (App.pgNear||[]).map(x=>x.p.code).join()!==viewChats._sig) paintPg(); });
+  },12000);
+  paintChip(); paint("");
   $("#chatSearch").oninput=e=>paint(e.target.value.trim());
 }
+/* ---------------- PandaGo strip (Chats → PandaGo tab) ---------------- */
+const PG_SIL={
+  Male:'<svg viewBox="0 0 64 80" preserveAspectRatio="xMidYMax slice" fill="#2c2950"><circle cx="32" cy="30" r="11"/><path d="M4 82c0-17 11-27 28-27s28 10 28 27z"/></svg>',
+  Female:'<svg viewBox="0 0 64 80" preserveAspectRatio="xMidYMax slice" fill="#2c2950"><path d="M32 13c-9 0-15 7-15 17 0 7-2 13-5 17 5 0 9-2 11-5h18c2 3 6 5 11 5-3-4-5-10-5-17 0-10-6-17-15-17z"/><circle cx="32" cy="31" r="10.5" fill="#3a3663"/><path d="M8 82c0-16 11-26 24-26s24 10 24 26z"/></svg>'
+};
+/* opposite gender placeholder: Male user -> Female silhouette, Female user -> Male silhouette */
+const pgSilhouette=()=>PG_SIL[(App.profile&&App.profile.gender)==="Female"?"Male":"Female"];
 
+/* read-only: who is near my last PandaGo position (this does NOT publish my location) */
+async function pgNearLoad(){
+  if(!sb||!App.me||App.preview||!App.profile) return App.pgNear||[];
+  try{
+    const {data,error}=await sb.rpc("zm_pandago_nearby"); if(error) throw error;
+    const want=App.profile.gender==="Female"?"Male":"Female";
+    const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from)), out=[];
+    for(const r of (data||[])){ if(blocked.has(r.user_id)) continue;
+      const p=await profileOf(r.user_id); if(p&&p.done&&p.gender===want) out.push({p,d:r.dist_m}); }
+    App.pgNear=out.sort((a,b)=>a.d-b.d);
+  }catch(e){ App.pgNear=App.pgNear||[]; }
+  return App.pgNear;
+}
+function pgNearHTML(list){
+  const img=p=>(p.photos&&p.photos[0])||artFor(p.code,p.name);
+  const logoBox=`<div class="nmt gold" data-pgopen="1"><div class="ph pgbox">${pgLogo(76)}</div><span>PandaGo</span></div>`;
+  const rest=list.length
+    ? list.map(it=>`<div class="nmt gold" data-pgopen="1"><div class="ph"><i style="background-image:url('${img(it.p)}')"></i></div><span>${esc(it.p.name)} · ${it.d} m</span></div>`).join("")
+    : [1,2].map(n=>`<div class="nmt pgp pgp${n}${n===1?" srch":""}"><div class="ph">${n===1?'<b class="rip"></b><b class="rip"></b><b class="rip"></b>':""}<div class="pgin">${pgSilhouette()}</div></div><span>(Person ${n})</span></div>`).join("");
+  return `<div class="newmatches">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 18px 4px">
+      <h3 style="font-size:16px">Finding for you</h3>
+      <button class="linkbtn" id="pgSee" style="font-size:12.5px">See who nearby you ›</button></div>
+    <div class="nmrow pgrow">${logoBox}${rest}</div></div>`;
+}
+function wirePgNear(box){
+  const open=async()=>{ await go("app",{tab:"people"}); openPandaGo(); };
+  $$("[data-pgopen],#pgSee",box).forEach(n=>n.onclick=open);
+}
 /* ------------------------------ thread ----------------------------------- */
 let threadUnsub=null;
 const parseRx=t=>{ const m=/^\u2063rx:(.+)$/.exec(t||""); return m?m[1]:null; };
@@ -4125,7 +4188,7 @@ function openPandaGo(){
       const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from)), out=[];
       for(const r of (data||[])){ if(blocked.has(r.user_id)) continue;
         const p=await profileOf(r.user_id); if(p&&p.done&&p.gender===want) out.push({p,d:r.dist_m}); }
-      st.real=out; paintNear();
+      st.real=out; App.pgNear=out.slice(); paintNear();
     }catch(e){ console.warn("[pandago]",e&&e.message||e); if(/function|schema cache|not exist/i.test(String(e&&e.message))) st.srv=false; }
     busy=false; paintLive();
   };
