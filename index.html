@@ -466,22 +466,26 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pg-scan .pgb{pointer-events:auto}
 #pgRoomCap{
   display:flex;
-  flex-direction:column;
+  flex-direction:row;
   align-items:center;
-  gap:5px;
+  justify-content:center;
+  gap:7px;
+  white-space:nowrap;
+  width:max-content;
+  max-width:94%;
+  padding:9px 12px;
   pointer-events:auto;
-  border-radius:16px;
-  padding:9px 18px;
+  border-radius:99px;
 }
 
 #pgRefresh{
   border:0;
   background:transparent;
   color:#D89000;
-  font-size:14px;
+  font-size:13px;
   cursor:pointer;
-  padding:3px 8px;
-  border-radius:8px;
+  padding:2px;
+  white-space:nowrap;
 }
 
 #pgRefresh b{
@@ -491,6 +495,47 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 
 #pgRefresh:active{
   transform:scale(.94);
+}
+
+/* Pull-to-refresh loader */
+.pg-pull-indicator{
+  position:absolute;
+  top:12px;
+  left:50%;
+  z-index:20;
+  width:30px;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:rgba(255,255,255,.95);
+  box-shadow:0 3px 12px rgba(0,0,0,.16);
+  opacity:0;
+  transform:translate(-50%,-12px);
+  transition:opacity .18s,transform .18s;
+  pointer-events:none;
+}
+
+.pg-pull-indicator i{
+  width:17px;
+  height:17px;
+  border:2px solid rgba(216,144,0,.25);
+  border-top-color:#D89000;
+  border-radius:50%;
+}
+
+.pg-pull-indicator.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+.pg-pull-indicator.refreshing i{
+  animation:pgRefreshSpin .7s linear infinite;
+}
+
+@keyframes pgRefreshSpin{
+  to{transform:rotate(360deg)}
 }
 .pgcap2{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;width:max-content;max-width:90%;padding:7px 15px;border-radius:99px;background:rgba(255,253,245,.93);box-shadow:0 6px 18px -8px rgba(0,0,0,.35);pointer-events:none}
 .pg-stage .pg-hud{z-index:3}
@@ -4257,11 +4302,14 @@ function openPandaGo(){
       <span class="pg-live" id="pgLive"><i></i><em>Locating…</em></span></div>
     <div class="pg-stage" id="pgStage">
       <div id="pgMap"></div>
+      <div class="pg-pull-indicator" id="pgPullIndicator">
+  <i></i>
+</div>
       <div class="pg-scan"><div class="radar pgr"><i class="rr"></i><i class="rr d1"></i><i class="rr d2"></i><i class="sweep"></i>
         <span class="pg-r30"><em>${PG_RADIUS} m</em></span><div id="pgBub"></div></div></div>
       <div class="pg-hud hide" id="pgHud"><b id="pgSpd">0</b><small>km/h</small></div>
       <div class="pg-cap pgcap2" id="pgRoomCap">
-  <span>Scanning for people</span>
+  <span id="pgRoomText">Scanning for people</span>
   <button type="button" id="pgRefresh">
     <b>Tap to refresh</b>
   </button>
@@ -4307,7 +4355,7 @@ function openPandaGo(){
       room.appendChild(b);
     });
     const n=list.length;
-    $("#pgRoomCap span",ui).textContent="Scanning for people";
+    $("#pgRoomText",ui).textContent="Scanning for people";
     $("#pgFoot",ui).textContent=n?`${n} nearby · You're visible only to people within ${PG_RADIUS} m while the app is open.`:`You're visible only to people within ${PG_RADIUS} m while the app is open.`;
   };
 
@@ -4335,12 +4383,18 @@ function openPandaGo(){
       sync(true);
     }
   };
-/* ---- PandaGo manual refresh ---- */
+/* ---- PandaGo pull-to-refresh ---- */
 let refreshQueued=false;
+let pgPullStartY=null;
+let pgPullDistance=0;
+
+const pgIndicator=$("#pgPullIndicator",ui);
 
 const refreshPeople=()=>{
   if(st.closed) return;
+
   lastPing=0;
+  pgIndicator.classList.add("show","refreshing");
 
   if(busy){
     refreshQueued=true;
@@ -4352,9 +4406,6 @@ const refreshPeople=()=>{
 
 $("#pgRefresh",ui).addEventListener("click",refreshPeople);
 
-/* Pull down from the top to refresh */
-let pgPullStartY=null;
-
 ui.addEventListener("touchstart",e=>{
   if(e.touches.length!==1) return;
 
@@ -4364,21 +4415,42 @@ ui.addEventListener("touchstart",e=>{
   if(y-rect.top>120) return;
 
   pgPullStartY=y;
+  pgPullDistance=0;
+},{passive:true});
+
+ui.addEventListener("touchmove",e=>{
+  if(pgPullStartY===null) return;
+
+  pgPullDistance=Math.max(
+    0,
+    e.touches[0].clientY-pgPullStartY
+  );
+
+  if(pgPullDistance>10){
+    pgIndicator.classList.add("show");
+    pgIndicator.classList.remove("refreshing");
+  }
 },{passive:true});
 
 ui.addEventListener("touchend",e=>{
   if(pgPullStartY===null) return;
 
   const distance=e.changedTouches[0].clientY-pgPullStartY;
+
   pgPullStartY=null;
+  pgPullDistance=0;
 
   if(distance>75){
     refreshPeople();
+  }else{
+    pgIndicator.classList.remove("show","refreshing");
   }
 },{passive:true});
 
 ui.addEventListener("touchcancel",()=>{
   pgPullStartY=null;
+  pgPullDistance=0;
+  pgIndicator.classList.remove("show","refreshing");
 },{passive:true});
   /* ---- the map: always on, always centred on you ---- */
   const OSM="https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -4427,7 +4499,7 @@ ui.addEventListener("touchcancel",()=>{
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(p=>{ if(!st.closed&&!st.fine) onPos(p); },()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:4000});   /* fast rough fix first */
     wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },e=>{ st.geo=e&&e.code===1?"denied":"err"; paintLive();
-      if(e&&e.code===1) $("#pgRoomCap span",ui).textContent="Allow location to find people within 30 m."; },{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
+      if(e&&e.code===1) $("#pgRoomText",ui).textContent="Allow location to find people within 30 m."; },{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
   } else { st.geo="denied"; paintLive(); }
   T(()=>sync(),7000);
   paintLive();
