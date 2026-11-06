@@ -1881,7 +1881,7 @@ async function startSession(user){
   else { go("app",{tab:"people"}); }
 }
 
-async function logout(msg){
+async function logout(msg){ try{ PGLoc.stop(); }catch(e){}
   const wasPreview=App.preview, code=App.me;
   App.watchers.forEach(u=>{try{u()}catch(e){}}); App.watchers=[];
   clearInterval(startGuard._t);
@@ -3314,12 +3314,78 @@ function pgNearHTML(list){
     <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 18px 4px">
       <h3 style="font-size:16px">Finding for you</h3>
       <button class="linkbtn" id="pgSee" style="font-size:12.5px">See who nearby you ›</button></div>
-    <div class="nmrow pgrow">${logoBox}${rest}</div></div>`;
+    <div class="nmrow pgrow">${logoBox}${rest}</div>${PGLoc.note()}</div>`;
 }
 function wirePgNear(box){
   const open=async()=>{ await go("app",{tab:"people"}); openPandaGo(); };
   $$("[data-pgopen],#pgSee",box).forEach(n=>n.onclick=open);
 }
+/* ---------------- PandaGo location (works app-wide while the app is open) ---------------- */
+const PGLoc={
+  wid:null, timer:null, pos:null, busy:false, last:0, sent:false, state:"idle", hiddenAt:0, inited:false,
+  note(){
+    const m={denied:"Location is blocked. Allow location for this site in your browser settings to find people nearby.",
+             nofix:"Getting your location…", unsupported:"This device can't share location.",
+             setup:"PandaGo isn't set up on the server yet."}[this.state];
+    return m?'<p style="margin:2px 18px 0;font-size:11.5px;opacity:.7">'+m+'</p>':"";
+  },
+  can(){ return !!(sb&&App.me&&!App.preview&&App.profile&&App.screen==="app"); },
+  refresh(){
+    const pn=$("#pgNear"); if(!pn||App.screen!=="app"||App.tab!=="chats") return;
+    const sig=(App.pgNear||[]).map(x=>x.p.code+":"+x.d).join()+"|"+this.state;
+    if(pn._sig===sig) return; pn._sig=sig;
+    pn.innerHTML=pgNearHTML(App.pgNear||[]); wirePgNear(pn);
+  },
+  start(){
+    if(this.wid!=null) return;
+    if(!navigator.geolocation){ this.state="unsupported"; this.refresh(); return; }
+    this.state="nofix";
+    this.wid=navigator.geolocation.watchPosition(p=>{
+      this.pos={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy||0,speed:p.coords.speed};
+      if(this.state==="nofix"||this.state==="denied") this.state="ok";
+      this.tick(!this.sent);
+    },e=>{ this.state=e&&e.code===1?"denied":"nofix"; this.refresh(); },
+    {enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+    this.timer=setInterval(()=>this.tick(false),7000);
+  },
+  stop(){
+    if(this.wid!=null&&navigator.geolocation) navigator.geolocation.clearWatch(this.wid);
+    clearInterval(this.timer); this.wid=null; this.timer=null;
+    if(this.sent&&sb&&!$("#pgui")) sb.rpc("zm_pandago_stop").then(()=>{},()=>{});
+    this.sent=false; this.pos=null; this.state="idle"; App.pgNear=[];
+  },
+  async tick(force){
+    if(!this.pos||this.busy||!this.can()) return;
+    if(!force&&Date.now()-this.last<6000) return;
+    if(this.pos.acc>150) return;
+    this.busy=true; this.last=Date.now();
+    try{
+      const a=await sb.rpc("zm_pandago_ping",{p_lat:this.pos.lat,p_lng:this.pos.lng,p_speed:this.pos.speed});
+      if(a.error) throw a.error;
+      this.sent=true; this.state="ok";
+      if(this.wid!=null) await pgNearLoad();
+    }catch(e){ console.warn("[pandago-loc]",e&&e.message||e);
+      if(/function|schema cache|not exist/i.test(String(e&&e.message))) this.state="setup"; }
+    this.busy=false; this.refresh();
+  },
+  /* decides every few seconds whether we should be sharing */
+  check(){
+    if(!this.can()){ if(this.wid!=null) this.stop(); return; }
+    if(document.hidden){
+      if(!this.hiddenAt) this.hiddenAt=Date.now();
+      if(Date.now()-this.hiddenAt>20000&&this.wid!=null) this.stop();   // app in background for >20 s
+      return;
+    }
+    this.hiddenAt=0;
+    if(this.wid==null) this.start();
+  },
+  init(){
+    if(this.inited) return; this.inited=true;
+    setInterval(()=>this.check(),4000);
+    document.addEventListener("visibilitychange",()=>{ if(document.hidden) this.hiddenAt=Date.now(); else { this.hiddenAt=0; this.check(); this.tick(true); } });
+    window.addEventListener("pagehide",()=>{ try{ if(this.sent&&sb) sb.rpc("zm_pandago_stop").then(()=>{},()=>{}); }catch(e){} });
+  }
+};
 /* ------------------------------ thread ----------------------------------- */
 let threadUnsub=null;
 const parseRx=t=>{ const m=/^\u2063rx:(.+)$/.exec(t||""); return m?m[1]:null; };
@@ -4125,7 +4191,7 @@ function openPandaGo(){
         <div class="pg-strip" id="pgStrip"></div></div>
     </div>
     <div class="pg-net"><i></i><i></i><i></i><i></i></div>
-    <div class="pg-foot" id="pgFoot">You're visible only to people within ${PG_RADIUS} m while PandaGo is open.</div>
+    <div class="pg-foot" id="pgFoot">You're visible only to people within ${PG_RADIUS} m while the app is open.</div>
     <div class="pg-sky" id="pgSky">${[8,22,38,52,66,80,92,30,60].map((l,i)=>`<i class="cl" style="left:${l}%;--s:${.8+(i%4)*.35};--d:${(i*.11).toFixed(2)}s"></i>`).join("")}
       <div class="pg-fall">${pgLogo(70,false)}</div></div>`;
   $("#frame").appendChild(ui);
@@ -4165,7 +4231,7 @@ function openPandaGo(){
     });
     const n=list.length;
     $("#pgRoomCap",ui).textContent=n?`${n} ${n===1?"person":"people"} within ${PG_RADIUS} m — tap a face to say hi`:`Scanning for people within ${PG_RADIUS} metres…`;
-    $("#pgFoot",ui).textContent=n?`${n} nearby · You're visible only to people within ${PG_RADIUS} m while PandaGo is open.`:`You're visible only to people within ${PG_RADIUS} m while PandaGo is open.`;
+    $("#pgFoot",ui).textContent=n?`${n} nearby · You're visible only to people within ${PG_RADIUS} m while the app is open.`:`You're visible only to people within ${PG_RADIUS} m while the app is open.`;
   };
   const makeTests=async()=>{
     const matched=new Set(App.matches.flatMap(m=>m.members));
@@ -4311,6 +4377,7 @@ function openPandaGo(){
   $("#pgBack",ui).onclick=close;
 }
 
+PGLoc.init();
 boot();
 </script>
 </body>
