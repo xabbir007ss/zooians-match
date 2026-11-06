@@ -3531,7 +3531,8 @@ async function pgNearLoad(){
   try{
     const {data,error}=await sb.rpc("zm_pandago_nearby"); if(error) throw error;
     const want=App.profile.gender==="Female"?"Male":"Female";
-    const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from)), out=[];
+    await pgLoadMyBlocks();
+const blocked=new Set(App.pgBlocks||[]), out=[];
     for(const r of (data||[])){ if(blocked.has(r.user_id)) continue;
       const p=await profileOf(r.user_id); if(p&&p.done&&p.gender===want&&!(App.matches||[]).some(m=>m.members.includes(p.code))) out.push({p,d:r.dist_m}); }
     App.pgNear=out.sort((a,b)=>a.d-b.d);
@@ -3636,12 +3637,60 @@ const PGLoc={
 };
 /* ---------------- PandaGo block (only available for PandaGo people / chats) ---------------- */
 async function pgBlock(p){
+  async function pgLoadMyBlocks(){
+  if(!sb||!App.me||App.preview) return [];
+  const {data,error}=await sb.from("pandago_blocks")
+    .select("blocked_id").eq("blocker_id",App.me);
+  if(error) throw error;
+  App.pgBlocks=(data||[]).map(x=>x.blocked_id);
+  return App.pgBlocks;
+}
+async function pgBlock(p){
   if(!sb) return false;
   const r=await sb.rpc("zm_pandago_block",{other:p.code});
-  if(r.error){ toast(/function|schema cache/i.test(r.error.message)?"Run zm-pandago-rules.sql in Supabase first":"Couldn't block: "+r.error.message,4200); return false; }
-  App.blocks=(App.blocks||[]).filter(b=>!(b.from===App.me&&b.to===p.code)); App.blocks.push({from:App.me,to:p.code,at:Date.now()});
+  if(r.error){ toast("Couldn't block: "+r.error.message,4200); return false; }
+  App.pgBlocks=Array.from(new Set([...(App.pgBlocks||[]),p.code]));
   App.pgNear=(App.pgNear||[]).filter(x=>x.p.code!==p.code);
   return true;
+}
+async function pgUnblock(code){
+  const r=await sb.rpc("zm_pandago_unblock",{other:code});
+  if(r.error){ toast("Couldn't unblock: "+r.error.message,4200); return false; }
+  App.pgBlocks=(App.pgBlocks||[]).filter(x=>x!==code);
+  await pgNearLoad();
+  return true;
+}
+async function pgBlockedProfilesDialog(){
+  if(!sb||App.preview){ toast("Not available in preview mode"); return; }
+  const b=modal("🚫 Blocked profiles",'<p class="muted small">Loading…</p>');
+  const paint=async()=>{
+    try{
+      const ids=await pgLoadMyBlocks();
+      const people=await Promise.all(ids.map(code=>profileOf(code)));
+      const rows=people.filter(Boolean);
+      b.innerHTML=`<div style="padding:18px">
+        <h3 style="margin-bottom:14px">🚫 Blocked profiles</h3>
+        ${rows.length?rows.map(p=>`
+          <div class="listopt" style="gap:10px">
+            <span style="flex:1">${esc(p.name||"Profile")}</span>
+            <button class="btn ghost" data-pgunblock="${p.code}" style="padding:7px 12px">Unblock</button>
+          </div>`).join(""):'<p class="muted small">You haven’t blocked anyone on PandaGo.</p>'}
+        <button class="btn ghost" id="pgBlkClose" style="margin-top:14px">Close</button>
+      </div>`;
+      $("#pgBlkClose",b).onclick=closeModal;
+      $$("[data-pgunblock]",b).forEach(btn=>btn.onclick=async()=>{
+        btn.disabled=true;
+        if(await pgUnblock(btn.dataset.pgunblock)){
+          toast("Profile unblocked");
+          await paint();
+        }else btn.disabled=false;
+      });
+    }catch(e){
+      b.innerHTML='<div style="padding:18px"><p class="small">Could not load blocked profiles.</p><button class="btn ghost" id="pgBlkClose">Close</button></div>';
+      $("#pgBlkClose",b).onclick=closeModal;
+    }
+  };
+  await paint();
 }
 function pgBlockDialog(p,done){
   const b=modal("Block "+p.name+"?",`<p class="small muted" style="margin-bottom:14px;line-height:1.55">They won't appear for you on PandaGo and you won't appear for them, even within ${PG_RADIUS} m. They also can't message you.</p>
@@ -3914,6 +3963,11 @@ async function viewProfile(root){
       <h3 style="margin:24px 0 10px">Account</h3>
       <div class="card" style="padding:4px 14px">
         <button class="listopt" id="pwBtn">${I.lock}<span style="flex:1">Change password</span><span class="muted">›</span></button>
+        <button class="listopt" id="pgBlockedBtn">
+  <span style="width:20px;flex:none">🚫</span>
+  <span style="flex:1">Blocked profiles</span>
+  <span class="muted">›</span>
+</button>
         <button class="listopt" id="supBtn"><span style="width:20px;flex:none;display:block">${I.chat}</span><span style="flex:1">Get Support</span>${isMember()?'<span class="muted">›</span>':'<span class="vstate" style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;display:block">'+I.lock+'</span>Members</span>'}</button>
         <button class="listopt" id="themeBtn">${I.sunmoon}<span style="flex:1">Appearance</span><span class="muted" id="themeNow">${LSget("zm:theme")||"auto"}</span></button>
         <button class="listopt" id="outBtn">${I.out}<span style="flex:1;color:var(--alert)">Log out</span></button>
@@ -3938,6 +3992,7 @@ async function viewProfile(root){
   $("#intBtn").onclick=()=>go("interests",{setup:false});
   $("#previewBtn").onclick=()=>openProfileSheet(App.profile,{readonly:true});
   $("#pwBtn").onclick=()=>go("changepw",{});
+  $("#pgBlockedBtn").onclick=pgBlockedProfilesDialog;
   $("#outBtn").onclick=()=>{ const b=modal("Log out?",`<p class="muted small" style="margin-bottom:14px">You'll need your email and password to get back in.</p>
     <button class="btn danger" id="okOut">Log out</button><button class="btn ghost" id="noOut" style="margin-top:10px">Stay</button>`);
     $("#okOut",b).onclick=()=>{closeModal();logout()}; $("#noOut",b).onclick=closeModal; };
@@ -4538,7 +4593,8 @@ function openPandaGo(){
       if(a.error) throw a.error;
       const {data,error}=await sb.rpc("zm_pandago_nearby"); if(error) throw error;
       st.srv=true;
-      const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from)), out=[];
+      await pgLoadMyBlocks();
+const blocked=new Set(App.pgBlocks||[]), out=[];
       for(const r of (data||[])){ if(blocked.has(r.user_id)) continue;
         const p=await profileOf(r.user_id); if(p&&p.done&&p.gender===want) out.push({p,d:r.dist_m}); }
       st.real=out; App.pgNear=out.slice(); paintNear();
