@@ -864,8 +864,7 @@ html,body{overscroll-behavior-y:none}
   animation:pgNetwork 2.4s ease-in-out infinite;
 }
 
-@keyframes pgNetwork.nmt.pgp2 .ph::after{animation-delay:.45s}
-.nmt.pgp3 .ph::after{animation-delay:.9s}{
+@keyframes pgNetwork{
   0%,100%{
     box-shadow:0 0 2px rgba(255,201,60,.12);
     border-color:rgba(255,201,60,.22);
@@ -875,7 +874,8 @@ html,body{overscroll-behavior-y:none}
     border-color:rgba(255,201,60,.42);
   }
 }
-
+.nmt.pgp2 .ph::after{animation-delay:.45s}
+.nmt.pgp3 .ph::after{animation-delay:.9s}
 @keyframes pgSearchWave{
   0%,100%{transform:translateY(0)}
   25%{transform:translateY(-5px)}
@@ -927,29 +927,12 @@ html,body{overscroll-behavior-y:none}
   height:112px;
   border-radius:18px;
 }
-@media (prefers-reduced-motion:reduce){.nmt.pgc .ph,.nmt.pgp .ph::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:18px;
-  border:1px solid rgba(255,201,60,.22);
-  pointer-events:none;
-  z-index:3;
-  opacity:.45;
-  animation:pgNetwork 2.4s ease-in-out infinite;
+@media (prefers-reduced-motion:reduce){
+  .nmrow.pgrow .nmt.pgc,
+  .nmt.pgp .ph::after{
+    animation:none !important;
+  }
 }
-
-.nmt.pgp2 .ph::after{animation-delay:.45s}
-.nmt.pgp3 .ph::after{animation-delay:.9s}{
-  0%,100%{
-    box-shadow:0 0 2px rgba(255,201,60,.10);
-    opacity:.35;
-  }
-  50%{
-    box-shadow:0 0 6px 1px rgba(123,59,255,.16),0 0 4px rgba(255,201,60,.18);
-    opacity:.55;
-  }
-}animation:none}}
 .chhead.chtabrow{padding:12px 22px 4px}
 .chtabrow .chtabs2{width:100%;justify-content:space-between;gap:0}
 .chtabrow .chtabs2 button{font-size:15px}
