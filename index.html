@@ -3650,6 +3650,10 @@ async function pgBlock(p){
   if(r.error){ toast("Couldn't block: "+r.error.message,4200); return false; }
   App.pgBlocks=Array.from(new Set([...(App.pgBlocks||[]),p.code]));
   App.pgNear=(App.pgNear||[]).filter(x=>x.p.code!==p.code);
+
+  /* Remove only this person's PandaGo conversation locally; Dating stays untouched. */
+  App.matches=(App.matches||[]).filter(m=>!(m.pg&&Array.isArray(m.members)&&m.members.includes(p.code)));
+  paintBadges();
   return true;
 }
 async function pgUnblock(code){
@@ -3963,7 +3967,7 @@ async function viewProfile(root){
       <div class="card" style="padding:4px 14px">
         <button class="listopt" id="pwBtn">${I.lock}<span style="flex:1">Change password</span><span class="muted">›</span></button>
         <button class="listopt" id="pgBlockedBtn">
-  <span style="width:20px;flex:none;display:block;color:var(--text)">${I.ban}</span>
+  <span style="width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--text)">${I.ban}</span>
   <span style="flex:1">Blocked profiles</span>
   <span class="muted">›</span>
 </button>
