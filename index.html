@@ -3221,7 +3221,7 @@ $("#chFilter").style.display="none";    return;
     if(App.chatFilter==="unread") f=f.filter(isUnread);
     if(App.chatFilter==="older") f=f.filter(r=>!isRecent(r));
     if(App.chatFilter==="pandago") f=f.filter(r=>r.m.pg);
-    if(!f.length){ list.innerHTML=`<div class="chhead"><h3>${App.chatTab==="pandago"?"PandaGo":"Chats"}</h3><div class="chtabs2" id="chTabs"><button data-t="Your Matches">Recent</button><button data-t="pandago">PandaGo</button></div></div><p class="muted small" style="padding:28px;text-align:center">${App.chatTab==="pandago"?"No PandaGo chats yet — open PandaGo in People and say hi to someone nearby.":convo.length?"No chats here.":"No conversations yet — say hi to a new match!"}</p>`; wirePill(); paintTabs(); wireTabs(); return; }
+    if(!f.length){ list.innerHTML=`<div class="chhead"><h3>${App.chatTab==="pandago"?"PandaGo":"Chats"}</h3><div class="chtabs2" id="chTabs"><button data-t="Your">Your Matches</button><button data-t="pandago">PandaGo</button></div></div><p class="muted small" style="padding:28px;text-align:center">${App.chatTab==="pandago"?"No PandaGo chats yet — open PandaGo in People and say hi to someone nearby.":convo.length?"No chats here.":"No conversations yet — say hi to a new match!"}</p>`; wirePill(); paintTabs(); wireTabs(); return; }
     const draw=(title,arr)=>{
       if(!arr.length) return;
       list.insertAdjacentHTML("beforeend",`<div class="chhead"><h3>${title}</h3>${headDone?"":'<div class="chtabs2" id="chTabs"><button data-t="recent">Recent</button><button data-t="pandago">PandaGo</button></div>'}</div>`); headDone=true;
