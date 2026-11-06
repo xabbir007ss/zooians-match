@@ -3012,6 +3012,7 @@ function openProfileSheet(p,opts={}){
         :`<button class="act nope" id="sNope">${I.x}</button>
         <button class="act like big" id="sLike">${I.heart}</button>`}
         <button class="act" id="sFlag">${I.flag}</button>
+${opts.readonly && App.matches.some(m=>m.members.includes(p.code))?`<button class="act nope" id="sUnmatch">${I.x}</button>`:""}
       </div>
     </div>`;
   $("#frame").appendChild(sheet);
@@ -3027,7 +3028,8 @@ function openProfileSheet(p,opts={}){
     if(opts.discover){ if(!isMember()){ openMemberGate("Sending a like from Discover is a premium feature."); return; }
       close(); await doLike(p,false); toast("Like sent ♥"); if(opts.onLike) opts.onLike(p); return; }
     close(); swipeTop(1); };
-  $("#sFlag",sheet).onclick=()=>reportDialog(p);
+  const unmatchBtn=$("#sUnmatch",sheet);
+if(unmatchBtn) unmatchBtn.onclick=()=>personMenu(p,close);
 }
 
 
