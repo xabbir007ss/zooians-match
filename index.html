@@ -907,6 +907,12 @@ html,body{overscroll-behavior-y:none}
 .nmt.srch .rip{position:absolute;inset:0;border-radius:18px;border:2px solid var(--honey-deep);opacity:0;pointer-events:none;animation:pgRip 2.4s ease-out infinite}
 .nmt.srch .rip:nth-child(2){animation-delay:.8s}
 .nmt.srch .rip:nth-child(3){animation-delay:1.6s}
+.nmt.pgp2.srch .rip:nth-child(1){animation-delay:.45s}
+.nmt.pgp2.srch .rip:nth-child(2){animation-delay:1.25s}
+.nmt.pgp2.srch .rip:nth-child(3){animation-delay:2.05s}
+.nmt.pgp3.srch .rip:nth-child(1){animation-delay:.9s}
+.nmt.pgp3.srch .rip:nth-child(2){animation-delay:1.7s}
+.nmt.pgp3.srch .rip:nth-child(3){animation-delay:2.5s}
 @keyframes pgRip{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.2,1.16);opacity:0}}
 .nmrow.pgrow{
   padding:4px 18px 10px;
@@ -3542,7 +3548,7 @@ function pgNearHTML(list){
 
   let slots="";
   for(let n=shown.length+1;n<=3;n++){
-    slots+=`<div class="nmt pgc pgp pgp${n}${n===shown.length+1?" srch":""}"><div class="ph">${n===shown.length+1?'<b class="rip"></b><b class="rip"></b><b class="rip"></b>':""}<div class="pgin">${pgSilhouette()}</div></div><span>Person ${n}</span></div>`;
+    slots+=`<div class="nmt pgc pgp pgp${n} srch"><div class="ph"><b class="rip"></b><b class="rip"></b><b class="rip"></b><div class="pgin">${pgSilhouette()}</div></div><span>Person ${n}</span></div>`;
   }
 
   return `<div class="newmatches">
