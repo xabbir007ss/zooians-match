@@ -2963,13 +2963,14 @@ function expandCard(p){
   const deck=$("#deck"); if(!deck||App.expanded) return;
   App.expanded=p.code;
   const x=el("div","xprof");
+  const isMatch=App.matches.some(m=>m.members.includes(p.code));
   x.innerHTML=`<button class="xclose" aria-label="Back to card">${ICO_DOWN}</button>${pvHeroHTML(p)}${pvStreamHTML(p)}
-    <div style="padding:22px 18px 40px;text-align:center">
-      <button class="linkbtn" id="xMore" style="color:var(--ink-3);font-size:13px">Report or unmatch ${esc(p.name)}</button></div>`;
+    ${isMatch?`<div style="padding:22px 18px 40px;text-align:center">
+      <button class="linkbtn" id="xMore" style="color:var(--ink-3);font-size:13px">Report or unmatch ${esc(p.name)}</button></div>`:""}`;
   deck.appendChild(x);
   requestAnimationFrame(()=>requestAnimationFrame(()=>x.classList.add("on")));
   $(".xclose",x).onclick=collapseCard;
-  $("#xMore",x).onclick=()=>personMenu(p,collapseCard);
+  const more=$("#xMore",x); if(more) more.onclick=()=>personMenu(p,collapseCard);
   $$("[data-note]",x).forEach(b=>b.onclick=()=>openNote(p));
   /* the open profile only scrolls up/down — horizontal swipe is disabled; pull down from the top to close */
   x.style.touchAction="pan-y";
