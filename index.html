@@ -901,7 +901,7 @@ html,body{overscroll-behavior-y:none}
 @keyframes bubIn{from{opacity:0;transform:translateY(7px) scale(.97)}to{opacity:1;transform:none}}
 .bub.me{align-self:flex-end;background:linear-gradient(135deg,#6B5CE6,#4A3FC0);color:#fff;border-bottom-right-radius:7px;font-weight:500;box-shadow:0 6px 16px -8px rgba(74,63,192,.7)}
 .bub.them{align-self:flex-start;background:var(--paper);border:1px solid var(--line);border-bottom-left-radius:7px}
-.bub{position:relative;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.bub{position:relative;touch-action:manipulation;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 .bub.hasrx{margin-bottom:11px}
 .bub .rx{position:absolute;bottom:-11px;right:10px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:1px 7px;font-size:12px;font-weight:700;color:#E0287A;box-shadow:0 3px 8px rgba(0,0,0,.12);animation:rxPop .35s var(--ease)}
 .bub.them .rx{right:auto;left:10px}
@@ -2939,6 +2939,7 @@ function swipeState(){
 const AI_PER_MONTH=2;   /* each user sees AI profiles at most 2 times per rolling 30 days */
 async function aiStats(){ try{ const {data,error}=await sb.from("ai_appearances").select("seen_at").eq("user_id",App.me); if(error) return {month:0,total:1};
   const cut=Date.now()-30*864e5, rows=data||[]; return {total:rows.length, month:rows.filter(r=>new Date(r.seen_at).getTime()>cut).length}; }catch(e){ return {month:0,total:1}; } }
+async function aiTestMode(){ try{ const {data,error}=await sb.from("ai_test_users").select("ai_undo").limit(1); return !error && !!(data&&data[0]&&data[0].ai_undo); }catch(e){ return false; } }
 async function aiPending(){ try{ const {data,error}=await sb.from("ai_undo_pending").select("ai_id").eq("user_id",App.me); if(error) return new Set(); return new Set((data||[]).map(r=>r.ai_id)); }catch(e){ return new Set(); } }
 async function aiHidden(){ try{ const {data,error}=await sb.from("ai_exclusions").select("ai_id").eq("user_id",App.me); if(error) return new Set(); return new Set((data||[]).map(r=>r.ai_id)); }catch(e){ return new Set(); } }
 async function buildDeck(noDraw){
@@ -2973,7 +2974,7 @@ async function buildDeck(noDraw){
   }
   let deck=mix.slice(0,30);
   /* AI profiles (profiles.is_ai_enabled = true): exactly one in every 12 cards (11 real + 1 AI), random spot */
-  const hid=await aiHidden(), st=await aiStats(), room=Math.max(0,AI_PER_MONTH-st.month);
+  const testMode=await aiTestMode(), hid=testMode?new Set():await aiHidden(), st=await aiStats(), room=Math.max(0,AI_PER_MONTH-st.month);
   const ai=aiPool.filter(p=>!hid.has(p.code)).sort(()=>Math.random()-.5).slice(0,room);
   if(ai.length){ const out=[]; let a=0; const first=st.total===0;        /* brand-new to AI profiles: first one lands in the first 4 cards */
     for(let i=0;i<Math.max(deck.length,1);i+=11){ const blk=deck.slice(i,i+11);
