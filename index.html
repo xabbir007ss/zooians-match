@@ -3016,7 +3016,7 @@ const noteHTML=(n,mine,name,at=0)=>`
   <div class="pn ${mine?"me":"them"}">
     ${n.ph?`<span class="pn-ph"><img src="${esc(n.ph)}" alt=""></span>`:""}
     <span class="pn-b">
-      <small>${mine?`You replied to ${esc(name)}'s photo`:"Replied to your photo"}</small>
+      <small>${mine?`You replied to ${esc(name)}'s photo:`:"Replied to your photo:"}</small>
       ${esc(n.text)}
       ${at?`<small class="note-date">${noteDate(at)}</small>`:""}
     </span>
