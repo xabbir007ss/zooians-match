@@ -3956,7 +3956,8 @@ const PGLoc={
       if(this.state==="nofix"||this.state==="denied") this.state="ok";
       this.tick(!this.sent);
     };
-    this.wid=navigator.geolocation.watchPosition(p=>got(p,true),e=>{ this.state=e&&e.code===1?"denied":"nofix"; this.refresh(); },
+    this.lo=false; const wErr=e=>{ if(e&&e.code===1) this.state="denied"; else { if(this.wid!=null&&!this.lo){ this.lo=true; navigator.geolocation.clearWatch(this.wid); this.wid=navigator.geolocation.watchPosition(p=>got(p,true),wErr,{enableHighAccuracy:false,maximumAge:60000,timeout:30000}); } if(!this.pos) this.state="nofix"; } this.refresh(); };
+    this.wid=navigator.geolocation.watchPosition(p=>got(p,true),wErr,
     {enableHighAccuracy:true,maximumAge:5000,timeout:20000});
     navigator.geolocation.getCurrentPosition(p=>got(p,false),()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:12000});   /* quick coarse fix while GPS warms up */
     this.timer=setInterval(()=>this.tick(false),7000);
@@ -3970,7 +3971,7 @@ const PGLoc={
   async tick(force){
     if(!this.pos||this.busy||!this.can()) return;
     if(!force&&Date.now()-this.last<6000) return;
-    if(this.pos.acc>150) return;
+    if(this.pos.acc>PG_ACC_MAX) return;
     this.busy=true; this.last=Date.now();
     try{
       const a=await sb.rpc("zm_pandago_ping",{p_lat:this.pos.lat,p_lng:this.pos.lng,p_speed:this.pos.speed});
@@ -4809,6 +4810,8 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal();
    PANDAGO — people within 30 m (road view when moving, radar view when still)
    ========================================================================== */
 const PG_RADIUS=30;
+/* PCs only know their position from Wi-Fi/IP (100 m – few km); phones use GPS, so they keep the strict limit */
+const PG_ACC_MAX=(window.matchMedia&&matchMedia("(pointer:coarse)").matches)?150:5000;
 const pgLogo=(sz=32,live=true)=>{ const u="pgc"+(pgLogo._n=(pgLogo._n||0)+1);
   const house=x=>`<g transform="translate(${x} 0)"><path d="M3 33l7-6 7 6z" fill="#2B2840"/><rect x="4.5" y="33" width="11" height="9" fill="#2B2840"/><rect x="8.5" y="36" width="3" height="6" fill="#FFC93C"/></g>`;
   const tree=x=>`<g transform="translate(${x} 0)"><rect x="-1" y="35" width="2.4" height="8" fill="#2B2840"/><circle cx="0" cy="30" r="5.6" fill="#2B2840"/><circle cx="-4" cy="33" r="3.8" fill="#2B2840"/><circle cx="4" cy="33" r="3.8" fill="#2B2840"/></g>`;
@@ -5352,7 +5355,7 @@ if(pgIntro){
   let lastPing=0, busy=false;
   const sync=async(force)=>{
     if(st.closed||!sb||!st.pos||busy) return; if(!force&&Date.now()-lastPing<7000) return;
-    if(st.pos.acc>150){ st.weak=true; paintLive(); const rt=$("#pgRoomText",ui); if(rt) rt.textContent="Location too imprecise (±"+Math.round(st.pos.acc)+" m) — try on your phone"; return; }
+    if(st.pos.acc>PG_ACC_MAX){ st.weak=true; paintLive(); const rt=$("#pgRoomText",ui); if(rt) rt.textContent="Location too imprecise (±"+Math.round(st.pos.acc)+" m) — try on your phone"; return; }
     st.weak=false;
     busy=true; lastPing=Date.now();
     try{
@@ -5585,7 +5588,7 @@ initMap().then(()=>{
 });
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(p=>{ if(!st.closed&&!st.fine) onPos(p); },()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:12000});   /* fast rough fix first */
-    wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },e=>{ st.geo=e&&e.code===1?"denied":"err"; paintLive();
+    wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },function wErr(e){ if(e&&e.code!==1&&!st.lo&&wid!=null){ st.lo=true; navigator.geolocation.clearWatch(wid); wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },wErr,{enableHighAccuracy:false,maximumAge:60000,timeout:30000}); } if(!st.pos) st.geo=e&&e.code===1?"denied":"err"; paintLive();
       if(e&&e.code===1) $("#pgRoomText",ui).textContent="Allow location to find people within 30 m."; },{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
   } else { st.geo="denied"; paintLive(); }
   T(()=>sync(),7000);
