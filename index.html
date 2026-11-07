@@ -2981,11 +2981,6 @@ const Notes={
     .select()
     .single();
 },
-    await detectSchema();
-    const pid=pairId(App.me,to);
-    const row=put("messages",{match:pid||undefined,sender:App.me,receiver:to,body:NOTE_PFX+JSON.stringify({p:ph||"",t:text})});
-    return await sb.from(TBL("messages")).insert(row).select().single();
-  },
   async load(){
     await detectSchema(); const M=COL.messages;
     if(!sb||!isUuid(App.me)||!M.receiver||!M.body){ App.notes=[]; return []; }
@@ -4870,9 +4865,7 @@ ui.addEventListener("touchend",e=>{
   }
 },{passive:true});
 
-/* PandaGo pull-to-refresh: touch + desktop mouse support */
-let pgPullStartY=null;
-let pgPullDistance=0;
+/* Desktop mouse pull-to-refresh support */
 let pgPointerId=null;
 
 const pgStartPull=(y,target)=>{
@@ -4912,24 +4905,6 @@ const pgEndPull=()=>{
     pgIndicator.classList.remove("show","refreshing");
   }
 };
-
-/* Mobile touch */
-ui.addEventListener("touchstart",e=>{
-  if(e.touches.length!==1) return;
-  pgStartPull(e.touches[0].clientY,e.target);
-},{passive:true});
-
-ui.addEventListener("touchmove",e=>{
-  if(e.touches.length!==1) return;
-  pgMovePull(e.touches[0].clientY);
-},{passive:true});
-
-ui.addEventListener("touchend",pgEndPull,{passive:true});
-ui.addEventListener("touchcancel",()=>{
-  pgPullStartY=null;
-  pgPullDistance=0;
-  pgIndicator.classList.remove("show","refreshing");
-},{passive:true});
 
 /* Desktop mouse */
 ui.addEventListener("pointerdown",e=>{
