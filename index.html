@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -946,7 +945,24 @@ html,body{overscroll-behavior-y:none}
 .chtabrow .chtabs2{width:100%;justify-content:space-between;gap:0}
 .chtabrow .chtabs2 button{font-size:15px}
 .chsec{padding:10px 18px 0}.chsec h3{font-size:15px}
-
+/* ---- photo notes ---- */
+.bub.notemsg{background:transparent!important;border:0!important;box-shadow:none!important;padding:0;max-width:88%}
+.pn{display:flex;align-items:flex-end;gap:9px}
+.pn.me{flex-direction:row-reverse}
+.pn-ph{width:52px;height:68px;flex:none;border-radius:10px;border:3px solid #fff;box-shadow:0 6px 14px -6px rgba(0,0,0,.5);overflow:hidden;transform:rotate(-5deg);background:var(--ink)}
+.pn.me .pn-ph{transform:rotate(5deg)}
+.pn-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.pn-b{padding:10px 14px;border-radius:18px;font-size:15px;line-height:1.4;background:var(--honey-soft);border:1.5px solid var(--honey);color:var(--ink);word-break:break-word}
+.pn-b small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+.ncard{flex:none;width:218px;display:flex;gap:11px;align-items:center;padding:10px 12px;border-radius:18px;background:var(--honey-wash);border:1.5px solid var(--honey);text-align:left}
+.ncard .pn-ph{width:44px;height:58px}
+.ncard .t{min-width:0;flex:1}
+.ncard .t b{display:block;font-size:14px}
+.ncard .t p{font-size:12.5px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35}
+.nc-pol{width:112px;height:148px;margin:6px auto 10px;border-radius:14px;border:4px solid #fff;box-shadow:0 14px 28px -12px rgba(0,0,0,.55);overflow:hidden;transform:rotate(-4deg);background:var(--ink)}
+.nc-pol.big{width:140px;height:186px}
+.nc-pol img{width:100%;height:100%;object-fit:cover;display:block}
+.nc-bubble{margin:0 auto 14px;max-width:300px;padding:12px 16px;border-radius:18px;background:var(--honey-soft);border:1.5px solid var(--honey);font-size:15.5px;line-height:1.45;word-break:break-word}
 /* ================= toast / modal ================= */
 #toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%) translateY(-18px) scale(.96);
   max-width:min(88vw,380px);padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;line-height:1.35;text-align:center;
@@ -2550,7 +2566,7 @@ function paintBadges(){
   const unread=App.matches.filter(m=>m.lastMsg && m.lastFrom && m.lastFrom!==App.me && (m.lastAt>(readMark(m.id)||0))).length;
   const set=(k,n)=>{ const b=$(`[data-b="${k}"]`); if(!b) return;
     b.classList.toggle("hide",!n); b.textContent=n>9?"9+":n; };
-  set("liked",newLikes); set("chats",unread);
+  set("liked",newLikes); set("chats",unread+pendingNotes().length);
 }
 const readMark=id=>{ try{return +localStorage.getItem("zm:read:"+id)||0}catch(e){return 0} };
 const markRead=id=>{ try{localStorage.setItem("zm:read:"+id,String(now()))}catch(e){} };
@@ -2558,7 +2574,7 @@ const markRead=id=>{ try{localStorage.setItem("zm:read:"+id,String(now()))}catch
 async function loadSocial(){
   const me=App.me;
   const [matches,likedYou,myLikes,passes,blocks]=await Promise.all([
-    Social.matches(me),Social.likedBy(me),Social.myLikes(me),Social.myPasses(me),Promise.resolve([]),loadConfig()
+    Social.matches(me),Social.likedBy(me),Social.myLikes(me),Social.myPasses(me),Promise.resolve([]),loadConfig(),Notes.load()
   ]);
   App.matches=matches; App.likedYou=likedYou; App.myLikes=myLikes; App.passes=passes; App.blocks=blocks;
   App.demoOff = !SHOW_SAMPLE_PROFILES;
@@ -2856,7 +2872,7 @@ function wireCard(card,p){
   const showPhoto=i=>{ photoIdx=(i+photos.length)%photos.length;
     $(".photo",card).style.backgroundImage=`url('${photos[photoIdx]}')`;
     $$(".dots i",card).forEach((d,j)=>d.classList.toggle("on",j===photoIdx)); };
-  const nb=$("[data-note]",card); if(nb){ nb.onpointerdown=e=>e.stopPropagation(); nb.onclick=e=>{e.stopPropagation();openNote(p);}; }
+  const nb=$("[data-note]",card); if(nb){ nb.onpointerdown=e=>e.stopPropagation(); nb.onclick=e=>{e.stopPropagation();openNote(p,photos[photoIdx]);}; }
 
   /* only LEFT / RIGHT moves the card. Moving up = open the profile (like scrolling down in Bumble). */
   card.addEventListener("pointerdown",e=>{
@@ -2899,16 +2915,86 @@ function wireCard(card,p){
   card.addEventListener("wheel",e=>{ if(e.deltaY>25 && Date.now()-wheelAt>600){ wheelAt=Date.now(); expandCard(p); } },{passive:true});
 }
 
-/* ---- a note on someone's photo (Bumble-style). It stays on this device — it is NOT sent to the other person. ---- */
-function openNote(p){
-  const b=modal("Say something about this photo",`
-    <p class="muted small" style="margin-bottom:12px;line-height:1.5">Write a short note for ${esc(p.name)}'s photo.</p>
-    <textarea class="input" id="noteTxt" maxlength="120" placeholder="e.g. Love this smile 😊" style="min-height:90px"></textarea>
-    <button class="btn" id="noteSend" style="margin-top:12px">Send note</button>
+/* ---- Photo notes: a reply to ONE photo. Goes to their inbox with that photo attached. ---- */
+const NOTE_FREE=5, NOTE_PFX="\u2063note:";
+const parseNote=t=>{ if(!t||t.indexOf(NOTE_PFX)!==0) return null;
+  try{ const o=JSON.parse(t.slice(NOTE_PFX.length)); return o&&typeof o.t==="string"?{ph:o.p||"",text:o.t}:null; }catch(e){ return null; } };
+const Notes={
+  async usedToday(){
+    await detectSchema(); const M=COL.messages; if(!sb||!M.sender||!M.body||!M.created) return 0;
+    const {count,error}=await sb.from(TBL("messages")).select(M.id,{count:"exact",head:true})
+      .eq(M.sender,App.me).like(M.body,NOTE_PFX+"%").gte(M.created,new Date(Date.now()-864e5).toISOString());
+    return error?0:(count||0);
+  },
+  async send(to,ph,text){
+    await detectSchema();
+    const pid=pairId(App.me,to);
+    const row=put("messages",{match:pid||undefined,sender:App.me,receiver:to,body:NOTE_PFX+JSON.stringify({p:ph||"",t:text})});
+    return await sb.from(TBL("messages")).insert(row).select().single();
+  },
+  async load(){
+    await detectSchema(); const M=COL.messages;
+    if(!sb||!isUuid(App.me)||!M.receiver||!M.body){ App.notes=[]; return []; }
+    const {data,error}=await sb.from(TBL("messages")).select("*").eq(M.receiver,App.me)
+      .like(M.body,NOTE_PFX+"%").order(M.created,{ascending:false}).limit(100);
+    App.notes=error?[]:data.map(mapMsg).map(m=>{ const n=parseNote(m.text); return n?{id:m.id,from:m.from,ph:n.ph,text:n.text,at:m.at}:null; }).filter(Boolean);
+    return App.notes;
+  }
+};
+function pendingNotes(){
+  const blocked=new Set((App.blocks||[]).map(b=>b.from===App.me?b.to:b.from)), seen=new Set(), out=[];
+  (App.notes||[]).forEach(n=>{ if(seen.has(n.from)) return; seen.add(n.from);
+    if(blocked.has(n.from)||(App.passes||[]).some(x=>x.to===n.from)||(App.matches||[]).some(m=>m.members.includes(n.from))) return;
+    out.push(n); });
+  return out;
+}
+const noteHTML=(n,mine,name)=>`<div class="pn ${mine?"me":"them"}">${n.ph?`<span class="pn-ph"><img src="${esc(n.ph)}" alt=""></span>`:""}<span class="pn-b"><small>${mine?`You replied to ${esc(name)}'s photo`:"Replied to your photo"}</small>${esc(n.text)}</span></div>`;
+
+async function openNote(p,ph){
+  if(p.code===App.me) return;
+  if(App.preview||!isUuid(p.code)){ toast("Notes can't be sent to sample profiles"); return; }
+  const photo=(ph&&!/^data:/.test(ph))?ph:((p.photos&&p.photos[0])||"");
+  const member=isMember();
+  const used=member?0:await Notes.usedToday();
+  if(!member&&used>=NOTE_FREE){ openMemberGate(`You've used your ${NOTE_FREE} free notes for today.`); return; }
+  const left=NOTE_FREE-used;
+  const b=modal("",`
+    <div style="text-align:center">
+      <div class="nc-pol"><img src="${esc(photo||artFor(p.code,p.name))}" alt=""></div>
+      <h3 style="margin-bottom:4px">Reply to ${esc(p.name)}'s photo</h3>
+      <p class="muted small" style="margin-bottom:12px;line-height:1.5">They'll see your note in their inbox, with this photo.</p>
+    </div>
+    <textarea class="input" id="noteTxt" maxlength="120" placeholder="e.g. This view is unreal — where is it? 😍" style="min-height:90px"></textarea>
+    <p class="help" style="text-align:center">${member?"Unlimited notes with Zoo Membership":`${left} of ${NOTE_FREE} free notes left today`}</p>
+    <button class="btn love" id="noteSend" style="margin-top:12px">Send note ♥</button>
     <button class="btn ghost" id="noteNo" style="margin-top:9px">Cancel</button>`);
   $("#noteNo",b).onclick=closeModal;
-  $("#noteSend",b).onclick=()=>{ const v=$("#noteTxt",b).value.trim(); if(!v){ toast("Write something first"); return; }
-    closeModal(); toast("Note saved ♥"); };
+  $("#noteSend",b).onclick=async()=>{
+    const v=$("#noteTxt",b).value.trim(); if(!v){ toast("Write something first"); return; }
+    const btn=$("#noteSend",b); btn.disabled=true; btn.textContent="Sending…";
+    const r=await Notes.send(p.code,photo,v);
+    if(r.error){
+      closeModal();
+      if(/note_limit/.test(r.error.message||"")) openMemberGate(`You've used your ${NOTE_FREE} free notes for today.`);
+      else toast("Couldn't send the note: "+r.error.message,3800);
+      return; }
+    closeModal(); toast("Note sent ♥ — it's in their inbox with this photo",3000); buzz([14]);
+    const onTop=App.tab==="people"&&App.deck[0]&&App.deck[0].code===p.code&&$("#deck .swipecard:last-child");
+    if(onTop&&!swipeState().locked){ collapseCard(); swipeTop(1); }
+    else if(!App.myLikes.some(l=>l.to===p.code)) await doLike(p,false);   /* a note also likes them, so a match can happen */
+  };
+}
+async function notePeek(n,p){
+  const b=modal("",`<div style="text-align:center">
+      ${n.ph?`<div class="nc-pol big"><img src="${esc(n.ph)}" alt=""></div>`:""}
+      <p class="small muted" style="margin-bottom:10px"><b>${esc(p.name)}</b> replied to your photo</p>
+      <div class="nc-bubble">${esc(n.text)}</div>
+      <button class="btn love" id="npLike">Like back ♥</button>
+      <button class="btn ghost" id="npProf" style="margin-top:9px">View profile</button>
+      <button class="linkbtn" id="npNo" style="margin-top:12px;color:var(--ink-3)">Not now</button></div>`);
+  $("#npLike",b).onclick=async()=>{ closeModal(); await doLike(p,false); await loadSocial(); go("app",{tab:"chats"}); };
+  $("#npProf",b).onclick=()=>{ closeModal(); openProfileSheet(p,{readonly:true}); };
+  $("#npNo",b).onclick=async()=>{ closeModal(); await Social.pass(App.me,p.code); App.passes.push({to:p.code,at:Date.now()}); toast("Note dismissed"); go("app",{tab:"chats"}); };
 }
 
 /* ---- face verification (runs on this device; the selfie is never uploaded or stored) ---- */
@@ -3044,7 +3130,7 @@ function pvHeroHTML(p){
         ${p.verified?`<span class="vpill" style="margin:0;background:rgba(20,16,40,.72);color:#fff">${ICO_VER}Photo verified</span>`:""}
         ${p.gc&&p.gc.member&&p.gc.which?`<span class="zoobadge">🐼 ${esc(p.gc.which)} Member</span>`:""}</div>
       <div class="n">${esc(p.name)}<i>${p.age||""}</i></div></div>
-    <button class="notebtn" data-note="1" aria-label="Send a note" style="position:absolute;right:14px;bottom:14px;left:auto">${ICO_NOTE}</button></div>`;
+    <button class="notebtn" data-note="1" data-ph="${esc(photos[0])}" aria-label="Send a note" style="position:absolute;right:14px;bottom:14px;left:auto">${ICO_NOTE}</button></div>`;
 }
 /* the scrolling profile, in this exact order */
 function pvStreamHTML(p){
@@ -3054,7 +3140,7 @@ function pvStreamHTML(p){
   const pct=overlapPct(p.interests||[],me.interests||[]);
   const prompts=p.prompts||[];
   const pr=i=>prompts[i]?`<div class="pv-prompt"><small>${esc(prompts[i].q)}</small><p>${esc(prompts[i].a)}</p></div>`:"";
-  const im=i=>photos[i+1]?`<div class="pv-photo"><img src="${photos[i+1]}" alt=""><button class="notebtn" data-note="1" aria-label="Send a note">${ICO_NOTE}</button></div>`:"";
+  const im=i=>photos[i+1]?`<div class="pv-photo"><img src="${photos[i+1]}" alt=""><button class="notebtn" data-note="1" data-ph="${esc(photos[i+1])}" aria-label="Send a note">${ICO_NOTE}</button></div>`:"";
   const chip=(ic,t)=>t?`<span class="pv-chip"><i>${ic}</i>${esc(t)}</span>`:"";
   const km=distKm(me,p);
   const lsI=k=>LS_ICONS[k].replace('class="wic"','class="wic" style="margin:0"');
@@ -3088,7 +3174,7 @@ function expandCard(p){
   requestAnimationFrame(()=>requestAnimationFrame(()=>x.classList.add("on")));
   $(".xclose",x).onclick=collapseCard;
   $("#xMore",x).onclick=()=>personMenu(p,collapseCard);
-  $$("[data-note]",x).forEach(b=>b.onclick=()=>openNote(p));
+  $$("[data-note]",x).forEach(b=>b.onclick=()=>openNote(p,b.dataset.ph));
   /* the open profile only scrolls up/down — horizontal swipe is disabled; pull down from the top to close */
   x.style.touchAction="pan-y";
   let ty=0,atTop=false;
@@ -3135,7 +3221,7 @@ ${opts.readonly && App.matches.some(m=>m.members.includes(p.code))?`<button clas
     </div>`;
   $("#frame").appendChild(sheet);
   const close=()=>sheet.remove();
-  $$("[data-note]",sheet).forEach(b=>b.onclick=()=>openNote(p));
+  $$("[data-note]",sheet).forEach(b=>b.onclick=()=>openNote(p,b.dataset.ph));
   $("#closeSheet",sheet).onclick=close;
   $("#moreBtn",sheet).onclick=()=>personMenu(p,close);
   const pass=$("#sPass",sheet);
@@ -3383,10 +3469,12 @@ async function viewLiked(root){
     const p=await profileOf(l.from);
     const matched=App.matches.some(m=>m.members.includes(p.code));
     const pct=overlapPct(p.interests||[],App.profile.interests||[]);
+    const nt=(App.notes||[]).find(x=>x.from===p.code);
     const row=el("div","likerow");
     row.innerHTML=`<img class="av" data-face="${(p.photos&&p.photos[0])||""}" src="${(p.photos&&p.photos[0])||artFor(p.code,p.name)}" alt="">
       <div class="t"><b>${esc(p.name)}${p.age?`, ${p.age}`:""}</b>
-        <span>${l.super?"⭐ Super liked you · ":""}${pct}% in common · ${timeAgo(l.at)}</span></div>
+        <span>${l.super?"⭐ Super liked you · ":""}${pct}% in common · ${timeAgo(l.at)}</span>
+        ${nt?`<span style="display:block;margin-top:3px;color:var(--ink-2)">📷 “${esc(nt.text.slice(0,60))}”</span>`:""}</div>
       ${matched?`<button class="roundbtn plain" data-chat="${p.code}">${I.chat}</button>`
       :`<button class="roundbtn plain" data-pass="${p.code}">${I.x}</button>
         <button class="roundbtn" data-like="${p.code}">${I.heart}</button>`}`;
@@ -3413,7 +3501,7 @@ async function viewChats(root){
   root.innerHTML=`<div class="topbar"><h2>Chats</h2><button class="iconbtn" id="chFilter" aria-label="Filter chats">${I.filter}</button></div>
     <div class="searchwrap"><div class="search">${I.search}
       <input id="chatSearch" placeholder="Search your matches" autocomplete="off"></div></div>
-<div id="chipLine"></div><div id="newMatches"></div><div id="pgNear"></div><div id="threadList"></div>`;  const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
+<div id="chipLine"></div><div id="notesBox"></div><div id="newMatches"></div><div id="pgNear"></div><div id="threadList"></div>`;  const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
   const rows=[];
   for(const m of App.matches){
     const other=m.members.find(c=>c!==App.me);
@@ -3422,8 +3510,15 @@ async function viewChats(root){
   }
   rows.sort((a,b)=>(b.m.lastAt||b.m.at)-(a.m.lastAt||a.m.at));
   const waiting=App.likedYou.filter(l=>!blocked.has(l.from)&&!App.passes.some(x=>x.to===l.from)&&!App.myLikes.some(m=>m.to===l.from)&&!App.matches.some(m=>m.members.includes(l.from)));
+  const notePend=pendingNotes(), notePeople=await Promise.all(notePend.map(n=>profileOf(n.from)));
+  $("#notesBox").innerHTML=notePend.length?`<div class="newmatches" style="padding-bottom:0">
+    <div style="padding:0 18px 6px"><h3 style="font-size:16px">Photo notes <span class="pgtag">${notePend.length}</span></h3></div>
+    <div class="nmrow" style="gap:10px">${notePend.map((n,i)=>`<button class="ncard" data-i="${i}">
+      ${n.ph?`<span class="pn-ph"><img src="${esc(n.ph)}" alt=""></span>`:""}
+      <span class="t"><b>${esc(notePeople[i].name||"Someone")}</b><p>${esc(n.text)}</p></span></button>`).join("")}</div></div>`:"";
+  $$("#notesBox .ncard").forEach(c=>c.onclick=()=>{ const i=+c.dataset.i; notePeek(notePend[i],notePeople[i]); });
 
-  if(!rows.length && !waiting.length && App.chatTab!=="pandago"){
+  if(!rows.length && !waiting.length && !notePend.length && App.chatTab!=="pandago"){
     $("#threadList").innerHTML=`${CHTABS}<div style="text-align:center;padding:44px 34px">
       <div style="width:220px;margin:0 auto;position:relative;height:120px" class="pandas">
         <span class="spark">💛</span><div class="p m">${pandaSVG("m")}</div><div class="p f">${pandaSVG("f")}</div></div>
@@ -3501,6 +3596,7 @@ $("#chFilter").style.display="none";    return;
     $$("#chTabs button").forEach(b=>{ const k=b.dataset.t; b.classList.toggle("on",k===App.chatTab);
       b.innerHTML=(k==="pandago"?"PandaGo":"Your Matches")+(convoAll.some(r=>(k==="pandago"?!!r.m.pg:!r.m.pg)&&isUnread(r))?dot:""); });
     const nm=$("#newMatches"); if(nm) nm.style.display=App.chatTab==="pandago"?"none":"";
+    const nbx=$("#notesBox"); if(nbx) nbx.style.display=App.chatTab==="pandago"?"none":"";
     const pnb=$("#pgNear"); if(pnb) pnb.style.display=App.chatTab==="pandago"?"":"none"; };
   const wireTabs=()=>{ $$("#chTabs button").forEach(b=>b.onclick=()=>{ App.chatTab=b.dataset.t; LSset("zm:chatTab",App.chatTab); paint($("#chatSearch").value.trim()); }); };
       const pn=$("#pgNear");
@@ -3711,7 +3807,7 @@ let threadUnsub=null;
 const parseRx=t=>{ const m=/^\u2063rx:(.+)$/.exec(t||""); return m?m[1]:null; };
 const parseUn=t=>{ const m=/^\u2063un:(.+)$/.exec(t||""); return m?m[1]:null; };
 const parseGif=t=>{ const m=/^\u2063gif:(https:\/\/.+)$/.exec(t||""); return m?m[1]:null; };
-const previewText=t=>parseRx(t)?"♥ Reacted to a message":parseUn(t)?"Reaction removed":parseGif(t)?"GIF":t;
+const previewText=t=>parseRx(t)?"♥ Reacted to a message":parseUn(t)?"Reaction removed":parseGif(t)?"GIF":(typeof parseNote==="function"&&parseNote(t))?"📷 Photo note":t;
 function fmtHead(ms){
   const d=new Date(ms), n=new Date(), tm=d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
   const day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(), diff=Math.round((day(n)-day(d))/86400000);
@@ -3826,11 +3922,11 @@ async function openChat(pid,other){
       real.push(m);
       if(!prev || m.at-prev>=3600000){ const h=el("div","tmhead"); h.textContent=fmtHead(m.at); box.appendChild(h); }
       prev=m.at;
-      const g=parseGif(m.text), rn=rx[m.id]?rx[m.id].size:0;
-      const b=el("div","bub "+(m.from===App.me?"me":"them")+(g?" gif":"")+(rn?" hasrx":"")+(seen.has(m.id)?" old":""));
+      const g=parseGif(m.text), nt=parseNote(m.text), rn=rx[m.id]?rx[m.id].size:0;
+      const b=el("div","bub "+(m.from===App.me?"me":"them")+(g?" gif":"")+(nt?" notemsg":"")+(rn?" hasrx":"")+(seen.has(m.id)?" old":""));
       b.dataset.id=m.id; b.dataset.rn=rn;
       if(!g && /^\p{Extended_Pictographic}[\p{Extended_Pictographic}\u200d\ufe0f]{0,5}$/u.test(m.text.trim())) b.classList.add("big");
-      b.innerHTML=g?`<img class="gifmsg" src="${esc(g)}" alt="GIF" loading="lazy">`:esc(m.text);
+      b.innerHTML=g?`<img class="gifmsg" src="${esc(g)}" alt="GIF" loading="lazy">`:nt?noteHTML(nt,m.from===App.me,other.name):esc(m.text);
       if(rn) b.insertAdjacentHTML("beforeend",`<span class="rx">♥${rn>1?" 2":""}</span>`);
       box.appendChild(b); seen.add(m.id);
     });
@@ -4401,6 +4497,9 @@ function startRealtime(){
   }
 
   App.watchers.push(Chat.watchInbox(m=>{
+    if(m.to===me && parseNote(m.text) && !App.matches.some(x=>x.members.includes(m.from))){
+      Notes.load().then(()=>{ paintBadges(); if(onList()&&(App.tab==="chats"||App.tab==="liked")) go("app",{tab:App.tab}); });
+      buzz(20); return; }
     const mt=App.matches.find(x=>x.id===m.pid||(x.alias&&x.alias.includes(m.pid))||(m.from&&m.to&&x.members.includes(m.from)&&x.members.includes(m.to)));
     if(!mt){ syncMatches(); return; }
     mt.lastMsg=m.text; mt.lastAt=m.at; mt.lastFrom=m.from; paintBadges();
