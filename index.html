@@ -1487,7 +1487,7 @@ const SCHEMA = {
     langs:["languages","langs"], interests:["interests"],
     photo1:["photo_1"], photo2:["photo_2"], photo3:["photo_3"],
     religion:["religion"], qualities:["qualities"], prompts:["prompts"], drinking:["drinking"], smoking:["smoking"], kids:["kids"], verified:["verified"], is_member:["is_member"], member_until:["member_until"],
-    done:["profile_complete","is_complete","onboarded","done"], status:["status"], is_admin:["is_admin"],
+    done:["profile_complete","is_complete","onboarded","done"], status:["status"], is_admin:["is_admin"], is_ai:["is_ai_enabled"],
     last_seen:["last_seen","last_seen_at"], created:["created_at"], updated:["updated_at"] },
   likes:{ table:"likes",
     from:["from_user","liker_id","from_id","user_id","sender_id","from_user_id"],
@@ -1534,7 +1534,7 @@ function detectSchema(){
   if(detectSchema._p) return detectSchema._p;
   detectSchema._p=(async()=>{
     if(!sb) return;
-    try{ const c=JSON.parse(sessionStorage.getItem("zm:schema:v5")||"null");
+    try{ const c=JSON.parse(sessionStorage.getItem("zm:schema:v6")||"null");
       if(c){ Object.assign(COL,c); return; } }catch(e){}
     await Promise.all(Object.entries(SCHEMA).map(async([key,def])=>{
       const fields=Object.keys(def).filter(k=>k!=="table");
@@ -1548,7 +1548,7 @@ function detectSchema(){
     console.info("[schema] detected columns",COL);
     const missing=[]; Object.entries(COL).forEach(([t,m])=>Object.entries(m).forEach(([f,c])=>{ if(!c) missing.push(t+"."+f); }));
     if(missing.length) console.warn("[schema] not found (skipped):",missing.join(", "));
-    if(COL.likes&&COL.likes.from&&COL.likes.to&&COL.matches.a&&COL.messages.body){ try{ sessionStorage.setItem("zm:schema:v5",JSON.stringify(COL)); }catch(e){} }
+    if(COL.likes&&COL.likes.from&&COL.likes.to&&COL.matches.a&&COL.messages.body){ try{ sessionStorage.setItem("zm:schema:v6",JSON.stringify(COL)); }catch(e){} }
   })();
   return detectSchema._p;
 }
@@ -1678,7 +1678,7 @@ function fromRow(r){
     gc:{ member:!!g("gc_member"), which:g("gc_name")||"" },
     bio:g("bio")||"", langs:toArr(g("langs")), interests,
     done: doneCol===undefined ? (!!g("name") && photos.length>=REQ_PHOTOS && interests.length>=5) : !!doneCol,
-    status:g("status")||"active", isAdmin:!!g("is_admin"),
+    status:g("status")||"active", isAdmin:!!g("is_admin"), isAi:!!g("is_ai"),
     createdAt:toMs(g("created")), updatedAt:toMs(g("updated")), lastSeen:toMs(g("last_seen"))
   };
 }
@@ -2935,6 +2935,11 @@ function swipeState(){
   if(start===null||now>=start+SWIPE_WIN) return {locked:false,left:SWIPE_LIMIT};
   return count>=SWIPE_LIMIT?{locked:true,left:0,resetAt:start+SWIPE_WIN}:{locked:false,left:SWIPE_LIMIT-count};
 }
+/* AI profiles that already ended a chat with me (server table) never come back */
+const AI_PER_MONTH=2;   /* each user sees AI profiles at most 2 times per rolling 30 days */
+async function aiStats(){ try{ const {data,error}=await sb.from("ai_appearances").select("seen_at").eq("user_id",App.me); if(error) return {month:0,total:1};
+  const cut=Date.now()-30*864e5, rows=data||[]; return {total:rows.length, month:rows.filter(r=>new Date(r.seen_at).getTime()>cut).length}; }catch(e){ return {month:0,total:1}; } }
+async function aiHidden(){ try{ const {data,error}=await sb.from("ai_exclusions").select("ai_id").eq("user_id",App.me); if(error) return new Set(); return new Set((data||[]).map(r=>r.ai_id)); }catch(e){ return new Set(); } }
 async function buildDeck(noDraw){
   const me=App.profile;
   const want = me.gender==="Female" ? "Male" : "Female";
@@ -2942,6 +2947,7 @@ async function buildDeck(noDraw){
   const blocked=new Set(App.blocks.map(b=>b.from===App.me?b.to:b.from));
   const all=await allProfiles();
   let list=all.filter(p=>p && p.done && p.gender===want && !seen.has(p.code) && !blocked.has(p.code));
+  const aiPool=list.filter(p=>p.isAi); list=list.filter(p=>!p.isAi);   /* AI profiles are placed separately: 1 per 12 cards */
   /* distance filter: only when both sides have a known position */
   if(me.loc && me.loc.mode!=="global"){
     const r=me.loc.radius||DEFAULT_RADIUS;
@@ -2964,7 +2970,16 @@ async function buildDeck(noDraw){
     else if(O.length) mix.push(O.shift());
     else mix.push(L.shift());
   }
-  App.deck=mix.slice(0,30);
+  let deck=mix.slice(0,30);
+  /* AI profiles (profiles.is_ai_enabled = true): exactly one in every 12 cards (11 real + 1 AI), random spot */
+  const hid=await aiHidden(), st=await aiStats(), room=Math.max(0,AI_PER_MONTH-st.month);
+  const ai=aiPool.filter(p=>!hid.has(p.code)).sort(()=>Math.random()-.5).slice(0,room);
+  if(ai.length){ const out=[]; let a=0; const first=st.total===0;        /* brand-new to AI profiles: first one lands in the first 4 cards */
+    for(let i=0;i<Math.max(deck.length,1);i+=11){ const blk=deck.slice(i,i+11);
+      if(a<ai.length){ const lim=(first&&i===0)?Math.min(4,blk.length+1):blk.length+1; blk.splice(Math.floor(Math.random()*lim),0,ai[a++]); }
+      out.push(...blk); }
+    deck=out; }
+  App.deck=deck;
   if(!noDraw) drawDeck();
 }
 
@@ -3066,6 +3081,7 @@ function cardHTML(p){
       <div class="stack"><div class="info">
         <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px">
           ${p.verified?`<span class="vpill" style="margin:0">${ICO_VER}Photo verified</span>`:""}
+          ${p.isAi?`<span class="vpill" style="margin:0;background:rgba(20,16,40,.72);color:#fff">✨ AI-powered</span>`:""}
           ${p.gc&&p.gc.member&&p.gc.which?`<span class="zoobadge">🐼 ${esc(p.gc.which)} Member</span>`:""}</div>
         <div class="nm">${esc(p.name)} <i>${p.age||""}</i></div>
         ${p.work?`<div class="wline">${workIcon(p.work)}${esc(plain(p.work))}</div>`:""}
@@ -3328,6 +3344,7 @@ function swipeTop(dir,superLike){
   finishSwipe(card,p,dir,superLike);
 }
 async function finishSwipe(card,p,dir,superLike){
+  if(p.isAi){ try{ sb.rpc("zm_ai_seen",{p_ai:p.code}).then(()=>{},()=>{}); }catch(e){} }   /* counts toward the 2-per-month AI limit */
   card.style.transform=`translate(${dir*window.innerWidth}px,-40px) rotate(${dir*22}deg)`;
   card.style.opacity="0";
   App.lastSwipe={code:p.code,dir};
@@ -3389,7 +3406,7 @@ function pvHeroHTML(p){
   return `<div class="pv-hero"><img src="${photos[0]}" alt="${esc(p.name)}"><div class="pv-sh"></div>
     <div class="pv-nm">
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-        ${p.verified?`<span class="vpill" style="margin:0;background:rgba(20,16,40,.72);color:#fff">${ICO_VER}Photo verified</span>`:""}
+        ${p.verified?`<span class="vpill" style="margin:0;background:rgba(20,16,40,.72);color:#fff">${ICO_VER}Photo verified</span>`:""}${p.isAi?`<span class="vpill" style="margin:0;background:rgba(20,16,40,.72);color:#fff">✨ AI-powered</span>`:""}
         ${p.gc&&p.gc.member&&p.gc.which?`<span class="zoobadge">🐼 ${esc(p.gc.which)} Member</span>`:""}</div>
       <div class="n">${esc(p.name)}<i>${p.age||""}</i></div></div>
     <button class="notebtn" data-note="1" data-ph="${esc(photos[0])}" aria-label="Send a note" style="position:absolute;right:14px;bottom:14px;left:auto">${ICO_NOTE}</button></div>`;
