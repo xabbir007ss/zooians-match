@@ -774,6 +774,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .pgs .pgf-hud{display:flex;justify-content:center;text-shadow:none}
 .pgs-pill{display:inline-flex;flex-direction:column;align-items:center;padding:9px 16px 8px;border-radius:16px;background:rgba(18,26,44,.64);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .pgs .pgf-hud small{margin-top:4px}
+.pgs-fog{position:absolute;inset:0;background:linear-gradient(#a9cdee 0%,rgba(169,205,238,.85) 18%,rgba(169,205,238,0) 52%);pointer-events:none}
 .pgcard{position:absolute;inset:0;z-index:30;display:flex;align-items:flex-end}
 .pgcard .bk{position:absolute;inset:0;background:rgba(20,14,50,.45);opacity:0;transition:opacity .25s}
 .pgcard.on .bk{opacity:1}
@@ -3957,7 +3958,7 @@ const PGLoc={
     };
     this.wid=navigator.geolocation.watchPosition(p=>got(p,true),e=>{ this.state=e&&e.code===1?"denied":"nofix"; this.refresh(); },
     {enableHighAccuracy:true,maximumAge:5000,timeout:20000});
-    navigator.geolocation.getCurrentPosition(p=>got(p,false),()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:5000});   /* quick coarse fix while GPS warms up */
+    navigator.geolocation.getCurrentPosition(p=>got(p,false),()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:12000});   /* quick coarse fix while GPS warms up */
     this.timer=setInterval(()=>this.tick(false),7000);
   },
   stop(){
@@ -4896,6 +4897,7 @@ function pgMesh(ui){
 
   const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
   const frame=t=>{
+    if(!document.body.contains(cv)){ window.removeEventListener("resize",resizePg); window.removeEventListener("orientationchange",resizePg); if(cv._pgRO) cv._pgRO.disconnect(); return; }
     if(!document.body.contains(cv)) return;
     ctx.clearRect(0,0,W,H);
     for(const a of nodes){ a.x+=a.vx; a.y+=a.vy; if(a.x<0||a.x>W) a.vx*=-1; if(a.y<0||a.y>H) a.vy*=-1; }
@@ -5067,6 +5069,137 @@ function pgIntroSky(box,getPos,isClosed,done){
     raf=requestAnimationFrame(frame); };
   raf=requestAnimationFrame(frame);
 }
+/* ===== PandaGo intro v3: fall through the clouds -> 3D satellite-style city -> your location (no network, very smooth) ===== */
+function pgIntroAerial(box,getPos,isClosed,done){
+  if(!box) return;
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let ended=false, raf=0, guard=null;
+  const finish=()=>{
+    if(ended) return; ended=true; cancelAnimationFrame(raf); clearTimeout(guard);
+    box.classList.add("out");
+    setTimeout(()=>{ box.remove(); if(done) done(); },640);
+  };
+  if(reduce){ box.remove(); if(done) done(); return; }
+  guard=setTimeout(finish,9000);
+  const W=box.clientWidth||390, H=box.clientHeight||800, M=Math.max(W,H);
+  const dpr=Math.min(1.5,window.devicePixelRatio||1);
+  const stg=box.parentNode&&box.parentNode.querySelector("#pgStage");
+  box.style.setProperty("--cy",(stg?stg.offsetTop+stg.offsetHeight/2:H/2)+"px");
+  box.classList.add("pgf","pgs");
+  box.innerHTML=`<div class="pgs-world"></div><div class="pgs-fog"></div><div class="pgs-sky"></div><div class="pgs-clouds"></div><div class="pgs-haze"></div><div class="pgf-shade"></div>
+    <div class="pgf-ret"><i></i><i></i><b></b></div><div class="pgf-pin"></div>
+    <div class="pgf-hud"><div class="pgs-pill"><em>LOCATING YOU</em><small class="pgf-c">&nbsp;</small></div></div>`;
+  const q=s=>box.querySelector(s);
+  const rng=s=>()=>{ s|=0; s=s+0x6D2B79F5|0; let t=Math.imul(s^s>>>15,1|s); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+  const mk=(parent,side,px,cls)=>{ const c=document.createElement("canvas"); c.width=c.height=Math.round(px); c.className=cls;
+    c.style.cssText=`position:absolute;left:${-side/2}px;top:${-side/2}px;width:${side}px;height:${side}px;will-change:transform,opacity;backface-visibility:hidden`; parent.appendChild(c); return c; };
+
+  /* ---- clouds: soft puffs, 3 layers that rush past at different speeds ---- */
+  const drawClouds=(c,seed)=>{
+    const x=c.getContext("2d"), n=c.width, r=rng(seed);
+    const puff=(px,py,rad,col,a)=>{ const g=x.createRadialGradient(px,py,0,px,py,rad);
+      g.addColorStop(0,`rgba(${col},${a})`); g.addColorStop(.55,`rgba(${col},${a*.55})`); g.addColorStop(1,`rgba(${col},0)`);
+      x.fillStyle=g; x.beginPath(); x.arc(px,py,rad,0,6.2832); x.fill(); };
+    for(let k=0;k<22;k++){ const cx=r()*n, cy=r()*n, cr=n*(.06+r()*.09);
+      for(let i=0;i<8;i++){ const a=r()*6.28,d=r()*cr; puff(cx+Math.cos(a)*d*1.4,cy+Math.sin(a)*d*.8+cr*.2,cr*(.45+r()*.5),"198,212,232",.5); }
+      for(let i=0;i<9;i++){ const a=r()*6.28,d=r()*cr; puff(cx+Math.cos(a)*d*1.4,cy+Math.sin(a)*d*.8-cr*.12,cr*(.4+r()*.5),"255,255,255",.88); } } };
+
+  /* ---- map layers: satellite-style aerial view with 3D buildings (region -> city -> streets) ---- */
+  const ROOF=["#c9c2b6","#b8b0a4","#d8d0c3","#a69d92","#cdbfae","#b4695a","#97a2ab","#bdb6aa","#e0d9cd"];
+  const shade=(h,f)=>{ const n=parseInt(h.slice(1),16); return `rgb(${(n>>16&255)*f|0},${(n>>8&255)*f|0},${(n&255)*f|0})`; };
+  const drawMap=(c,k,seed)=>{
+    const x=c.getContext("2d"), N=c.width, r=rng(seed), pick=a=>a[Math.floor(r()*a.length)];
+    x.scale(N/1000,N/1000);
+    const B=[], T=[];
+    const bld=(bx,by,bw,bh,h,col)=>B.push([bx,by,bw,bh,h,col||pick(ROOF)]);
+    const tree=(px,py,rad)=>T.push([px,py,rad]);
+    const paintB=()=>{
+      for(const b of B) for(let i=1;i<=4;i++){ x.fillStyle="rgba(12,16,10,.11)"; x.fillRect(b[0]+b[4]*.6*i/4,b[1]+b[4]*.38*i/4,b[2],b[3]); }
+      B.sort((p,q2)=>(p[1]+p[3])-(q2[1]+q2[3]));
+      for(const [bx,by,bw,bh,h,col] of B){ x.fillStyle=shade(col,.6); x.fillRect(bx,by+bh-h,bw,h); x.fillStyle=col; x.fillRect(bx,by-h,bw,bh);
+        x.strokeStyle="rgba(255,255,255,.28)"; x.lineWidth=k===0?.4:.8; x.strokeRect(bx,by-h,bw,bh);
+        if(k===2&&bw>40){ x.fillStyle=shade(col,.86); x.fillRect(bx+bw*.15,by-h+bh*.15,bw*.22,bh*.2); x.fillRect(bx+bw*.55,by-h+bh*.5,bw*.18,bh*.22); } }
+      B.length=0; };
+    const paintT=()=>{ for(const [px,py,rad] of T){ x.fillStyle="rgba(10,18,8,.28)"; x.beginPath(); x.arc(px+rad*.7,py+rad*.55,rad,0,6.2832); x.fill();
+        x.fillStyle="#3f6235"; x.beginPath(); x.arc(px,py-rad*.5,rad,0,6.2832); x.fill();
+        x.fillStyle="#5f8a47"; x.beginPath(); x.arc(px-rad*.25,py-rad*.8,rad*.6,0,6.2832); x.fill(); }
+      T.length=0; };
+    const ell=(px,py,rx,ry,col,al)=>{ x.globalAlpha=al==null?1:al; x.fillStyle=col; x.beginPath(); x.ellipse(px,py,rx,ry,r()*3,0,6.2832); x.fill(); x.globalAlpha=1; };
+    const line=(a,b,w,col)=>{ x.strokeStyle=col; x.lineWidth=w; x.lineCap="round"; x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); };
+    if(k===0){
+      x.fillStyle="#6b8650"; x.fillRect(0,0,1000,1000);
+      for(let i=0;i<130;i++){ x.save(); x.translate(r()*1000,r()*1000); x.rotate(r()*.7-.3); x.fillStyle=pick(["#86a05a","#a3a766","#6f8c50","#b5a679","#8e9c5c","#7a9456","#9aa860"]); const w=40+r()*120,h=28+r()*80; x.fillRect(-w/2,-h/2,w,h); x.restore(); }
+      for(let i=0;i<55;i++){ const px=r()*1000,py=r()*1000; ell(px,py,30+r()*50,22+r()*36,"#46683a",.92); for(let j=0;j<7;j++) ell(px+(r()-.5)*60,py+(r()-.5)*40,8+r()*10,7+r()*8,"#365a2e",.7); }
+      for(let i=0;i<1800;i++){ x.fillStyle=r()<.5?"rgba(0,0,0,.05)":"rgba(255,255,255,.05)"; x.fillRect(r()*1000,r()*1000,2+r()*5,2+r()*5); }
+      x.lineCap="round"; x.strokeStyle="#7fa9a8"; x.lineWidth=62; x.beginPath(); x.moveTo(110,1250); x.bezierCurveTo(300,900,40,600,230,-250); x.stroke();
+      x.strokeStyle="#3f6e78"; x.lineWidth=52; x.stroke(); ell(830,200,140,80,"#7fa9a8"); ell(830,200,128,70,"#3f6e78");
+      x.save(); x.beginPath(); x.ellipse(500,500,330,300,.2,0,6.2832); x.clip();
+      x.fillStyle="#8d8a82"; x.fillRect(0,0,1000,1000);
+      for(let i=0;i<46;i++){ const g=130+i*22; line([g,0],[g+(r()-.5)*30,1000],1.5,"#5d5f62"); line([0,g],[1000,g+(r()-.5)*30],1.5,"#5d5f62"); }
+      for(let i=0;i<9;i++) ell(500+(r()-.5)*500,500+(r()-.5)*460,22+r()*30,18+r()*24,"#5f8a47",.9);
+      for(let i=0;i<1500;i++){ const px=200+r()*600,py=220+r()*560,w=6+r()*10,h=5+r()*9; bld(px,py,w,h,2+r()*5); }
+      paintB(); x.restore();
+      line([-50,640],[1050,380],4.5,"#8e8e8e"); line([-50,640],[1050,380],3,"#5f6164"); line([380,-50],[640,1050],4,"#8e8e8e"); line([380,-50],[640,1050],2.6,"#5f6164");
+    } else {
+      const S=k===1?120:260, RW=k===1?9:26, n=k===1?6:3, ins=k===1?6:20;
+      x.fillStyle=k===1?"#8d8a82":"#9a978f"; x.fillRect(0,0,1000,1000);
+      const lo=i=>500+(i-.5)*S;
+      for(let i=-n-1;i<=n;i++) for(let j=-n-1;j<=n;j++){
+        const x0=lo(i)+ins, y0=lo(j)+ins, w=S-2*ins, h=S-2*ins,
+          center=(Math.abs(x0+w/2-500)<S*.6&&Math.abs(y0+h/2-500)<S*.6);
+        if(center||r()<.12){ x.fillStyle="#6a8f50"; x.fillRect(x0,y0,w,h); for(let t=0;t<(k===1?9:22);t++) { const tx=x0+8+r()*(w-16), ty=y0+8+r()*(h-16); if(!center||Math.hypot(tx-500,ty-500)>(k===1?34:84)) tree(tx,ty,k===1?3.4:10); }
+          if(center){ x.fillStyle="#c9c4b8"; x.beginPath(); x.arc(500,500,k===1?20:48,0,6.2832); x.fill(); x.strokeStyle="#a9a498"; x.lineWidth=k===1?1:2.5; x.stroke();
+            for(let a=0;a<4;a++){ line([500,500],[500+Math.cos(a*1.57+.8)*w/2,500+Math.sin(a*1.57+.8)*h/2],k===1?1.6:5,"#c9c4b8"); } }
+          continue; }
+        x.fillStyle=k===1?"#a09c92":"#aaa79e"; x.fillRect(x0,y0,w,h);
+        const cnt=k===1?13:5;
+        for(let q=0;q<cnt;q++){ const bw=k===1?16+r()*26:60+r()*70, bh=k===1?14+r()*24:50+r()*60, bx=x0+3+r()*(w-bw-6), by=y0+3+r()*(h-bh-6); bld(bx,by,bw,bh,k===1?5+r()*24:16+r()*58); }
+        if(k===2) for(let q=0;q<9;q++) tree(x0+6+r()*(w-12),r()<.5?y0+7:y0+h-7,8+r()*4); }
+      for(let i=-n-1;i<=n+1;i++){ const p=500+(i+.5)*S;
+        line([p,-300],[p,1300],RW+(k===2?10:3),"#a9a69d"); line([-300,p],[1300,p],RW+(k===2?10:3),"#a9a69d"); }
+      for(let i=-n-1;i<=n+1;i++){ const p=500+(i+.5)*S; line([p,-300],[p,1300],RW,"#55575a"); line([-300,p],[1300,p],RW,"#55575a"); }
+      x.setLineDash(k===1?[7,6]:[22,18]); for(let i=-n-1;i<=n+1;i++){ const p=500+(i+.5)*S; line([p,-300],[p,1300],k===1?.7:1.8,"rgba(255,255,255,.7)"); line([-300,p],[1300,p],k===1?.7:1.8,"rgba(255,255,255,.7)"); } x.setLineDash([]);
+      paintB(); paintT();
+      if(k===2) for(let i=0;i<70;i++){ const v=r()<.5, p=500+(Math.floor((r()-.5)*2*(n+1))+.5)*S+(r()<.5?-6:6), t=r()*1200-100; x.fillStyle=pick(["#d94a3a","#e8e8e8","#3b5b92","#222","#e5b93c","#8b8b8b"]); if(v) x.fillRect(p-3.2,t,6.4,12); else x.fillRect(t,p-3.2,12,6.4); }
+    }
+    if(k===0) paintT();
+  };
+
+  const world=q(".pgs-world"), cloudBox=q(".pgs-clouds");
+  const maps=[0,1,2].map(k=>{ const side=M*(k?1.5:3.2); const c=mk(world,side,Math.min(2048,side*dpr),"pgs-m"); drawMap(c,k,11+k*7); return c; });
+  const clouds=[0,1,2].map(j=>{ const c=mk(cloudBox,M*2,640,"pgs-c"); drawClouds(c,5+j*13); return c; });
+  const fog=q(".pgs-fog"), sky=q(".pgs-sky"), haze=q(".pgs-haze"), tag=q(".pgf-hud em"), info=q(".pgf-c");
+
+  const fmt=(v,a,b)=>Math.abs(v).toFixed(4)+"° "+(v>=0?a:b);
+  const ss=(a,b,v)=>{ v=Math.min(1,Math.max(0,(v-a)/(b-a))); return v*v*(3-2*v); };
+  const T=4400, LN=Math.log(90), A0=11000, A1=120;
+  let t0=0, landed=false;
+  const land=()=>{ landed=true; const p=getPos&&getPos();
+    box.classList.add("land"); tag.textContent="LOCATION FOUND";
+    info.textContent=p&&isFinite(p.lat)?fmt(p.lat,"N","S")+"  ·  "+fmt(p.lng,"E","W"):" ";
+    setTimeout(finish,950); };
+  const frame=now=>{
+    if(ended) return;
+    if(!box.isConnected||(isClosed&&isClosed())){ finish(); return; }
+    if(!t0) t0=now;
+    const t=Math.min(1,(now-t0)/T), e=.5-.5*Math.cos(Math.PI*Math.pow(t,1.5)), S=Math.exp(LN*e), rot=-20*(1-e), tilt=62*Math.pow(1-e,1.4);
+    maps.forEach((c,k)=>{ const rr=S/Math.pow(6,k), a=k?ss(.7,1.4,rr):1, covered=k<2&&ss(.7,1.4,S/Math.pow(6,k+1))>=1;
+      c.style.visibility=(a<=0||covered)?"hidden":"visible"; c.style.opacity=a; c.style.transform=`translateZ(0) scale(${rr})`; });
+    world.style.transform=`perspective(1100px) rotateX(${tilt}deg) rotateZ(${rot}deg)`; fog.style.opacity=(tilt/62).toFixed(3);
+    const cp=Math.min(1,t/.5), cc=cp*(.25+.75*cp);
+    clouds.forEach((c,j)=>{ const o=1-ss([.22,.38,.52][j],[.58,.76,.98][j],cp);
+      c.style.visibility=o<=0?"hidden":"visible"; c.style.opacity=o;
+      c.style.transform=`translateZ(0) rotate(${(j%2?1:-1)*5*cp}deg) scale(${[1,.82,.64][j]*(1+7*Math.pow(cc,1.2))})`; });
+    sky.style.opacity=(.85*(1-ss(.08,.95,cp))).toFixed(3);
+    haze.style.opacity=(.55*Math.pow(Math.sin(Math.PI*Math.min(1,cp*1.05)),2)).toFixed(3);
+    if(cp>.72) box.classList.add("lock");
+    if(t>.5&&tag.textContent==="LOCATING YOU") tag.textContent="ZOOMING IN";
+    const alt=A0*Math.pow(A1/A0,e);
+    if(!landed) info.textContent="ALT "+(alt>=1000?Math.round(alt/100)*100:Math.max(A1,Math.round(alt/10)*10)).toLocaleString()+" m";
+    if(t>=1&&!landed) land();
+    raf=requestAnimationFrame(frame); };
+  raf=requestAnimationFrame(frame);
+}
 function openPandaGo(){
   if($("#pgui")) return;
   LSset("zm:pgopen","1");                         /* so a refresh brings you straight back here */
@@ -5164,7 +5297,7 @@ function openPandaGo(){
   $("#frame").appendChild(ui);
   pgMesh(ui);
   const pgIntro=null;   /* old intro disabled — replaced by pgIntroFly */
-setTimeout(()=>pgIntroSky($("#pgIntro",ui),()=>st.pos||PGLoc.pos||pgLastPos(),()=>st.closed,()=>{ if(st.map) st.map.invalidateSize(true); }),0);
+setTimeout(()=>pgIntroAerial($("#pgIntro",ui),()=>st.pos||PGLoc.pos||pgLastPos(),()=>st.closed,()=>{ if(st.map) st.map.invalidateSize(true); }),0);
 
 if(pgIntro){
   setTimeout(()=>{
@@ -5190,6 +5323,7 @@ if(pgIntro){
     let t="Locating…",c="";
     if(st.geo==="denied"){ t="Location off"; c="off"; }
     else if(st.pos&&st.srv===false){ t="Setup needed"; c="off"; }
+    else if(st.pos&&st.weak){ t="Weak location"; c="off"; }
     else if(st.pos){ t="Live"; c="on"; }
     b.className="pg-live "+c; $("em",b).textContent=t; };
 
@@ -5218,7 +5352,8 @@ if(pgIntro){
   let lastPing=0, busy=false;
   const sync=async(force)=>{
     if(st.closed||!sb||!st.pos||busy) return; if(!force&&Date.now()-lastPing<7000) return;
-    if(st.pos.acc>150) return;
+    if(st.pos.acc>150){ st.weak=true; paintLive(); const rt=$("#pgRoomText",ui); if(rt) rt.textContent="Location too imprecise (±"+Math.round(st.pos.acc)+" m) — try on your phone"; return; }
+    st.weak=false;
     busy=true; lastPing=Date.now();
     try{
       const a=await sb.rpc("zm_pandago_ping",{p_lat:st.pos.lat,p_lng:st.pos.lng,p_speed:st.speed});
@@ -5382,7 +5517,7 @@ ui.addEventListener("pointercancel",()=>{
     L.tileLayer(OSM,{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(st.map);
     st.trail=L.polyline([],{color:"#FFB300",weight:6,opacity:.85,lineCap:"round"}).addTo(st.map);
     const myPhoto=(App.profile&&App.profile.photos&&App.profile.photos[0])||artFor(App.me,App.profile&&App.profile.name);
-const croppedPhoto=await faceCrop(myPhoto).catch(()=>null);
+const croppedPhoto=await Promise.race([faceCrop(myPhoto).catch(()=>null),new Promise(r=>setTimeout(()=>r(null),2500))]);
 const markerPhoto=croppedPhoto||myPhoto;
 
 st.mk=L.marker([c.lat,c.lng],{
@@ -5399,7 +5534,7 @@ st.mk=L.marker([c.lat,c.lng],{
     setTimeout(()=>st.map&&st.map.invalidateSize(),2000);   /* after the pop-in animation settles */
   };
   const follow=()=>{
-    if(!st.map||!st.pos) return; const ll=[st.pos.lat,st.pos.lng], z=st.moving?17:18;
+    if(!st.map||!st.pos||!st.mk) return; const ll=[st.pos.lat,st.pos.lng], z=st.moving?17:18;
     st.mk.setLatLng(ll);
     const car=st.mk.getElement();
     if(st.moving){ st.trail.addLatLng(ll); const tr=st.trail.getLatLngs(); if(tr.length>60) st.trail.setLatLngs(tr.slice(-60)); }
@@ -5449,7 +5584,7 @@ initMap().then(()=>{
   pgMapResize();
 });
   if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(p=>{ if(!st.closed&&!st.fine) onPos(p); },()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:4000});   /* fast rough fix first */
+    navigator.geolocation.getCurrentPosition(p=>{ if(!st.closed&&!st.fine) onPos(p); },()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:12000});   /* fast rough fix first */
     wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },e=>{ st.geo=e&&e.code===1?"denied":"err"; paintLive();
       if(e&&e.code===1) $("#pgRoomText",ui).textContent="Allow location to find people within 30 m."; },{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
   } else { st.geo="denied"; paintLive(); }
