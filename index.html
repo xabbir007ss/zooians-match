@@ -2939,6 +2939,7 @@ function swipeState(){
 const AI_PER_MONTH=2;   /* each user sees AI profiles at most 2 times per rolling 30 days */
 async function aiStats(){ try{ const {data,error}=await sb.from("ai_appearances").select("seen_at").eq("user_id",App.me); if(error) return {month:0,total:1};
   const cut=Date.now()-30*864e5, rows=data||[]; return {total:rows.length, month:rows.filter(r=>new Date(r.seen_at).getTime()>cut).length}; }catch(e){ return {month:0,total:1}; } }
+async function aiPending(){ try{ const {data,error}=await sb.from("ai_undo_pending").select("ai_id").eq("user_id",App.me); if(error) return new Set(); return new Set((data||[]).map(r=>r.ai_id)); }catch(e){ return new Set(); } }
 async function aiHidden(){ try{ const {data,error}=await sb.from("ai_exclusions").select("ai_id").eq("user_id",App.me); if(error) return new Set(); return new Set((data||[]).map(r=>r.ai_id)); }catch(e){ return new Set(); } }
 async function buildDeck(noDraw){
   const me=App.profile;
@@ -2979,6 +2980,11 @@ async function buildDeck(noDraw){
       if(a<ai.length){ const lim=(first&&i===0)?Math.min(4,blk.length+1):blk.length+1; blk.splice(Math.floor(Math.random()*lim),0,ai[a++]); }
       out.push(...blk); }
     deck=out; }
+  /* test accounts (ai_test_users.ai_undo): an AI that unmatched them comes back as the FIRST card */
+  const pend=await aiPending();
+  if(pend.size){ const matched=new Set((App.matches||[]).flatMap(m=>m.members||[]));
+    const pp=all.filter(p=>p&&p.isAi&&p.done&&p.gender===want&&pend.has(p.code)&&!matched.has(p.code)&&!blocked.has(p.code));
+    deck=deck.filter(p=>!pend.has(p.code)); deck.unshift(...pp); }
   App.deck=deck;
   if(!noDraw) drawDeck();
 }
