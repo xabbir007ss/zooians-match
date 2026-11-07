@@ -1232,6 +1232,15 @@ code.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var
   height:15px;
   flex:none;
 }
+
+/* ===== PandaGo "message sent" banner ===== */
+.pgsent{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));width:min(92vw,380px);transform:translate(-50%,-140%);opacity:0;z-index:9998;display:flex;align-items:center;gap:11px;padding:9px 14px 9px 9px;border-radius:20px;background:var(--paper);border:1px solid var(--line);box-shadow:0 14px 34px -14px rgba(30,16,60,.45);text-align:left;transition:transform .45s var(--ease),opacity .3s}
+.pgsent.on{transform:translate(-50%,0);opacity:1}
+.pgsent img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;border:2px solid var(--honey)}
+.pgsent .t{flex:1;min-width:0}
+.pgsent b{display:block;font-size:14px}
+.pgsent small{font-size:12px;color:var(--ink-3)}
+.pgsent .go{color:var(--ink-3);font-size:22px;line-height:1}
 </style>
 </head>
 <body>
@@ -3216,7 +3225,8 @@ const Notes={
     return App.notes;
   }
 };
-function pendingNotes(){
+function pendingNotes(){ return []; }
+function _pendingNotesOld(){
   const blocked=new Set((App.blocks||[]).map(b=>b.from===App.me?b.to:b.from)), seen=new Set(), out=[];
   (App.notes||[]).forEach(n=>{ if(seen.has(n.from)) return; seen.add(n.from);
     if(blocked.has(n.from)||(App.passes||[]).some(x=>x.to===n.from)||(App.matches||[]).some(m=>m.members.includes(n.from))) return;
@@ -3760,7 +3770,7 @@ async function viewLiked(root){
     row.innerHTML=`<img class="av" data-face="${(p.photos&&p.photos[0])||""}" src="${(p.photos&&p.photos[0])||artFor(p.code,p.name)}" alt="">
       <div class="t"><b>${esc(p.name)}${p.age?`, ${p.age}`:""}</b>
         <span>${l.super?"⭐ Super liked you · ":""}${pct}% in common · ${timeAgo(l.at)}</span>
-        ${nt?`<span style="display:block;margin-top:3px;color:var(--ink-2)">📷 “${esc(nt.text.slice(0,60))}”</span>`:""}</div>
+        </div>
       ${matched?`<button class="roundbtn plain" data-chat="${p.code}">${I.chat}</button>`
       :`<button class="roundbtn plain" data-pass="${p.code}">${I.x}</button>
         <button class="roundbtn" data-like="${p.code}">${I.heart}</button>`}`;
@@ -4088,6 +4098,24 @@ async function pgBlockedProfilesDialog(){
   };
   await paint();
 }
+function pgSentBanner(p,mid){
+  $$(".pgsent").forEach(n=>n.remove());
+  const ph=(p.photos&&p.photos[0])||artFor(p.code,p.name);
+  const b=el("button","pgsent");
+  b.innerHTML=`<img src="${esc(ph)}" alt=""><span class="t"><b>Message sent to ${esc((p.name||"").split(" ")[0])}</b><small>Tap to open chat</small></span><span class="go">\u203a</span>`;
+  document.body.appendChild(b);
+  requestAnimationFrame(()=>b.classList.add("on"));
+  const kill=()=>{ b.classList.remove("on"); setTimeout(()=>b.remove(),350); };
+  const timer=setTimeout(kill,4500);
+  b.onclick=async()=>{
+    clearTimeout(timer); kill();
+    const back=$("#pgBack"); if(back) back.click();
+    App.chatTab="pandago"; LSset("zm:chatTab","pandago");
+    await go("app",{tab:"chats"});
+    const m=(App.matches||[]).find(x=>x.id===mid||x.members.includes(p.code));
+    if(m) openChat(m.id,p);
+  };
+}
 function pgBlockDialog(p,done){
   const b=modal("Block "+p.name+"?",`<p class="small muted" style="margin-bottom:14px;line-height:1.55">They won't appear for you on PandaGo and you won't appear for them, even within ${PG_RADIUS} m. They also can't message you.</p>
     <button class="btn danger" id="okBlk">Block</button><button class="btn ghost" id="noBlk" style="margin-top:10px">Cancel</button>`);
@@ -4274,20 +4302,22 @@ async function openChat(pid,other){
       note.textContent=left>0?`Message sent. You can send another once ${other.name} replies — they have ${d} day${d>1?"s":""} left to reply.`
                              :`${other.name} didn't reply within 3 days, so this PandaGo chat is closed.`;
     }
-    ta.disabled=locked; $("#cSend",sheet).disabled=locked; $("#cGif",sheet).disabled=locked;
+    ta.readOnly=locked; $("#cSend",sheet).disabled=locked; $("#cGif",sheet).disabled=locked;
     ta.placeholder=locked?"Waiting for their reply…":"Message "+other.name;
   };
   gate();
   ta.addEventListener("input",()=>{ ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,110)+"px"; });
   const send=async()=>{
-    const t=ta.value.trim(); if(!t||ta.disabled) return;
+    const t=ta.value.trim(); if(!t||ta.readOnly) return; ta.focus({preventScroll:true});
     ta.value=""; ta.style.height="auto";
     const {data,error}=await Chat.send(pid,App.me,t,other.code);
     if(error){ ta.value=t; toast(/pandago_wait/.test(error.message||"")?"Wait for their reply before sending another message":/blocked/.test(error.message||"")?"You can't message this person":"Message not sent: "+error.message,3800); return; }
     if(data) addMsg(data);
     markRead(pid);
   };
-  $("#cSend",sheet).onclick=send;
+  const sendBtn=$("#cSend",sheet);
+  ["mousedown","pointerdown","touchstart"].forEach(ev=>sendBtn.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
+  sendBtn.onclick=async()=>{ await send(); ta.focus({preventScroll:true}); };
   $("#cGif",sheet).onclick=()=>openGifPicker(async(url,isEmoji)=>{
     const {data,error}=await Chat.send(pid,App.me,isEmoji?url:"\u2063gif:"+url,other.code);
     if(error){ toast("GIF not sent: "+error.message,3200); return; }
@@ -5653,7 +5683,7 @@ initMap().then(()=>{
         const mid=r.data, res=await Chat.send(mid,App.me,t,p.code);
         if(res.error) throw res.error;
         App.matches=await Social.matches(App.me); paintBadges();
-        close(); toast("Sent ✓ — find it in Chats → PandaGo",3200);
+        close(); pgSentBanner(p,mid);
       }catch(e){ btn.disabled=false; const m=String(e&&e.message||e);
         toast(/pandago_wait/.test(m)?"Wait for their reply — you can message again once they answer":/not_nearby/.test(m)?"They moved out of range":/blocked/.test(m)?"You can't message this person":/function/i.test(m)?"PandaGo isn't set up yet (run zm-pandago.sql)":"Couldn't send: "+m,3600); }
     };
