@@ -1029,6 +1029,21 @@ code.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var
 .syncdot{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-3)}
 .syncdot i{width:7px;height:7px;border-radius:50%;background:var(--bamboo)}
 .syncdot.local i{background:var(--honey-deep)}
+.note-preview{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  vertical-align:middle;
+  color:#e7a51a;
+  font-size:inherit;
+  font-weight:600;
+}
+
+.note-preview svg{
+  width:15px;
+  height:15px;
+  flex:none;
+}
 </style>
 </head>
 <body>
@@ -3639,7 +3654,7 @@ $("#chFilter").style.display="none";    return;
         const row=el("button","thread");
         row.innerHTML=`<img class="av sm" data-face="${(r.p.photos&&r.p.photos[0])||""}" src="${img(r.p)}" alt="">
           <div class="t"><b>${esc(r.p.name)}${r.m.pg?pgTag():""}</b>
-            <p style="${unread?"color:var(--ink);font-weight:600":""}">${esc((r.m.lastFrom===App.me?"You: ":"")+previewText(r.m.lastMsg))}</p></div>
+            <p style="${unread?"color:var(--ink);font-weight:600":""}">${esc(r.m.lastFrom===App.me?"You: ":"")}${(typeof parseNote==="function"&&parseNote(r.m.lastMsg))?`<span class="note-preview">${ICO_NOTE}<span>Photo note</span></span>`:esc(previewText(r.m.lastMsg))}</p></div>
           <div class="meta">${timeAgo(r.m.lastAt||r.m.at)}${unread?'<div style="margin-top:5px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pink)"></span></div>':""}</div>`;
         row.onclick=()=>openChat(r.m.id,r.p);
         list.appendChild(row);
@@ -3872,7 +3887,7 @@ let threadUnsub=null;
 const parseRx=t=>{ const m=/^\u2063rx:(.+)$/.exec(t||""); return m?m[1]:null; };
 const parseUn=t=>{ const m=/^\u2063un:(.+)$/.exec(t||""); return m?m[1]:null; };
 const parseGif=t=>{ const m=/^\u2063gif:(https:\/\/.+)$/.exec(t||""); return m?m[1]:null; };
-const previewText=t=>parseRx(t)?"♥ Reacted to a message":parseUn(t)?"Reaction removed":parseGif(t)?"GIF":(typeof parseNote==="function"&&parseNote(t))?"📷 Photo note":t;
+const previewText=t=>parseRx(t)?"♥ Reacted to a message":parseUn(t)?"Reaction removed":parseGif(t)?"GIF":(typeof parseNote==="function"&&parseNote(t))?"Photo note":t;
 function fmtHead(ms){
   const d=new Date(ms), n=new Date(), tm=d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
   const day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(), diff=Math.round((day(n)-day(d))/86400000);
