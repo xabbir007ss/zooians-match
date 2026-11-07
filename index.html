@@ -742,6 +742,28 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
     display:none;
   }
 }
+/* ===== PandaGo satellite fly-in intro (space -> your exact location) ===== */
+.pg-intro.pgf{background:radial-gradient(120% 90% at 50% 40%,#12304f 0%,#071425 62%,#030812 100%);transform-origin:50% var(--cy,50%)}
+.pg-intro.pgf.out{animation:pgfOut .62s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes pgfOut{to{opacity:0;transform:scale(1.55);visibility:hidden}}
+.pgf-map,.pgf-map.leaflet-container{position:absolute;inset:0;background:#0a2038}
+.pgf-map .leaflet-tile-pane{filter:saturate(1.12) contrast(1.05)}
+.pgf-shade{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% var(--cy,50%),transparent 38%,rgba(3,8,18,.58) 100%)}
+.pgf-ret{position:absolute;left:50%;top:var(--cy,50%);width:0;height:0;pointer-events:none}
+.pgf-ret i{position:absolute;left:-60px;top:-60px;width:120px;height:120px;border:1.5px solid rgba(255,201,60,.9);border-radius:50%;opacity:0;animation:pgfRet 1.5s ease-out infinite}
+.pgf-ret i+i{animation-delay:.75s}
+.pgf-ret b{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:#FFC93C;box-shadow:0 0 12px #FFC93C}
+@keyframes pgfRet{0%{transform:scale(2.4);opacity:0}25%{opacity:.9}100%{transform:scale(.3);opacity:0}}
+.pgf-pin{position:absolute;left:50%;top:var(--cy,50%);width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:#FFC93C;border:4px solid #fff;box-sizing:border-box;box-shadow:0 4px 22px rgba(255,190,35,.8);opacity:0;pointer-events:none}
+.pgf-pin::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid #FFC93C;opacity:0;animation:pgfPulse 1.2s .35s ease-out infinite}
+.pgf.land .pgf-ret{display:none}
+.pgf.land .pgf-pin{animation:pgfPin .6s cubic-bezier(.2,.9,.3,1.3) forwards}
+@keyframes pgfPin{0%{opacity:0;transform:scale(.2)}70%{opacity:1;transform:scale(1.3)}100%{opacity:1;transform:scale(1)}}
+@keyframes pgfPulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(4.2);opacity:0}}
+.pgf-hud{position:absolute;left:0;right:0;bottom:11%;text-align:center;color:#fff;pointer-events:none;text-shadow:0 1px 10px rgba(0,0,0,.7)}
+.pgf-hud em{display:block;font-style:normal;font-size:12px;font-weight:800;letter-spacing:3.5px;transition:color .3s}
+.pgf-hud small{display:block;margin-top:6px;font-size:11.5px;letter-spacing:1.4px;opacity:.75;font-variant-numeric:tabular-nums;min-height:14px}
+.pgf.land .pgf-hud em{color:#FFC93C}
 .pgcard{position:absolute;inset:0;z-index:30;display:flex;align-items:flex-end}
 .pgcard .bk{position:absolute;inset:0;background:rgba(20,14,50,.45);opacity:0;transition:opacity .25s}
 .pgcard.on .bk{opacity:1}
@@ -4874,6 +4896,63 @@ function pgMesh(ui){
     if(!reduce) requestAnimationFrame(frame); };
   requestAnimationFrame(frame);
 }
+/* ===== PandaGo intro: satellite fly-in (space -> your exact location) ===== */
+const PG_SAT="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+function pgIntroFly(box,getPos,isClosed,done){
+  if(!box) return;
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let ended=false, fm=null, guard=null;
+  const finish=()=>{
+    if(ended) return; ended=true; clearTimeout(guard);
+    box.classList.add("out");
+    setTimeout(()=>{ try{ if(fm) fm.remove(); }catch(e){} box.remove(); if(done) done(); },640);
+  };
+  if(reduce){ box.remove(); if(done) done(); return; }
+  guard=setTimeout(finish,9500);
+  box.classList.add("pgf");
+  box.innerHTML=`<div class="pgf-map"></div><div class="pgf-shade"></div>
+    <div class="pgf-ret"><i></i><i></i><b></b></div><div class="pgf-pin"></div>
+    <div class="pgf-hud"><em>LOCATING YOU</em><small class="pgf-c">&nbsp;</small><small class="pgf-a">&nbsp;</small></div>`;
+  const q=s=>box.querySelector(s);
+  const pos=()=>{ const p=getPos&&getPos(); return p&&isFinite(p.lat)&&isFinite(p.lng)?{lat:p.lat,lng:p.lng}:null; };
+  const fmt=(v,a,b)=>Math.abs(v).toFixed(4)+"° "+(v>=0?a:b);
+  const run=L=>{
+    if(ended) return;
+    if(isClosed&&isClosed()){ finish(); return; }
+    const stg=box.parentNode&&box.parentNode.querySelector("#pgStage");
+    const cy=stg?stg.offsetTop+stg.offsetHeight/2:box.clientHeight/2;
+    const dy=cy-box.clientHeight/2;                       /* the real map's centre sits a bit lower than the box centre */
+    box.style.setProperty("--cy",cy+"px");
+    const tag=q(".pgf-hud em"), cEl=q(".pgf-c"), aEl=q(".pgf-a");
+    const m=L.map(q(".pgf-map"),{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false,keyboard:false,boxZoom:false,tap:false,inertia:false,zoomSnap:0});
+    fm=m;
+    const sat=L.tileLayer(PG_SAT,{maxNativeZoom:17,maxZoom:19,keepBuffer:1}).addTo(m);
+    m.setView([20,10],2.2,{animate:false});
+    const hud=()=>{ const c=m.getCenter(), z=m.getZoom();
+      const alt=156543.03*Math.cos(c.lat*Math.PI/180)/Math.pow(2,z)*box.clientHeight*.9;
+      cEl.textContent=fmt(c.lat,"N","S")+"  ·  "+fmt(c.lng,"E","W");
+      aEl.textContent="ALT "+(alt>=1000?Math.round(alt/1000).toLocaleString()+" km":Math.max(10,Math.round(alt/10)*10)+" m"); };
+    hud(); m.on("move",hud);
+    let landed=false;
+    const land=()=>{ if(landed||ended) return; landed=true;
+      const p=pos()||{lat:m.getCenter().lat,lng:m.getCenter().lng};
+      m.off("move",hud); box.classList.add("land"); tag.textContent="LOCATION FOUND";
+      cEl.textContent=fmt(p.lat,"N","S")+"  ·  "+fmt(p.lng,"E","W"); aEl.innerHTML="&nbsp;";
+      setTimeout(finish,950); };
+    const launch=()=>{ if(ended) return;
+      const p=pos()||{lat:23.8103,lng:90.4125}, Z=17;
+      const c=m.unproject(m.project([p.lat,p.lng],Z).subtract([0,dy]),Z);
+      tag.textContent="ZOOMING IN";
+      m.once("moveend",()=>{ if(sat._loading){ sat.once("load",land); setTimeout(land,900); } else land(); });
+      m.flyTo(c,Z,{duration:3.2,easeLinearity:.25}); };
+    const t0=Date.now();                                  /* wait (briefly) for a real GPS fix so we fly to the right spot */
+    const wait=setInterval(()=>{
+      if(ended||(isClosed&&isClosed())){ clearInterval(wait); if(!ended) finish(); return; }
+      const el=Date.now()-t0;
+      if((pos()&&el>=500)||el>=1700){ clearInterval(wait); launch(); } },100);
+  };
+  loadLeaflet().then(run).catch(finish);
+}
 function openPandaGo(){
   if($("#pgui")) return;
   LSset("zm:pgopen","1");                         /* so a refresh brings you straight back here */
@@ -4970,7 +5049,8 @@ function openPandaGo(){
 </div>`;
   $("#frame").appendChild(ui);
   pgMesh(ui);
-  const pgIntro=$("#pgIntro",ui);
+  const pgIntro=null;   /* old intro disabled — replaced by pgIntroFly */
+setTimeout(()=>pgIntroFly($("#pgIntro",ui),()=>st.pos||PGLoc.pos||pgLastPos(),()=>st.closed,()=>{ if(st.map) st.map.invalidateSize(true); }),0);
 
 if(pgIntro){
   setTimeout(()=>{
