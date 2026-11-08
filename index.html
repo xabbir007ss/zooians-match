@@ -3696,15 +3696,25 @@ const SUP={
   get unlocked(){ return SUP.active===true; },
   set unlocked(v){ SUP.active=!!v; },
   lastAdmin(list){ return list.filter(m=>m.sender!=="customer").reduce((a,m)=>Math.max(a,Date.parse(m.created_at)||0),0); },
-  async load(){
+  gone(e){ return /not.?found|no such|closed|ended|does not exist|invalid conversation/i.test((e&&e.message)||""); },
+  async call(action,extra){
     if(!SUP.conv){
       const s=await centralSupportRequest("start_conversation");
       if(!s.conversation_id) throw new Error("Could not start support conversation.");
       SUP.conv=s.conversation_id;
     }
-    const r=await centralSupportRequest("get_messages",{conversation_id:SUP.conv});
-    return r.messages||[];
+    try{ return await centralSupportRequest(action,Object.assign({conversation_id:SUP.conv},extra||{})); }
+    catch(e){
+      if(!SUP.gone(e)) throw e;
+      /* admin ended or deleted this chat: start a fresh one */
+      SUP.conv=""; SUP.seen=0; SUP.unread=false;
+      const s=await centralSupportRequest("start_conversation");
+      if(!s.conversation_id) throw e;
+      SUP.conv=s.conversation_id;
+      return await centralSupportRequest(action,Object.assign({conversation_id:SUP.conv},extra||{}));
+    }
   },
+  async load(){ const r=await SUP.call("get_messages"); return r.messages||[]; },
   badgeHTML(){
     return SUP.unlocked
       ?`<span class="vstate ok" style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;display:block">${I.check}</span>Unlocked</span>`
@@ -3724,7 +3734,9 @@ const SUP={
     try{
       const r=await centralSupportRequest("get_messages",{conversation_id:SUP.conv});
       SUP.unread=SUP.lastAdmin(r.messages||[])>SUP.seen; SUP.paint();
-    }catch(e){}
+    }catch(e){
+      if(SUP.gone(e)){ SUP.conv=""; SUP.seen=0; SUP.unread=false; SUP.paint(); }
+    }
   },
     async refreshLock(){
     if(!App.me||App.preview) return false;
@@ -3830,8 +3842,7 @@ async function openSupport(){
     const p={sender:"customer",body,created_at:new Date().toISOString(),pending:true};
     pend.push(p); first=true; render();
     try{
-      if(!SUP.conv) await SUP.load();
-      await centralSupportRequest("send_message",{conversation_id:SUP.conv,body});
+      await SUP.call("send_message",{body});
       pend=pend.filter(x=>x!==p); busy=false; await refresh();
     }catch(e){
       pend=pend.filter(x=>x!==p); render(); ta.value=body;
