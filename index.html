@@ -3593,9 +3593,13 @@ const HELP_ARTICLES=[
  ["note","If you are in immediate danger or have been threatened, contact the police or emergency services first (999 in Bangladesh), then report the profile so we can act on it too."]]}
 ];
 function openSupport(){ if(!isMember()){ openMemberGate("Get Support (direct WhatsApp help) is a premium feature."); return; } window.open(SUPPORT_URL,"_blank","noopener"); }
-function openHelpCenter(){
+function openHelpCenter(initialId){
+  $$("#frame .hc-sheet").forEach(s=>s.remove());
   const sheet=el("div","sheet");
+  sheet.classList.add("hc-sheet");
   const list=()=>{
+        if(location.hash.startsWith("#help/"))
+      history.replaceState(null,"",location.pathname+location.search);
     sheet.innerHTML=`<div class="topbar line" style="background:var(--cream)"><button class="iconbtn" id="hcBack">${I.back}</button><h2>Safety & Help Center</h2><span style="width:44px"></span></div>
       <div class="scroll pad" style="padding-top:14px">
         <p class="muted small" style="line-height:1.6;margin-bottom:16px">Everything you need to know about staying safe, getting verified and reporting problems on ZOOIANS MATCH.</p>
@@ -3609,13 +3613,18 @@ function openHelpCenter(){
   };
   const article=id=>{
     const a=HELP_ARTICLES.find(x=>x.id===id);
+    if(!a) return list();
+    history.replaceState(null,"","#help/"+id);
     const html=a.body.map(([t,v])=>t==="h"?`<h4>${esc(v)}</h4>`:t==="p"?`<p>${esc(v)}</p>`:t==="note"?`<div class="callout">${esc(v)}</div>`
       :`<${t}>${v.map(i=>`<li>${esc(i)}</li>`).join("")}</${t}>`).join("");
     sheet.innerHTML=`<div class="topbar line" style="background:var(--cream)"><button class="iconbtn" id="hcBack">${I.back}</button><h2>Help Center</h2><span style="width:44px"></span></div>
       <div class="scroll pad hc-art" style="padding-top:8px;padding-bottom:40px"><h2>${esc(a.title)}</h2>${html}</div>`;
     $("#hcBack",sheet).onclick=list;
   };
-  list(); $("#frame").appendChild(sheet);
+  $("#frame").appendChild(sheet);
+  if(initialId && HELP_ARTICLES.some(a=>a.id===initialId))
+    article(initialId);
+  else list();
 }
 
 /* ---------- face-cropped avatars (profile tab + chats) ---------- */
@@ -4786,6 +4795,9 @@ async function boot(){
 
   const done=()=>{ const s=$("#splash"); if(!s) return; s.classList.add("out"); setTimeout(()=>s.remove(),700); };
 
+  const helpMatch=location.hash.match(/^#help\/(safety|verify|terms|report)$/);
+  const publicHelpId=helpMatch?helpMatch[1]:null;
+
   if(location.hash==="#/admin"){ done(); openAdmin(); ROUTES.login(); return; }
 
   /* restore the signed-in user after a refresh */
@@ -4811,13 +4823,16 @@ async function boot(){
             if(m){ const o=await profileOf(m.members.find(c=>c!==App.me)); if(o) openChat(r.chat,o); } }catch(e){} }
         }
       }
+            if(publicHelpId) openHelpCenter(publicHelpId);
       startGuard(); startRealtime(); return;
     }
     setTimeout(done,500); go("banned");
+    if(publicHelpId) openHelpCenter(publicHelpId);
     return;
   }
   setTimeout(done,900);
   go("login");
+  if(publicHelpId) openHelpCenter(publicHelpId);
 }
 
 /* live updates: new messages (unread badge + inbox order), new likes, new matches */
@@ -4890,7 +4905,14 @@ function startGuard(){
   document.addEventListener("visibilitychange",()=>{ if(!document.hidden) check(); });
 }
 
-window.addEventListener("hashchange",()=>{ if(location.hash==="#/admin") openAdmin(); else closeAdmin(); });
+window.addEventListener("hashchange",()=>{
+  if(location.hash==="#/admin") openAdmin();
+  else {
+    closeAdmin();
+    const m=location.hash.match(/^#help\/(safety|verify|terms|report)$/);
+    if(m) openHelpCenter(m[1]);
+  }
+});
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal();
   const s=$("#frame .sheet:last-of-type"); if(s) s.remove(); } });
 
