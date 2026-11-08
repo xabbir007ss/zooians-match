@@ -3668,43 +3668,14 @@ async function openCentralSupportChat() {
         <p class="muted">Loading messages...</p>
       </div>
 
-      <div style="
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:8px;
-  background:#FFFFFF;
-  border:1px solid #E9E3D5;
-  border-radius:18px;
-  box-shadow:0 4px 18px rgba(35,28,70,.06);
-">
-  <input id="centralSupportInput"
-    type="text"
-    maxlength="4000"
-    placeholder="Type your message..."
-    style="
-      flex:1 1 0;
-      width:100%;
-      min-width:0;
-      height:48px;
-      padding:0 13px;
-      border:0;
-      outline:none;
-      background:transparent;
-      color:#29234F;
-      font-size:14px;
-      box-sizing:border-box;
-    ">
-  <button class="btn" id="centralSupportSend"
-    style="
-      flex:0 0 76px;
-      width:76px;
-      min-width:76px;
-      height:46px;
-      border-radius:13px;
-      padding:0;
-    ">Send</button>
-</div>
+      <div style="display:flex;gap:8px">
+        <input id="centralSupportInput"
+          type="text"
+          maxlength="4000"
+          placeholder="Write your message..."
+          style="flex:1;min-width:0">
+        <button class="btn" id="centralSupportSend">Send</button>
+      </div>
 
       <button class="btn ghost" id="centralSupportRefresh"
         style="width:100%;margin-top:9px">Refresh Messages</button>
@@ -3720,31 +3691,7 @@ async function openCentralSupportChat() {
         conversation_id: conversationId
       });
 
-      messagesBox.innerHTML = (result.messages || []).map(message => {
-  const mine = message.sender === "customer";
-
-  return `
-    <div style="display:flex;justify-content:${mine ? "flex-end" : "flex-start"};margin:12px 0">
-      <div style="max-width:82%">
-        <div style="
-          padding:12px 15px;
-          border-radius:${mine ? "18px 18px 4px 18px" : "18px 18px 18px 4px"};
-          background:${mine ? "#29234F" : "#FFFFFF"};
-          color:${mine ? "#FFFFFF" : "#29234F"};
-          border:1px solid ${mine ? "#29234F" : "#EAE5D8"};
-          box-shadow:0 3px 12px rgba(35,28,70,.07);
-          font-size:14px;
-          line-height:1.55;
-          overflow-wrap:anywhere;
-        ">${esc(message.body)}</div>
-
-        <div style="font-size:10px;color:#89839B;margin-top:5px;text-align:${mine ? "right" : "left"}">
-          ${mine ? "You" : "ZOO Support"} · ${new Date(message.created_at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
-        </div>
-      </div>
-    </div>
-  `;
-}).join("") || '<p class="muted">No messages yet. Send us a message.</p>';
+      messagesBox.innerHTML = (result.messages || []).map(message => `
         <div style="margin-bottom:10px;text-align:${message.sender === "customer" ? "right" : "left"}">
           <div style="display:inline-block;max-width:85%;padding:9px 12px;border-radius:12px;background:${message.sender === "customer" ? "var(--primary)" : "var(--card)"};color:${message.sender === "customer" ? "#fff" : "inherit"};text-align:left">
             ${esc(message.body)}
