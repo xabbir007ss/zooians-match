@@ -2440,7 +2440,7 @@ async function startSession(user){
   else { go("app",{tab:"people"}); }
 }
 
-async function logout(msg){ SUP.unread=false; SUP.open=false; try{ PGLoc.stop(); LSset("zm:pgopen",""); }catch(e){}
+async function logout(msg){ SUP.unread=false; SUP.open=false; SUP.active=false; try{ PGLoc.stop(); LSset("zm:pgopen",""); }catch(e){}
   const wasPreview=App.preview, code=App.me;
   App.watchers.forEach(u=>{try{u()}catch(e){}}); App.watchers=[];
   clearInterval(startGuard._t);
@@ -3692,8 +3692,9 @@ const SUP={
   set conv(v){ LSset("zm:supConv:"+App.me,v||""); },
   get seen(){ return +LSget("zm:supSeen:"+App.me)||0; },
   set seen(v){ LSset("zm:supSeen:"+App.me,String(v)); },
-  get unlocked(){ return isMember()||LSget("zm:supOk:"+App.me)==="1"; },
-  set unlocked(v){ LSset("zm:supOk:"+App.me,v?"1":""); },
+  active:false,   /* real status from Supabase (memory only, never saved) */
+  get unlocked(){ return SUP.active===true; },
+  set unlocked(v){ SUP.active=!!v; },
   lastAdmin(list){ return list.filter(m=>m.sender!=="customer").reduce((a,m)=>Math.max(a,Date.parse(m.created_at)||0),0); },
   async load(){
     if(!SUP.conv){
@@ -3717,19 +3718,21 @@ const SUP={
   },
   /* background: did support reply while the chat was closed? -> red dot on Profile */
   async check(){
-    if(!App.me||App.preview||SUP.open||!SUP.unlocked||!SUP.conv) return;
+    if(!App.me||App.preview||SUP.open) return;
+    if(!(await SUP.refreshLock())){ SUP.unread=false; SUP.paint(); return; }
+    if(!SUP.conv) return;
     try{
       const r=await centralSupportRequest("get_messages",{conversation_id:SUP.conv});
       SUP.unread=SUP.lastAdmin(r.messages||[])>SUP.seen; SUP.paint();
     }catch(e){}
   },
-  async refreshLock(){
-    if(SUP.unlocked||!App.me||App.preview) return;
+    async refreshLock(){
+    if(!App.me||App.preview) return false;
     try{ const s=await centralSupportRequest("status");
-      if(s.linked&&s.active){ SUP.unlocked=true; SUP.paintRow(); } }catch(e){}
+      SUP.active=!!(s.linked&&s.active); }
+    catch(e){ /* network error: keep the old value */ }
+    SUP.paintRow(); return SUP.active;
   },
-  start(){ if(SUP.timer) return; SUP.timer=setInterval(()=>{ if(!document.hidden) SUP.check(); },15000); setTimeout(()=>SUP.check(),2500); }
-};
 
 /* membership verification code (nice popup instead of the browser prompt) */
 async function supVerify(){
@@ -3763,9 +3766,9 @@ const SUP_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 
 async function openSupport(){
   if(App.preview){ toast("Not available in preview mode"); return; }
-  if(!SUP.unlocked){
+  if(!(await SUP.refreshLock())){
     const ok=await supVerify(); if(!ok) return;
-    SUP.unlocked=true; SUP.paintRow();
+    SUP.active=true; SUP.paintRow();
   }
   $$("#frame .sp-sheet").forEach(s=>s.remove());
   const sheet=el("div","sheet sp-sheet");
