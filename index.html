@@ -4351,8 +4351,7 @@ async function openChat(pid,other){
     markRead(pid);
   };
   const sendBtn=$("#cSend",sheet);
-  ["mousedown","pointerdown","touchstart"].forEach(ev=>sendBtn.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
-  sendBtn.onclick=async()=>{ await send(); ta.focus({preventScroll:true}); };
+sendBtn.onclick=async()=>{ await send(); ta.focus({preventScroll:true}); };
   $("#cGif",sheet).onclick=()=>openGifPicker(async(url,isEmoji)=>{
     const {data,error}=await Chat.send(pid,App.me,isEmoji?url:"\u2063gif:"+url,other.code);
     if(error){ toast("GIF not sent: "+error.message,3200); return; }
@@ -5747,8 +5746,7 @@ initMap().then(()=>{
         toast(/pandago_wait/.test(m)?"Wait for their reply — you can message again once they answer":/not_nearby/.test(m)?"They moved out of range":/blocked/.test(m)?"You can't message this person":/function/i.test(m)?"PandaGo isn't set up yet (run zm-pandago.sql)":"Couldn't send: "+m,3600); }
     };
     const sendBtn=$("#pgSend",box);
-    ["mousedown","pointerdown","touchstart"].forEach(ev=>sendBtn.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
-    sendBtn.onclick=send;
+sendBtn.onclick=send;
     $("#pgMsg",box).addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); send(); } });
   }
 
