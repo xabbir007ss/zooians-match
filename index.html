@@ -3664,7 +3664,7 @@ async function openCentralSupportChat() {
 
     const body = modal("Central Support", `
       <div id="centralSupportMessages"
-           style="height:300px;overflow-y:auto;padding:10px;background:var(--soft);border-radius:12px;margin-bottom:12px">
+           style="height:360px;overflow-y:auto;padding:16px;background:#f5f3ef;border:1px solid #e8e3da;border-radius:16px;margin-bottom:16px">
         <p class="muted">Loading messages...</p>
       </div>
 
@@ -3674,7 +3674,7 @@ async function openCentralSupportChat() {
           maxlength="4000"
           placeholder="Write your message..."
           style="flex:1;min-width:0">
-        <button class="btn" id="centralSupportSend">Send</button>
+        <button class="btn" id="centralSupportSend" style="flex:0 0 auto;min-width:76px;height:48px;border-radius:12px">Send</button>
       </div>
 
       <button class="btn ghost" id="centralSupportRefresh"
@@ -3693,7 +3693,7 @@ async function openCentralSupportChat() {
 
       messagesBox.innerHTML = (result.messages || []).map(message => `
         <div style="margin-bottom:10px;text-align:${message.sender === "customer" ? "right" : "left"}">
-          <div style="display:inline-block;max-width:85%;padding:9px 12px;border-radius:12px;background:${message.sender === "customer" ? "var(--primary)" : "var(--card)"};color:${message.sender === "customer" ? "#fff" : "inherit"};text-align:left">
+          <div style="display:inline-block;max-width:85%;padding:12px 16px;border-radius:16px;background:${message.sender === "customer" ? "#ffc93c" : "#ffffff"};color:#252525;border:1px solid ${message.sender === "customer" ? "#efb91e" : "#e5e1d9"};box-shadow:0 2px 8px rgba(0,0,0,.05);text-align:left;line-height:1.55;overflow-wrap:anywhere">
             ${esc(message.body)}
           </div>
           <div class="muted" style="font-size:10px;margin-top:3px">
@@ -4559,7 +4559,7 @@ async function viewProfile(root){
     <div class="pad" style="padding-top:6px">
       <div style="display:flex;gap:15px;align-items:center">
         <img class="av" data-face="${p.photos[0]||""}" style="width:78px;height:78px;border-radius:50%" src="${p.photos[0]||artFor(App.me,p.name)}" alt="">
-        <div style="flex:1;min-width:0">
+        <div style="flex:1 1 0%;width:100%;min-width:0;height:48px;box-sizing:border-box;padding:0 14px;border:1px solid #dedbd3;border-radius:12px;background:#ffffff;color:#252525;font-size:15px">
           <h1 style="font-size:24px">${esc(p.name)}${p.age?`, ${p.age}`:""}</h1>
           <p class="small muted" style="margin-top:3px">${esc(p.loc.label||"No location set")}</p>
           <code class="code" style="margin-top:7px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(App.email||"—")}</code>
