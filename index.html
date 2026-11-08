@@ -1241,6 +1241,9 @@ code.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var
 .pgsent b{display:block;font-size:14px}
 .pgsent small{font-size:12px;color:var(--ink-3)}
 .pgsent .go{color:var(--ink-3);font-size:22px;line-height:1}
+.pgoff{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:99px;border:1.5px solid var(--honey-deep);background:var(--honey);color:#2A1C00;font-size:12.5px;font-weight:600;cursor:pointer}
+.pgloc{border:0;background:transparent;color:#D89000;font-size:13px;cursor:pointer;padding:2px;white-space:nowrap}
+.pgloc b{font-weight:900;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -3924,18 +3927,29 @@ const PG_SIL={
 const pgSilhouette=()=>PG_SIL[(App.profile&&App.profile.gender)==="Female"?"Male":"Female"];
 
 /* read-only: who is near my last PandaGo position (this does NOT publish my location) */
+const PG_KEEP_MS=45000;
+async function pgIngest(rows){
+  App.pgSeen=App.pgSeen||new Map();
+  const want=(App.profile&&App.profile.gender)==="Female"?"Male":"Female", nowT=Date.now();
+  try{ await pgLoadMyBlocks(); }catch(e){}
+  const blocked=new Set(App.pgBlocks||[]);
+  for(const r of rows){
+    if(blocked.has(r.user_id)) continue;
+    const p=await profileOf(r.user_id);
+    if(p&&p.done&&p.gender===want) App.pgSeen.set(r.user_id,{p,d:r.dist_m,t:nowT});
+  }
+  for(const [k,v] of Array.from(App.pgSeen)) if(blocked.has(k)||nowT-v.t>PG_KEEP_MS) App.pgSeen.delete(k);
+  const matched=new Set((App.matches||[]).flatMap(m=>m.members||[]));
+  App.pgNear=Array.from(App.pgSeen.values()).filter(v=>!matched.has(v.p.code)).map(v=>({p:v.p,d:v.d})).sort((a,b)=>a.d-b.d);
+  return App.pgNear;
+}
 async function pgNearLoad(){
   if(!sb||!App.me||App.preview||!App.profile) return App.pgNear||[];
   try{
     const {data,error}=await sb.rpc("zm_pandago_nearby"); if(error) throw error;
-    const want=App.profile.gender==="Female"?"Male":"Female";
-    await pgLoadMyBlocks();
-const blocked=new Set(App.pgBlocks||[]), out=[];
-    for(const r of (data||[])){ if(blocked.has(r.user_id)) continue;
-      const p=await profileOf(r.user_id); if(p&&p.done&&p.gender===want&&!(App.matches||[]).some(m=>m.members.includes(p.code))) out.push({p,d:r.dist_m}); }
-    App.pgNear=out.sort((a,b)=>a.d-b.d);
-  }catch(e){ App.pgNear=App.pgNear||[]; }
-  return App.pgNear;
+    await pgIngest(data||[]);
+  }catch(e){ try{ await pgIngest([]); }catch(_){} }
+  return App.pgNear||[];
 }
 function pgNearHTML(list){
   const img=p=>(p.photos&&p.photos[0])||artFor(p.code,p.name);
@@ -3962,15 +3976,36 @@ function pgNearHTML(list){
 function wirePgNear(box){
   const open=async()=>{ await go("app",{tab:"people"}); openPandaGo(); };
   $$("[data-pgopen],#pgSee",box).forEach(n=>n.onclick=open);
+  $$("[data-pgloc]",box).forEach(n=>n.onclick=()=>pgAskLocation(()=>PGLoc.restart()));
 }
 /* ---------------- PandaGo location (works app-wide while the app is open) ---------------- */
+async function pgAskLocation(onOk){
+  if(!navigator.geolocation){ toast("This device can't share location."); return; }
+  if(window.isSecureContext===false){ toast("Location only works on a secure (https) page.",4000); return; }
+  let perm=""; try{ perm=(await navigator.permissions.query({name:"geolocation"})).state; }catch(e){}
+  const help=()=>{
+    const b=modal("Turn on location",`<p class="muted small" style="line-height:1.65;margin-bottom:14px">Location is blocked for ZOOIANS MATCH. To use PandaGo:<br>1. Tap the lock / settings icon next to the web address (or open your browser's Site settings).<br>2. Set <b>Location</b> to <b>Allow</b>.<br>3. Make sure GPS / Location Services is on in your phone settings.<br>4. Come back and tap Try again.</p>
+      <button class="btn" id="locRetry">Try again</button><button class="btn ghost" id="locNo" style="margin-top:10px">Close</button>`);
+    $("#locNo",b).onclick=closeModal;
+    $("#locRetry",b).onclick=()=>{ closeModal(); pgAskLocation(onOk); };
+  };
+  if(perm==="denied"){ help(); return; }
+  navigator.geolocation.getCurrentPosition(p=>{ if(onOk) onOk(p); },
+    e=>{ if(e&&e.code===1){ if(perm==="prompt") toast("Please tap Allow to turn on location",3200); else help(); } else toast(geoErrorText(e),4200); },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
 const PGLoc={
   wid:null, timer:null, pos:null, busy:false, last:0, sent:false, state:"idle", hiddenAt:0, inited:false,
-  note(){
-    const m={denied:"Location is blocked. Allow location for this site in your browser settings to find people nearby.",
-             nofix:"Getting your location…", unsupported:"This device can't share location.",
+    note(){
+    if(this.state==="denied") return '<div style="margin:6px 18px 0"><button type="button" class="pgoff" data-pgloc="1"><b>Your location is off</b> · Tap to turn on</button></div>';
+    const m={nofix:"Getting your location…", unsupported:"This device can't share location.",
              setup:"PandaGo isn't set up on the server yet."}[this.state];
     return m?'<p style="margin:2px 18px 0;font-size:11.5px;opacity:.7">'+m+'</p>':"";
+  },
+  restart(){
+    try{ if(this.wid!=null&&navigator.geolocation) navigator.geolocation.clearWatch(this.wid); }catch(e){}
+    clearInterval(this.timer); this.wid=null; this.timer=null; this.fine=false; this.state="nofix";
+    this.start(); this.refresh();
   },
   can(){ return !!(sb&&App.me&&!App.preview&&App.profile&&App.screen==="app"); },
   refresh(){
@@ -4000,7 +4035,7 @@ const PGLoc={
     if(this.wid!=null&&navigator.geolocation) navigator.geolocation.clearWatch(this.wid);
     clearInterval(this.timer); this.wid=null; this.timer=null;
     if(this.sent&&sb&&!$("#pgui")) sb.rpc("zm_pandago_stop").then(()=>{},()=>{});
-    this.sent=false; this.pos=null; this.state="idle"; App.pgNear=[];
+    this.sent=false; this.pos=null; this.state="idle"; App.pgNear=[]; App.pgSeen=new Map();
   },
   async tick(force){
     if(!this.pos||this.busy||!this.can()) return;
@@ -5376,13 +5411,26 @@ if(pgIntro){
   if(PGLoc.pos){ st.pos={lat:PGLoc.pos.lat,lng:PGLoc.pos.lng,acc:PGLoc.pos.acc||0,t:Date.now()}; st.geo="ok"; st.real=(App.pgNear||[]).slice(); }
 
   /* ---- status pill ---- */
+  const paintCap=()=>{
+    const t=$("#pgRoomText",ui), rf=$("#pgRefresh",ui); if(!t) return;
+    if(st.geo==="denied"){
+      if(!$("#pgLocOn",t)){
+        t.innerHTML='<button type="button" class="pgloc" id="pgLocOn"><b>Your location is off — tap to turn on</b></button>';
+        $("#pgLocOn",t).onclick=()=>turnOn();
+      }
+      if(rf) rf.style.display="none";
+    }else{
+      if(rf) rf.style.display="";
+      t.textContent=st.weak?"Location too imprecise — try on your phone":"Scanning for people";
+    }
+  };
   const paintLive=()=>{ const b=$("#pgLive",ui); if(!b) return;
     let t="Locating…",c="";
     if(st.geo==="denied"){ t="Location off"; c="off"; }
     else if(st.pos&&st.srv===false){ t="Setup needed"; c="off"; }
     else if(st.pos&&st.weak){ t="Weak location"; c="off"; }
     else if(st.pos){ t="Live"; c="on"; }
-    b.className="pg-live "+c; $("em",b).textContent=t; };
+    b.className="pg-live "+c; $("em",b).textContent=t; paintCap(); };
 
   /* ---- nearby people: faces float around you inside the scan ring ---- */
   const hashA=s=>{ let h=0; for(const ch of s) h=(h*31+ch.charCodeAt(0))|0; return Math.abs(h%628)/100; };
@@ -5390,26 +5438,27 @@ if(pgIntro){
     const ph=(p.photos&&p.photos[0])||"";
     b.innerHTML=`<img data-face="${ph}" src="${ph||artFor(p.code,p.name)}" alt=""><small>${esc(p.name)} · ${it.d} m</small>`;
     b.onclick=()=>pgCard(it); return b; };
-  const paintNear=()=>{
-    const list=st.real.slice().sort((a,b)=>a.d-b.d), room=$("#pgBub",ui); if(!room) return;
-    room.innerHTML="";
-    const base=list.length?hashA(list[0].p.code):0;
+    const paintNear=()=>{
+    const matched=new Set((App.matches||[]).flatMap(m=>m.members||[]));
+    const list=st.real.filter(x=>!matched.has(x.p.code)).sort((a,b)=>a.d-b.d), room=$("#pgBub",ui); if(!room) return;
+    const n=list.length;
+    $("#pgFoot",ui).textContent=n?`${n} nearby · You're visible only to people within ${PG_RADIUS} m while the app is open.`:`You're visible only to people within ${PG_RADIUS} m while the app is open.`;
+    const sig=list.map(i=>i.p.code+":"+i.d).join();
+    if(sig===st.sig&&room.children.length===n) return;
+    st.sig=sig; room.innerHTML="";
+    const base=n?hashA(list[0].p.code):0;
     list.forEach((it,i)=>{
-      const a=base+i*(2*Math.PI/Math.max(list.length,1))+(i%2?.35:0);
+      const a=base+i*(2*Math.PI/Math.max(n,1))+(i%2?.35:0);
       const r=70+Math.min(it.d,PG_RADIUS)/PG_RADIUS*62;
       const b=bubble(it); b.style.left=`calc(50% + ${Math.round(Math.cos(a)*r)}px)`; b.style.top=`calc(50% + ${Math.round(Math.sin(a)*r)}px)`;
       room.appendChild(b);
     });
-    const n=list.length;
-    $("#pgRoomText",ui).textContent="Scanning for people";
-    $("#pgFoot",ui).textContent=n?`${n} nearby · You're visible only to people within ${PG_RADIUS} m while the app is open.`:`You're visible only to people within ${PG_RADIUS} m while the app is open.`;
   };
-
   /* ---- server: publish my spot, read who's close ---- */
   let lastPing=0, busy=false;
   const sync=async(force)=>{
     if(st.closed||!sb||!st.pos||busy) return; if(!force&&Date.now()-lastPing<7000) return;
-    if(st.pos.acc>PG_ACC_MAX){ st.weak=true; paintLive(); const rt=$("#pgRoomText",ui); if(rt) rt.textContent="Location too imprecise (±"+Math.round(st.pos.acc)+" m) — try on your phone"; return; }
+    if(st.pos.acc>PG_ACC_MAX){ st.weak=true; paintLive(); const rt=$("#pgRoomText",ui); if(rt) rt.textContent="    if(st.pos.acc>PG_ACC_MAX){ st.weak=true; paintLive(); return; }"+Math.round(st.pos.acc)+" m) — try on your phone"; return; }
     st.weak=false;
     busy=true; lastPing=Date.now();
     try{
@@ -5417,11 +5466,7 @@ if(pgIntro){
       if(a.error) throw a.error;
       const {data,error}=await sb.rpc("zm_pandago_nearby"); if(error) throw error;
       st.srv=true;
-      await pgLoadMyBlocks();
-const blocked=new Set(App.pgBlocks||[]), out=[];
-      for(const r of (data||[])){ if(blocked.has(r.user_id)) continue;
-        const p=await profileOf(r.user_id); if(p&&p.done&&p.gender===want) out.push({p,d:r.dist_m}); }
-      st.real=out; App.pgNear=out.slice(); paintNear();
+           st.real=(await pgIngest(data||[])).slice(); paintNear();
     }catch(e){ console.warn("[pandago]",e&&e.message||e); if(/function|schema cache|not exist/i.test(String(e&&e.message))) st.srv=false; }
     busy=false;
     paintLive();
@@ -5640,11 +5685,25 @@ initMap().then(()=>{
   if(st.pos) follow();
   pgMapResize();
 });
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(p=>{ if(!st.closed&&!st.fine) onPos(p); },()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:12000});   /* fast rough fix first */
-    wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },function wErr(e){ if(e&&e.code!==1&&!st.lo&&wid!=null){ st.lo=true; navigator.geolocation.clearWatch(wid); wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },wErr,{enableHighAccuracy:false,maximumAge:60000,timeout:30000}); } if(!st.pos) st.geo=e&&e.code===1?"denied":"err"; paintLive();
-      if(e&&e.code===1) $("#pgRoomText",ui).textContent="Allow location to find people within 30 m."; },{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
-  } else { st.geo="denied"; paintLive(); }
+    const turnOn=()=>pgAskLocation(p=>{ if(st.closed) return; st.geo="ok"; onPos(p); startGeo(); try{ PGLoc.restart(); }catch(e){} toast("Location is on"); });
+  const geoErr=function(e){
+    if(e&&e.code===1) st.geo="denied";
+    else if(e&&e.code===2&&!st.pos) st.geo="denied";
+    else{
+      if(e&&!st.lo&&wid!=null){ st.lo=true; navigator.geolocation.clearWatch(wid);
+        wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },geoErr,{enableHighAccuracy:false,maximumAge:60000,timeout:30000}); }
+      if(!st.pos) st.geo="err";
+    }
+    paintLive();
+  };
+  const startGeo=()=>{
+    if(!navigator.geolocation){ st.geo="denied"; paintLive(); return; }
+    if(wid!=null){ try{ navigator.geolocation.clearWatch(wid); }catch(e){} wid=null; }
+    st.lo=false; st.fine=false;
+    navigator.geolocation.getCurrentPosition(p=>{ if(!st.closed&&!st.fine) onPos(p); },()=>{},{enableHighAccuracy:false,maximumAge:300000,timeout:12000});
+    wid=navigator.geolocation.watchPosition(p=>{ st.fine=true; onPos(p); },geoErr,{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
+  };
+  startGeo();
   T(()=>sync(),7000);
   paintLive();
   if(st.pos){ paintNear(); sync(true); }
@@ -5683,11 +5742,17 @@ initMap().then(()=>{
         const mid=r.data, res=await Chat.send(mid,App.me,t,p.code);
         if(res.error) throw res.error;
         App.matches=await Social.matches(App.me); paintBadges();
+        st.real=st.real.filter(x=>x.p.code!==p.code);
+        if(App.pgSeen) App.pgSeen.delete(p.code);
+        App.pgNear=(App.pgNear||[]).filter(x=>x.p.code!==p.code);
+        st.sig=""; paintNear();
         close(); pgSentBanner(p,mid);
       }catch(e){ btn.disabled=false; const m=String(e&&e.message||e);
         toast(/pandago_wait/.test(m)?"Wait for their reply — you can message again once they answer":/not_nearby/.test(m)?"They moved out of range":/blocked/.test(m)?"You can't message this person":/function/i.test(m)?"PandaGo isn't set up yet (run zm-pandago.sql)":"Couldn't send: "+m,3600); }
     };
-    $("#pgSend",box).onclick=send;
+    const sendBtn=$("#pgSend",box);
+    ["mousedown","pointerdown","touchstart"].forEach(ev=>sendBtn.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
+    sendBtn.onclick=send;
     $("#pgMsg",box).addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); send(); } });
   }
 
