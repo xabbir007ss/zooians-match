@@ -3979,20 +3979,19 @@ function wirePgNear(box){
   $$("[data-pgloc]",box).forEach(n=>n.onclick=()=>pgAskLocation(()=>PGLoc.restart()));
 }
 /* ---------------- PandaGo location (works app-wide while the app is open) ---------------- */
-async function pgAskLocation(onOk){
+function pgAskLocation(onOk){
   if(!navigator.geolocation){ toast("This device can't share location."); return; }
   if(window.isSecureContext===false){ toast("Location only works on a secure (https) page.",4000); return; }
-  let perm=""; try{ perm=(await navigator.permissions.query({name:"geolocation"})).state; }catch(e){}
   const help=()=>{
-    const b=modal("Turn on location",`<p class="muted small" style="line-height:1.65;margin-bottom:14px">Location is blocked for ZOOIANS MATCH. To use PandaGo:<br>1. Tap the lock / settings icon next to the web address (or open your browser's Site settings).<br>2. Set <b>Location</b> to <b>Allow</b>.<br>3. Make sure GPS / Location Services is on in your phone settings.<br>4. Come back and tap Try again.</p>
+    const b=modal("Turn on location",`<p class="muted small" style="line-height:1.65;margin-bottom:14px">If your browser asked for location and you didn't tap <b>Allow</b>, tap <b>Try again</b> to be asked once more.<br><br>If it doesn't ask, location is blocked for this site:<br>1. Tap the lock / settings icon next to the web address (or open your browser's Site settings).<br>2. Set <b>Location</b> to <b>Allow</b>.<br>3. Make sure GPS / Location Services is on in your phone settings.<br>Location will turn on automatically after you allow it.</p>
       <button class="btn" id="locRetry">Try again</button><button class="btn ghost" id="locNo" style="margin-top:10px">Close</button>`);
     $("#locNo",b).onclick=closeModal;
     $("#locRetry",b).onclick=()=>{ closeModal(); pgAskLocation(onOk); };
   };
-  if(perm==="denied"){ help(); return; }
+  /* called straight from the tap, nothing awaited before it, so the browser can show its Allow popup */
   navigator.geolocation.getCurrentPosition(p=>{ if(onOk) onOk(p); },
-    e=>{ if(e&&e.code===1){ if(perm==="prompt") toast("Please tap Allow to turn on location",3200); else help(); } else toast(geoErrorText(e),4200); },
-    {enableHighAccuracy:true,timeout:15000,maximumAge:0});
+    e=>{ if(e&&e.code===1) help(); else toast(geoErrorText(e),4200); },
+    {enableHighAccuracy:false,timeout:15000,maximumAge:0});
 }
 const PGLoc={
   wid:null, timer:null, pos:null, busy:false, last:0, sent:false, state:"idle", hiddenAt:0, inited:false,
@@ -4060,6 +4059,7 @@ const PGLoc={
       return;
     }
     this.hiddenAt=0;
+    if(this.state==="denied"&&navigator.permissions){ navigator.permissions.query({name:"geolocation"}).then(r=>{ if(r.state!=="denied"&&this.state==="denied") this.restart(); }).catch(()=>{}); }
     if(this.wid==null) this.start();
   },
   init(){
@@ -5686,6 +5686,7 @@ initMap().then(()=>{
   pgMapResize();
 });
     const turnOn=()=>pgAskLocation(p=>{ if(st.closed) return; st.geo="ok"; onPos(p); startGeo(); try{ PGLoc.restart(); }catch(e){} toast("Location is on"); });
+  try{ if(navigator.permissions) navigator.permissions.query({name:"geolocation"}).then(r=>{ st.permObj=r; r.onchange=()=>{ if(!st.closed&&r.state!=="denied"&&st.geo==="denied"){ startGeo(); try{ PGLoc.restart(); }catch(e){} } }; }).catch(()=>{}); }catch(e){}p=>{ if(st.closed) return; st.geo="ok"; onPos(p); startGeo(); try{ PGLoc.restart(); }catch(e){} toast("Location is on"); });
   const geoErr=function(e){
     if(e&&e.code===1) st.geo="denied";
     else if(e&&e.code===2&&!st.pos) st.geo="denied";
