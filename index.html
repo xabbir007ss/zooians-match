@@ -1244,6 +1244,44 @@ code.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var
 .pgoff{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:99px;border:1.5px solid var(--honey-deep);background:var(--honey);color:#2A1C00;font-size:12.5px;font-weight:600;cursor:pointer}
 .pgloc{border:0;background:transparent;color:#D89000;font-size:13px;cursor:pointer;padding:2px;white-space:nowrap}
 .pgloc b{font-weight:900;text-decoration:underline}
+/* ================= LIVE CHAT SUPPORT (blue theme) ================= */
+:root{--sp-bg:#F2F6FC;--sp-card:#FFFFFF;--sp-line:#DCE6F5;--sp-ink:#0F1E3D}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sp-bg:#0C1426;--sp-card:#16223D;--sp-line:#24365C;--sp-ink:#EAF0FF}}
+:root[data-theme="dark"]{--sp-bg:#0C1426;--sp-card:#16223D;--sp-line:#24365C;--sp-ink:#EAF0FF}
+.sp-sheet{z-index:75;background:var(--sp-bg);display:flex;flex-direction:column}
+.sp-head{display:flex;align-items:center;gap:12px;padding:12px 14px;color:#fff;background:linear-gradient(135deg,#1E6BFF 0%,#0B3FB8 100%);box-shadow:0 10px 26px -14px rgba(11,63,184,.9);flex:none}
+.sp-back{width:40px;height:40px;border-radius:13px;border:0;display:grid;place-items:center;background:rgba(255,255,255,.18);color:#fff;flex:none}
+.sp-back svg{width:19px;height:19px}
+.sp-av{position:relative;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center;flex:none}
+.sp-av svg{width:24px;height:24px}
+.sp-on{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:#2FE38F;border:2px solid #0B3FB8}
+.sp-ti{min-width:0}
+.sp-ti b{display:block;font-family:var(--ff-d);font-size:18px;line-height:1.15}
+.sp-ti small{display:block;font-size:12px;opacity:.88;margin-top:2px}
+.sp-msgs{flex:1;min-height:0;overflow-y:auto;padding:16px 14px 10px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.sp-msgs>*{flex-shrink:0}
+.sp-hello{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:18px;background:var(--sp-card);border:1px solid var(--sp-line);color:var(--sp-ink);font-size:14px;line-height:1.55}
+.sp-hello .ic{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#1E6BFF,#0B3FB8);color:#fff;display:grid;place-items:center;flex:none}
+.sp-hello .ic svg{width:20px;height:20px}
+.sp-hello b{display:block;font-size:15px;margin-bottom:2px}
+.sp-day{align-self:center;font-size:11.5px;font-weight:600;color:var(--ink-3);margin:4px 0}
+.sp-row{display:flex;flex-direction:column;max-width:82%;animation:bubIn .24s var(--ease)}
+.sp-row.me{align-self:flex-end;align-items:flex-end}
+.sp-row.them{align-self:flex-start;align-items:flex-start}
+.sp-b{padding:11px 15px;border-radius:18px;font-size:15px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+.sp-row.me .sp-b{background:linear-gradient(135deg,#1E6BFF,#0B3FB8);color:#fff;border-bottom-right-radius:6px;box-shadow:0 8px 18px -10px rgba(11,63,184,.9)}
+.sp-row.them .sp-b{background:var(--sp-card);color:var(--sp-ink);border:1px solid var(--sp-line);border-bottom-left-radius:6px}
+.sp-row small{font-size:10.5px;color:var(--ink-3);margin:3px 6px 0}
+.sp-comp{display:flex;gap:10px;align-items:flex-end;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--sp-card);border-top:1px solid var(--sp-line);flex:none}
+.sp-comp textarea{flex:1;min-height:46px;max-height:120px;border-radius:23px;border:1.5px solid var(--sp-line);background:var(--sp-bg);color:var(--sp-ink);padding:12px 16px;font-size:15px;line-height:1.35;resize:none;outline:none;transition:border-color .15s,box-shadow .15s}
+.sp-comp textarea:focus{border-color:#1E6BFF;box-shadow:0 0 0 4px rgba(30,107,255,.18)}
+.sp-send{width:46px;height:46px;border-radius:50%;border:0;background:linear-gradient(135deg,#1E6BFF,#0B3FB8);color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 8px 18px -8px rgba(11,63,184,.9)}
+.sp-send svg{width:21px;height:21px}
+.sp-send:active{transform:scale(.92)}
+.sp-vbtn{background:linear-gradient(135deg,#1E6BFF,#0B3FB8)!important;color:#fff!important;box-shadow:0 10px 22px -10px rgba(11,63,184,.9)!important}
+/* red dots */
+.badge.dot{min-width:11px;height:11px;padding:0;font-size:0;top:6px;right:calc(50% - 15px);background:#FF3B30}
+.sup-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#FF3B30;margin-left:8px;vertical-align:1px}
 </style>
 </head>
 <body>
@@ -2402,7 +2440,7 @@ async function startSession(user){
   else { go("app",{tab:"people"}); }
 }
 
-async function logout(msg){ try{ PGLoc.stop(); LSset("zm:pgopen",""); }catch(e){}
+async function logout(msg){ SUP.unread=false; SUP.open=false; try{ PGLoc.stop(); LSset("zm:pgopen",""); }catch(e){}
   const wasPreview=App.preview, code=App.me;
   App.watchers.forEach(u=>{try{u()}catch(e){}}); App.watchers=[];
   clearInterval(startGuard._t);
@@ -2845,6 +2883,7 @@ function paintBadges(){
   const set=(k,n)=>{ const b=$(`[data-b="${k}"]`); if(!b) return;
     b.classList.toggle("hide",!n); b.textContent=n>9?"9+":n; };
   set("liked",newLikes); set("chats",unread+pendingNotes().length);
+  SUP.paint();
 }
 const readMark=id=>{ try{return +localStorage.getItem("zm:read:"+id)||0}catch(e){return 0} };
 const markRead=id=>{ try{localStorage.setItem("zm:read:"+id,String(now()))}catch(e){} };
@@ -3646,109 +3685,168 @@ const HELP_ARTICLES=[
  ["ul",["Suspended and banned accounts are signed out and cannot use the app.","We look at the whole picture — one report is reviewed carefully, patterns across several reports are acted on faster.","We do not tolerate retaliation against people who report. Doing so is itself a reason for removal.","False or malicious reports made on purpose may lead to action against the reporter."]],
  ["note","If you are in immediate danger or have been threatened, contact the police or emergency services first (999 in Bangladesh), then report the profile so we can act on it too."]]}
 ];
-async function openCentralSupportChat() {
-  try {
-    const active = await ensureCentralMembership();
-
-    if (!active) {
-      openMemberGate("You need an active Zoo Membership to use Central Support.");
-      return;
+/* ===================== LIVE CHAT SUPPORT ===================== */
+const SUP={
+  open:false, unread:false, timer:null,
+  get conv(){ return LSget("zm:supConv:"+App.me)||""; },
+  set conv(v){ LSset("zm:supConv:"+App.me,v||""); },
+  get seen(){ return +LSget("zm:supSeen:"+App.me)||0; },
+  set seen(v){ LSset("zm:supSeen:"+App.me,String(v)); },
+  get unlocked(){ return isMember()||LSget("zm:supOk:"+App.me)==="1"; },
+  set unlocked(v){ LSset("zm:supOk:"+App.me,v?"1":""); },
+  lastAdmin(list){ return list.filter(m=>m.sender!=="customer").reduce((a,m)=>Math.max(a,Date.parse(m.created_at)||0),0); },
+  async load(){
+    if(!SUP.conv){
+      const s=await centralSupportRequest("start_conversation");
+      if(!s.conversation_id) throw new Error("Could not start support conversation.");
+      SUP.conv=s.conversation_id;
     }
+    const r=await centralSupportRequest("get_messages",{conversation_id:SUP.conv});
+    return r.messages||[];
+  },
+  badgeHTML(){
+    return SUP.unlocked
+      ?`<span class="vstate ok" style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;display:block">${I.check}</span>Unlocked</span>`
+      :`<span class="vstate" style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;display:block">${I.lock}</span>Members</span>`;
+  },
+  paintRow(){ const b=$("#supBadge"); if(b) b.innerHTML=SUP.badgeHTML(); },
+  paint(){
+    const b=$('[data-b="profile"]');
+    if(b){ b.classList.add("dot"); b.textContent=""; b.classList.toggle("hide",!SUP.unread); }
+    const d=$("#supDot"); if(d) d.classList.toggle("hide",!SUP.unread);
+  },
+  /* background: did support reply while the chat was closed? -> red dot on Profile */
+  async check(){
+    if(!App.me||App.preview||SUP.open||!SUP.unlocked||!SUP.conv) return;
+    try{
+      const r=await centralSupportRequest("get_messages",{conversation_id:SUP.conv});
+      SUP.unread=SUP.lastAdmin(r.messages||[])>SUP.seen; SUP.paint();
+    }catch(e){}
+  },
+  async refreshLock(){
+    if(SUP.unlocked||!App.me||App.preview) return;
+    try{ const s=await centralSupportRequest("status");
+      if(s.linked&&s.active){ SUP.unlocked=true; SUP.paintRow(); } }catch(e){}
+  },
+  start(){ if(SUP.timer) return; SUP.timer=setInterval(()=>{ if(!document.hidden) SUP.check(); },15000); setTimeout(()=>SUP.check(),2500); }
+};
 
-    const started = await centralSupportRequest("start_conversation");
-    const conversationId = started.conversation_id;
-
-    if (!conversationId) {
-      throw new Error("Could not start support conversation.");
-    }
-
-    const body = modal("Central Support", `
-      <div id="centralSupportMessages"
-           style="height:300px;overflow-y:auto;padding:10px;background:var(--soft);border-radius:12px;margin-bottom:12px">
-        <p class="muted">Loading messages...</p>
-      </div>
-
-      <div style="display:flex;gap:8px">
-        <input id="centralSupportInput"
-          type="text"
-          maxlength="4000"
-          placeholder="Write your message..."
-          style="flex:1;min-width:0">
-        <button class="btn" id="centralSupportSend">Send</button>
-      </div>
-
-      <button class="btn ghost" id="centralSupportRefresh"
-        style="width:100%;margin-top:9px">Refresh Messages</button>
-    `);
-
-    const messagesBox = $("#centralSupportMessages", body);
-    const input = $("#centralSupportInput", body);
-    const sendButton = $("#centralSupportSend", body);
-    const refreshButton = $("#centralSupportRefresh", body);
-
-    async function loadMessages() {
-      const result = await centralSupportRequest("get_messages", {
-        conversation_id: conversationId
-      });
-
-      messagesBox.innerHTML = (result.messages || []).map(message => `
-        <div style="margin-bottom:10px;text-align:${message.sender === "customer" ? "right" : "left"}">
-          <div style="display:inline-block;max-width:85%;padding:9px 12px;border-radius:12px;background:${message.sender === "customer" ? "var(--primary)" : "var(--card)"};color:${message.sender === "customer" ? "#fff" : "inherit"};text-align:left">
-            ${esc(message.body)}
-          </div>
-          <div class="muted" style="font-size:10px;margin-top:3px">
-            ${message.sender === "customer" ? "You" : "Support"} · ${new Date(message.created_at).toLocaleString()}
-          </div>
-        </div>
-      `).join("") || '<p class="muted">No messages yet. Send us a message.</p>';
-
-      messagesBox.scrollTop = messagesBox.scrollHeight;
-    }
-
-    refreshButton.onclick = async () => {
-      try {
-        refreshButton.disabled = true;
-        await loadMessages();
-      } catch (error) {
-        alert(error.message);
-      } finally {
-        refreshButton.disabled = false;
-      }
+/* membership verification code (nice popup instead of the browser prompt) */
+async function supVerify(){
+  try{ const s=await centralSupportRequest("status"); if(s.linked&&s.active) return true; }
+  catch(e){ toast(e.message||"Couldn't check your membership",3600); return false; }
+  return new Promise(res=>{
+    const b=modal("Unlock Live Chat Support",`
+      <p class="muted small" style="line-height:1.6;margin-bottom:14px">Live Chat Support is for Zoo Members. Enter your Zoo Membership verification code to unlock it.</p>
+      <div id="vcErr"></div>
+      <input class="input" id="vcCode" placeholder="Verification code" autocomplete="off" autocapitalize="none" spellcheck="false">
+      <button class="btn sp-vbtn" id="vcOk" style="margin-top:12px">Verify &amp; unlock</button>
+      <button class="btn ghost" id="vcNo" style="margin-top:9px">Cancel</button>`,{dismissable:false});
+    $("#vcNo",b).onclick=()=>{ closeModal(); res(false); };
+    const go=async()=>{
+      const code=$("#vcCode",b).value.trim(); const err=$("#vcErr",b);
+      if(!code){ err.innerHTML=`<div class="alert err">${I.alert}<span>Enter your verification code.</span></div>`; return; }
+      const btn=$("#vcOk",b); btn.disabled=true; btn.textContent="Verifying…"; err.innerHTML="";
+      try{
+        const r=await centralSupportRequest("link_member",{verification_code:code});
+        if(r.success&&r.active){ closeModal(); res(true); return; }
+        err.innerHTML=`<div class="alert err">${I.alert}<span>That code isn't valid or the membership isn't active.</span></div>`;
+      }catch(e){ err.innerHTML=`<div class="alert err">${I.alert}<span>${esc(e.message||"Verification failed.")}</span></div>`; }
+      btn.disabled=false; btn.textContent="Verify & unlock";
     };
-
-    sendButton.onclick = async () => {
-      const message = input.value.trim();
-      if (!message) return;
-
-      try {
-        sendButton.disabled = true;
-
-        await centralSupportRequest("send_message", {
-          conversation_id: conversationId,
-          body: message
-        });
-
-        input.value = "";
-        await loadMessages();
-      } catch (error) {
-        alert(error.message);
-      } finally {
-        sendButton.disabled = false;
-      }
-    };
-
-    input.addEventListener("keydown", event => {
-      if (event.key === "Enter") sendButton.click();
-    });
-
-    await loadMessages();
-
-  } catch (error) {
-    alert(error.message || "Could not open Central Support.");
-  }
+    $("#vcOk",b).onclick=go;
+    $("#vcCode",b).addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
+  });
 }
-function openSupport(){
-  openCentralSupportChat();
+
+const SUP_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><path d="M21 15a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2zM3 15a2 2 0 0 0 2 2h1v-5H5a2 2 0 0 0-2 2z"/><path d="M18 17v1a3 3 0 0 1-3 3h-2"/></svg>';
+
+async function openSupport(){
+  if(App.preview){ toast("Not available in preview mode"); return; }
+  if(!SUP.unlocked){
+    const ok=await supVerify(); if(!ok) return;
+    SUP.unlocked=true; SUP.paintRow();
+  }
+  $$("#frame .sp-sheet").forEach(s=>s.remove());
+  const sheet=el("div","sheet sp-sheet");
+  sheet.innerHTML=`
+    <div class="sp-head">
+      <button class="sp-back" id="spBack" aria-label="Back">${I.back}</button>
+      <div class="sp-av">${SUP_ICON}<i class="sp-on"></i></div>
+      <div class="sp-ti"><b>Live Chat Support</b><small id="spSt">Online · We typically reply within minutes</small></div>
+    </div>
+    <div class="sp-msgs" id="spMsgs"></div>
+    <div class="sp-comp">
+      <textarea id="spIn" rows="1" maxlength="4000" placeholder="Type your message…"></textarea>
+      <button class="sp-send" id="spSend" aria-label="Send">${I.send}</button>
+    </div>`;
+  $("#frame").appendChild(sheet);
+  SUP.open=true;
+
+  const box=$("#spMsgs",sheet), ta=$("#spIn",sheet);
+  let list=[], pend=[], lastSig="", first=true, busy=false;
+  const tm=t=>new Date(t).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+
+  const render=()=>{
+    const all=list.concat(pend);
+    const sig=all.map(m=>m.created_at+"|"+m.sender+"|"+(m.body||"").length+(m.pending?"p":"")).join(",");
+    if(sig===lastSig) return; lastSig=sig;
+    const stick=first||box.scrollHeight-box.scrollTop-box.clientHeight<140;
+    let prev=0;
+    let html=`<div class="sp-hello"><span class="ic">${SUP_ICON}</span><div><b>Hi, how can we help? 👋</b>Write your message below. Our support team will reply right here.</div></div>`;
+    all.forEach(m=>{
+      const t=Date.parse(m.created_at)||Date.now(), me=m.sender==="customer";
+      if(!prev||t-prev>=3600000) html+=`<div class="sp-day">${esc(fmtHead(t))}</div>`;
+      prev=t;
+      html+=`<div class="sp-row ${me?"me":"them"}"><div class="sp-b">${esc(m.body)}</div><small>${me?(m.pending?"Sending…":"You"):"Support"} · ${tm(t)}</small></div>`;
+    });
+    box.innerHTML=html;
+    if(stick) box.scrollTop=box.scrollHeight;
+    first=false;
+    const la=SUP.lastAdmin(list); if(la>SUP.seen) SUP.seen=la;
+    SUP.unread=false; SUP.paint();
+  };
+
+  const refresh=async()=>{
+    if(busy||!document.body.contains(sheet)) return; busy=true;
+    try{
+      list=await SUP.load(); render();
+      const st=$("#spSt",sheet); if(st) st.textContent="Online · We typically reply within minutes";
+    }catch(e){
+      const st=$("#spSt",sheet); if(st) st.textContent="Reconnecting…";
+      if(first){ box.innerHTML=`<div class="sp-hello"><span class="ic">${SUP_ICON}</span><div><b>Couldn't load messages</b>${esc(e.message||"Check your connection.")}</div></div>`; }
+    }
+    busy=false;
+  };
+
+  const send=async()=>{
+    const body=ta.value.trim(); if(!body) return;
+    ta.value=""; ta.style.height="auto";
+    const p={sender:"customer",body,created_at:new Date().toISOString(),pending:true};
+    pend.push(p); first=true; render();
+    try{
+      if(!SUP.conv) await SUP.load();
+      await centralSupportRequest("send_message",{conversation_id:SUP.conv,body});
+      pend=pend.filter(x=>x!==p); busy=false; await refresh();
+    }catch(e){
+      pend=pend.filter(x=>x!==p); render(); ta.value=body;
+      toast(e.message||"Message not sent",3600);
+    }
+  };
+
+  /* auto refresh: admin replies appear by themselves */
+  const iv=setInterval(()=>{
+    if(!document.body.contains(sheet)){ clearInterval(iv); SUP.open=false; return; }
+    if(!document.hidden) refresh();
+  },3000);
+
+  $("#spBack",sheet).onclick=()=>{ clearInterval(iv); SUP.open=false; sheet.remove(); SUP.paint(); };
+  $("#spSend",sheet).onclick=async()=>{ await send(); ta.focus({preventScroll:true}); };
+  ta.addEventListener("input",()=>{ ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,120)+"px"; });
+  ta.addEventListener("keydown",e=>{
+    if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&!matchMedia("(pointer:coarse)").matches){ e.preventDefault(); send(); }
+  });
+  refresh();
 }
 function openHelpCenter(initialId){
   $$("#frame .hc-sheet").forEach(s=>s.remove());
@@ -4594,7 +4692,7 @@ async function viewProfile(root){
   <span style="flex:1">Blocked profiles</span>
   <span class="muted">›</span>
 </button>
-        <button class="listopt" id="supBtn"><span style="width:20px;flex:none;display:block">${I.chat}</span><span style="flex:1">Get Support</span>${isMember()?'<span class="muted">›</span>':'<span class="vstate" style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;display:block">'+I.lock+'</span>Members</span>'}</button>
+        <button class="listopt" id="supBtn"><span style="width:20px;flex:none;display:block">${I.chat}</span><span style="flex:1">Get Support<i class="sup-dot hide" id="supDot"></i></span><span id="supBadge">${SUP.badgeHTML()}</span></button>
         <button class="listopt" id="themeBtn">${I.sunmoon}<span style="flex:1">Appearance</span><span class="muted" id="themeNow">${LSget("zm:theme")||"auto"}</span></button>
         <button class="listopt" id="outBtn">${I.out}<span style="flex:1;color:var(--alert)">Log out</span></button>
       </div>
@@ -4605,6 +4703,7 @@ async function viewProfile(root){
         <span class="tiny muted">Version ${APP_VERSION}</span></p>
     </div>`;
   $("#supBtn").onclick=openSupport;
+  SUP.paint(); SUP.check(); SUP.refreshLock();
   $("#verBtn").onclick=()=>{ if(p.verified){
       const b=modal("Remove verification?",`<p class="muted small" style="margin-bottom:14px;line-height:1.6">Your Photo verified badge will disappear from your profile. You can verify again any time with a new selfie.</p>
         <button class="btn danger" id="vRm">Remove verification</button>
@@ -5940,6 +6039,7 @@ window.removeEventListener("orientationchange",pgMapResize);
   $("#pgBack",ui).onclick=close;
 }
 
+SUP.start();
 PGLoc.init();
 boot();
 </script>
