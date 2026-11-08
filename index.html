@@ -1487,6 +1487,60 @@ const TENOR_KEY = "";             // optional second GIF source (free key: devel
 const GIPHY_KEY = "dc6zaTOxFJmzC"; // GIF search. Replace with your own free key from developers.giphy.com for reliable GIFs
 const MEMBERSHIP_URL = "https://jointhezoogc.vercel.app/";
 const SUPPORT_URL    = "https://wa.me/message/F2JDXVCG2XHBI1";
+const CENTRAL_SUPPORT_URL =
+  "https://fgdmwwvzkjbumkssjfmk.supabase.co/functions/v1/customer-support";
+
+const CENTRAL_SUPPORT_KEY =
+  "sb_publishable_FiESzy-QBuKDVvLzGvzrrw_O5ynLq_4";
+async function ensureCentralMembership() {
+  const status = await centralSupportRequest("status");
+
+  if (status.linked && status.active) {
+    return true;
+  }
+
+  const code = prompt("Enter your Zoo Membership Verification Code:");
+
+  if (!code || !code.trim()) {
+    return false;
+  }
+
+  const result = await centralSupportRequest("link_member", {
+    verification_code: code.trim()
+  });
+
+  return !!(result.success && result.active);
+}
+async function centralSupportRequest(action, payload = {}) {
+  const session = await Auth.session();
+
+  if (!session?.access_token) {
+    throw new Error("Please log in again.");
+  }
+
+  const response = await fetch(CENTRAL_SUPPORT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": CENTRAL_SUPPORT_KEY,
+      "Authorization": `Bearer ${session.access_token}`
+    },
+    body: JSON.stringify({
+      action,
+      support_app: "zooians_match",
+      source_url: location.href,
+      ...payload
+    })
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || "Support request failed.");
+  }
+
+  return result;
+}
 const ADMIN_EMAILS = [];             // e.g. ["you@gmail.com"]  (also works via profiles.is_admin = true)
 
 const SCHEMA = {
@@ -3592,7 +3646,110 @@ const HELP_ARTICLES=[
  ["ul",["Suspended and banned accounts are signed out and cannot use the app.","We look at the whole picture — one report is reviewed carefully, patterns across several reports are acted on faster.","We do not tolerate retaliation against people who report. Doing so is itself a reason for removal.","False or malicious reports made on purpose may lead to action against the reporter."]],
  ["note","If you are in immediate danger or have been threatened, contact the police or emergency services first (999 in Bangladesh), then report the profile so we can act on it too."]]}
 ];
-function openSupport(){ if(!isMember()){ openMemberGate("Get Support (direct WhatsApp help) is a premium feature."); return; } window.open(SUPPORT_URL,"_blank","noopener"); }
+async function openCentralSupportChat() {
+  try {
+    const active = await ensureCentralMembership();
+
+    if (!active) {
+      openMemberGate("You need an active Zoo Membership to use Central Support.");
+      return;
+    }
+
+    const started = await centralSupportRequest("start_conversation");
+    const conversationId = started.conversation_id;
+
+    if (!conversationId) {
+      throw new Error("Could not start support conversation.");
+    }
+
+    const body = modal("Central Support", `
+      <div id="centralSupportMessages"
+           style="height:300px;overflow-y:auto;padding:10px;background:var(--soft);border-radius:12px;margin-bottom:12px">
+        <p class="muted">Loading messages...</p>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <input id="centralSupportInput"
+          type="text"
+          maxlength="4000"
+          placeholder="Write your message..."
+          style="flex:1;min-width:0">
+        <button class="btn" id="centralSupportSend">Send</button>
+      </div>
+
+      <button class="btn ghost" id="centralSupportRefresh"
+        style="width:100%;margin-top:9px">Refresh Messages</button>
+    `);
+
+    const messagesBox = $("#centralSupportMessages", body);
+    const input = $("#centralSupportInput", body);
+    const sendButton = $("#centralSupportSend", body);
+    const refreshButton = $("#centralSupportRefresh", body);
+
+    async function loadMessages() {
+      const result = await centralSupportRequest("get_messages", {
+        conversation_id: conversationId
+      });
+
+      messagesBox.innerHTML = (result.messages || []).map(message => `
+        <div style="margin-bottom:10px;text-align:${message.sender === "customer" ? "right" : "left"}">
+          <div style="display:inline-block;max-width:85%;padding:9px 12px;border-radius:12px;background:${message.sender === "customer" ? "var(--primary)" : "var(--card)"};color:${message.sender === "customer" ? "#fff" : "inherit"};text-align:left">
+            ${esc(message.body)}
+          </div>
+          <div class="muted" style="font-size:10px;margin-top:3px">
+            ${message.sender === "customer" ? "You" : "Support"} · ${new Date(message.created_at).toLocaleString()}
+          </div>
+        </div>
+      `).join("") || '<p class="muted">No messages yet. Send us a message.</p>';
+
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+
+    refreshButton.onclick = async () => {
+      try {
+        refreshButton.disabled = true;
+        await loadMessages();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        refreshButton.disabled = false;
+      }
+    };
+
+    sendButton.onclick = async () => {
+      const message = input.value.trim();
+      if (!message) return;
+
+      try {
+        sendButton.disabled = true;
+
+        await centralSupportRequest("send_message", {
+          conversation_id: conversationId,
+          body: message
+        });
+
+        input.value = "";
+        await loadMessages();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        sendButton.disabled = false;
+      }
+    };
+
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter") sendButton.click();
+    });
+
+    await loadMessages();
+
+  } catch (error) {
+    alert(error.message || "Could not open Central Support.");
+  }
+}
+function openSupport(){
+  openCentralSupportChat();
+}
 function openHelpCenter(initialId){
   $$("#frame .hc-sheet").forEach(s=>s.remove());
   const sheet=el("div","sheet");
