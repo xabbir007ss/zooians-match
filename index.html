@@ -5685,6 +5685,7 @@ initMap().then(()=>{
   pgMapResize();
 });
     const turnOn=()=>pgAskLocation(p=>{ if(st.closed) return; st.geo="ok"; onPos(p); startGeo(); try{ PGLoc.restart(); }catch(e){} toast("Location is on"); });
+  try{ if(navigator.permissions) navigator.permissions.query({name:"geolocation"}).then(r=>{ st.permObj=r; r.onchange=()=>{ if(!st.closed&&r.state!=="denied"&&st.geo==="denied"){ startGeo(); try{ PGLoc.restart(); }catch(e){} } }; }).catch(()=>{}); }catch(e){}p=>{ if(st.closed) return; st.geo="ok"; onPos(p); startGeo(); try{ PGLoc.restart(); }catch(e){} toast("Location is on"); });
   const geoErr=function(e){
     if(e&&e.code===1) st.geo="denied";
     else if(e&&e.code===2&&!st.pos) st.geo="denied";
