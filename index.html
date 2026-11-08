@@ -4059,7 +4059,6 @@ const PGLoc={
       return;
     }
     this.hiddenAt=0;
-    if(this.state==="denied"&&navigator.permissions){ navigator.permissions.query({name:"geolocation"}).then(r=>{ if(r.state!=="denied"&&this.state==="denied") this.restart(); }).catch(()=>{}); }
     if(this.wid==null) this.start();
   },
   init(){
