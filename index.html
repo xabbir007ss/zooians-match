@@ -3731,8 +3731,10 @@ const SUP={
     try{ const s=await centralSupportRequest("status");
       SUP.active=!!(s.linked&&s.active); }
     catch(e){ /* network error: keep the old value */ }
-    SUP.paintRow(); return SUP.active;
+        SUP.paintRow(); return SUP.active;
   },
+  start(){ if(SUP.timer) return; SUP.timer=setInterval(()=>{ if(!document.hidden) SUP.check(); },15000); setTimeout(()=>SUP.check(),2500); }
+};
 
 /* membership verification code (nice popup instead of the browser prompt) */
 async function supVerify(){
