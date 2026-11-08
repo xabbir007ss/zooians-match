@@ -4559,7 +4559,7 @@ async function viewProfile(root){
     <div class="pad" style="padding-top:6px">
       <div style="display:flex;gap:15px;align-items:center">
         <img class="av" data-face="${p.photos[0]||""}" style="width:78px;height:78px;border-radius:50%" src="${p.photos[0]||artFor(App.me,p.name)}" alt="">
-        <div style="flex:1 1 0%;width:100%;min-width:0;height:48px;box-sizing:border-box;padding:0 14px;border:1px solid #dedbd3;border-radius:12px;background:#ffffff;color:#252525;font-size:15px">
+        <div style="display:block;flex:1 1 0;min-width:0;width:0;height:52px;box-sizing:border-box;padding:12px 15px;border:1px solid #dedbd3;border-radius:12px;background:#ffffff;color:#252525;font-family:inherit;font-size:16px;font-weight:500;line-height:26px;letter-spacing:normal;text-align:left;vertical-align:middle;opacity:1;visibility:visible;-webkit-text-fill-color:#252525">
           <h1 style="font-size:24px">${esc(p.name)}${p.age?`, ${p.age}`:""}</h1>
           <p class="small muted" style="margin-top:3px">${esc(p.loc.label||"No location set")}</p>
           <code class="code" style="margin-top:7px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(App.email||"—")}</code>
